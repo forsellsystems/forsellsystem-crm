@@ -1,18 +1,15 @@
 import { TrendingUp, Kanban, BarChart3, Trophy } from 'lucide-react'
 import {
   getDashboardStats,
-  getPipelineSummary,
   getRecentDeals,
 } from '@/lib/queries/dashboard'
 import { formatCurrency } from '@/lib/utils'
 import { StatCard } from '@/components/dashboard/stat-card'
-import { PipelineChart } from '@/components/dashboard/pipeline-chart'
 import { RecentDealsList } from '@/components/dashboard/recent-deals-list'
 
 export default async function DashboardPage() {
-  const [stats, pipelineSummary, recentDeals] = await Promise.all([
+  const [stats, recentDeals] = await Promise.all([
     getDashboardStats(),
-    getPipelineSummary(),
     getRecentDeals(),
   ])
 
@@ -57,9 +54,8 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Charts & Lists */}
-      <div className="grid gap-6 lg:grid-cols-2 stagger-children">
-        <PipelineChart data={pipelineSummary} />
+      {/* Recent Deals */}
+      <div className="stagger-children">
         <RecentDealsList deals={recentDeals} />
       </div>
     </div>

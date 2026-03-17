@@ -4,8 +4,9 @@ import { useState, useCallback } from 'react'
 import {
   DndContext,
   DragOverlay,
-  closestCorners,
+  closestCenter,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   useDroppable,
@@ -21,6 +22,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import Link from 'next/link'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { PIPELINE_STAGES } from '@/lib/constants'
 import { formatCurrency } from '@/lib/utils'
@@ -44,7 +46,10 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 3 },
+      activationConstraint: { distance: 6 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
     })
   )
 
@@ -58,6 +63,37 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     },
     [columns]
   )
+
+  async function moveCard(cardId: string, direction: 'next' | 'prev') {
+    const currentCol = findColumn(cardId)
+    if (!currentCol) return
+
+    const stageIndex = PIPELINE_STAGES.findIndex((s) => s.key === currentCol)
+    const targetIndex = direction === 'next' ? stageIndex + 1 : stageIndex - 1
+    if (targetIndex < 0 || targetIndex >= PIPELINE_STAGES.length) return
+
+    const targetCol = PIPELINE_STAGES[targetIndex].key
+
+    // Optimistic update
+    setColumns((prev) => {
+      const sourceCards = [...prev[currentCol]]
+      const targetCards = [...prev[targetCol]]
+      const cardIndex = sourceCards.findIndex((c) => c.id === cardId)
+      if (cardIndex < 0) return prev
+
+      const [movedCard] = sourceCards.splice(cardIndex, 1)
+      movedCard.stage = targetCol
+      targetCards.push(movedCard)
+
+      return { ...prev, [currentCol]: sourceCards, [targetCol]: targetCards }
+    })
+
+    try {
+      await updateDealStage(cardId, targetCol, 0)
+    } catch {
+      window.location.reload()
+    }
+  }
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event
@@ -76,7 +112,6 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     const overId = over.id as string
 
     const activeCol = findColumn(activeId)
-    // over can be a column id (droppable) or a card id
     const overCol = columns[overId] ? overId : findColumn(overId)
 
     if (!activeCol || !overCol || activeCol === overCol) return
@@ -89,7 +124,6 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       const [movedCard] = activeCards.splice(activeIndex, 1)
       movedCard.stage = overCol
 
-      // If dropping on a card, insert at that position; otherwise append
       const overIndex = overCards.findIndex((c) => c.id === overId)
       const insertIndex = overIndex >= 0 ? overIndex : overCards.length
       overCards.splice(insertIndex, 0, movedCard)
@@ -107,7 +141,6 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     const activeId = active.id as string
     const overId = over.id as string
 
-    // The card is now in its current column (may have been moved by handleDragOver)
     const currentCol = findColumn(activeId)
     const startCol = originColumn
     setOriginColumn(null)
@@ -117,7 +150,6 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
     const movedBetweenColumns = startCol !== currentCol
 
     if (!movedBetweenColumns) {
-      // Reorder within same column
       const cards = columns[currentCol]
       const oldIndex = cards.findIndex((c) => c.id === activeId)
       const newIndex = cards.findIndex((c) => c.id === overId)
@@ -135,7 +167,6 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
         }
       }
     } else {
-      // Moved between columns — already visually updated by handleDragOver
       const newIndex = columns[currentCol].findIndex((c) => c.id === activeId)
 
       try {
@@ -152,13 +183,13 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={closestCenter}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div className="grid grid-cols-6 gap-3">
-        {PIPELINE_STAGES.map((stage) => {
+        {PIPELINE_STAGES.map((stage, stageIndex) => {
           const cards = columns[stage.key] ?? []
           const totalValue = cards.reduce((sum, c) => sum + (c.value ?? 0), 0)
 
@@ -171,6 +202,8 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
               count={cards.length}
               totalValue={totalValue}
               cards={cards}
+              stageIndex={stageIndex}
+              onMoveCard={moveCard}
             />
           )
         })}
@@ -190,6 +223,8 @@ function KanbanColumn({
   count,
   totalValue,
   cards,
+  stageIndex,
+  onMoveCard,
 }: {
   id: string
   title: string
@@ -197,6 +232,8 @@ function KanbanColumn({
   count: number
   totalValue: number
   cards: DealCard[]
+  stageIndex: number
+  onMoveCard: (cardId: string, direction: 'next' | 'prev') => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id })
 
@@ -205,11 +242,11 @@ function KanbanColumn({
       <div className="mb-3">
         <div className="flex items-center gap-2 mb-1">
           <div
-            className="w-2.5 h-2.5 rounded-full"
+            className="w-2.5 h-2.5 rounded-full shrink-0"
             style={{ backgroundColor: color }}
           />
-          <h3 className="font-condensed text-[11px] tracking-[0.1em] text-[#1A1F1D]">{title}</h3>
-          <span className="text-xs text-[#6B7672] bg-[#F0F2F1] px-1.5 py-0.5 rounded-full">
+          <h3 className="font-condensed text-[11px] tracking-[0.1em] text-[#1A1F1D] truncate">{title}</h3>
+          <span className="text-xs text-[#6B7672] bg-[#F0F2F1] px-1.5 py-0.5 rounded-full shrink-0">
             {count}
           </span>
         </div>
@@ -232,10 +269,15 @@ function KanbanColumn({
           }`}
         >
           {cards.map((card) => (
-            <SortableDealCard key={card.id} card={card} />
+            <SortableDealCard
+              key={card.id}
+              card={card}
+              stageIndex={stageIndex}
+              onMoveCard={onMoveCard}
+            />
           ))}
           {cards.length === 0 && (
-            <div className={`text-center py-12 text-xs ${isOver ? 'text-[#50645F]' : 'text-[#B8BFBB]'}`}>
+            <div className={`flex items-center justify-center min-h-[176px] text-xs ${isOver ? 'text-[#50645F]' : 'text-[#B8BFBB]'}`}>
               {isOver ? 'Släpp här' : 'Dra affärer hit'}
             </div>
           )}
@@ -245,7 +287,15 @@ function KanbanColumn({
   )
 }
 
-function SortableDealCard({ card }: { card: DealCard }) {
+function SortableDealCard({
+  card,
+  stageIndex,
+  onMoveCard,
+}: {
+  card: DealCard
+  stageIndex: number
+  onMoveCard: (cardId: string, direction: 'next' | 'prev') => void
+}) {
   const {
     attributes,
     listeners,
@@ -263,7 +313,11 @@ function SortableDealCard({ card }: { card: DealCard }) {
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <DealCardComponent card={card} />
+      <DealCardComponent
+        card={card}
+        stageIndex={stageIndex}
+        onMoveCard={onMoveCard}
+      />
     </div>
   )
 }
@@ -271,44 +325,74 @@ function SortableDealCard({ card }: { card: DealCard }) {
 function DealCardComponent({
   card,
   isDragging,
+  stageIndex,
+  onMoveCard,
 }: {
   card: DealCard
   isDragging?: boolean
+  stageIndex?: number
+  onMoveCard?: (cardId: string, direction: 'next' | 'prev') => void
 }) {
+  const isFirst = stageIndex === 0
+  const isLast = stageIndex === PIPELINE_STAGES.length - 1
+
   return (
-    <Link href={`/pipeline/${card.id}`} onClick={(e) => isDragging && e.preventDefault()}>
-      <Card
-        className={`p-3 cursor-grab active:cursor-grabbing hover:ring-1 hover:ring-[#50645F]/30 transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-[#50645F]/40' : ''}`}
-      >
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-[#1A1F1D] truncate">
+    <Card
+      className={`p-3 cursor-grab active:cursor-grabbing group/card hover:ring-1 hover:ring-[#50645F]/30 transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-[#50645F]/40' : ''}`}
+    >
+      <div className="space-y-2">
+        <Link href={`/pipeline/${card.id}`} onClick={(e) => isDragging && e.preventDefault()}>
+          <p className="text-sm font-medium text-[#1A1F1D] truncate hover:text-[#50645F] transition-colors">
             {card.company_name}
           </p>
-          {card.quote_number && (
-            <p className="text-xs text-[#6B7672]">#{card.quote_number}</p>
+        </Link>
+        {card.quote_number && (
+          <p className="text-xs text-[#6B7672]">#{card.quote_number}</p>
+        )}
+        <div className="flex items-center justify-between">
+          {card.value ? (
+            <span className="text-sm font-semibold text-[#50645F]">
+              {formatCurrency(card.value)}
+            </span>
+          ) : (
+            <span className="text-xs text-[#B8BFBB]">Inget värde</span>
           )}
-          <div className="flex items-center justify-between">
-            {card.value ? (
-              <span className="text-sm font-semibold text-[#50645F]">
-                {formatCurrency(card.value)}
-              </span>
-            ) : (
-              <span className="text-xs text-[#B8BFBB]">Inget värde</span>
-            )}
-            {card.responsible_name && (
-              <span className="text-xs text-[#6B7672] truncate max-w-[80px]">
-                {card.responsible_name}
-              </span>
-            )}
-          </div>
-          {card.contact_name && (
-            <p className="text-xs text-[#6B7672]">{card.contact_name}</p>
-          )}
-          {card.reseller_name && (
-            <p className="text-[10px] text-[#C4883A]">via {card.reseller_name}</p>
+          {card.responsible_name && (
+            <span className="text-xs text-[#6B7672] truncate max-w-[80px]">
+              {card.responsible_name}
+            </span>
           )}
         </div>
-      </Card>
-    </Link>
+        {card.contact_name && (
+          <p className="text-xs text-[#6B7672]">{card.contact_name}</p>
+        )}
+        {card.reseller_name && (
+          <p className="text-[10px] text-[#C4883A]">via {card.reseller_name}</p>
+        )}
+
+        {/* Move buttons */}
+        {onMoveCard && !isDragging && (
+          <div className="flex items-center justify-between pt-1 border-t border-[#F0F2F1]">
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isFirst) onMoveCard(card.id, 'prev') }}
+              disabled={isFirst}
+              className="p-1 rounded hover:bg-[#F0F2F1] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              title="Flytta bakåt"
+            >
+              <ChevronLeft className="size-3.5 text-[#6B7672]" />
+            </button>
+            <span className="text-[9px] text-[#B8BFBB] font-condensed tracking-wider">FLYTTA</span>
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isLast) onMoveCard(card.id, 'next') }}
+              disabled={isLast}
+              className="p-1 rounded hover:bg-[#F0F2F1] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              title="Flytta framåt"
+            >
+              <ChevronRight className="size-3.5 text-[#6B7672]" />
+            </button>
+          </div>
+        )}
+      </div>
+    </Card>
   )
 }
