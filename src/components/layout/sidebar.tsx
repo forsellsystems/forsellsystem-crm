@@ -85,7 +85,7 @@ export function Sidebar() {
               className={cn(
                 "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] font-medium tracking-[0.12em] transition-all duration-200",
                 "font-condensed",
-                isIndented && !collapsed && "ml-4 py-2 text-[10px] tracking-[0.1em]",
+                isIndented && !collapsed && "py-2 text-[10px] tracking-[0.1em] opacity-80",
                 isActive
                   ? "bg-[#3D4E4A] text-white shadow-sm shadow-black/10"
                   : "text-[#8A9E99] hover:bg-[#3D4E4A]/60 hover:text-[#F0F2F1]"
@@ -94,7 +94,7 @@ export function Sidebar() {
               <Icon
                 className={cn(
                   "shrink-0 transition-colors",
-                  isIndented ? "h-[15px] w-[15px]" : "h-[18px] w-[18px]",
+                  "h-[18px] w-[18px]",
                   isActive ? "text-[#C4883A]" : "text-[#6A7F7A] group-hover:text-[#8A9E99]"
                 )}
               />
