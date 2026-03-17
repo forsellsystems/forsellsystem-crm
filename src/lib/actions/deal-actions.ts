@@ -108,7 +108,7 @@ export async function updateDealStage(
     .eq('id', dealId)
 
   if (error) throw new Error(`Kunde inte uppdatera affär: ${error.message}`)
-  revalidatePath('/pipeline')
+  // No revalidatePath here — kanban uses optimistic updates
 }
 
 export async function updateDealSortOrders(
@@ -125,6 +125,5 @@ export async function updateDealSortOrders(
 
     if (error) throw new Error(`Kunde inte omsortera: ${error.message}`)
   }
-
-  revalidatePath('/pipeline')
+  // No revalidatePath here — kanban uses optimistic updates
 }

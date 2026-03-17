@@ -92,9 +92,11 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="outline" />}>
-        <Pencil className="size-4" data-icon="inline-start" />
-        Redigera
+      <DialogTrigger>
+        <Button variant="outline">
+          <Pencil className="size-4 mr-2" />
+          Redigera
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>

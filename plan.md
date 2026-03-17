@@ -1,6 +1,6 @@
 # Forsell System CRM2 — Implementeringsplan
 
-## Status: ✅ ALLA FASER KLARA (2026-03-17)
+## Status: PÅGÅR (2026-03-17)
 
 | Fas | Status |
 |---|---|
@@ -8,15 +8,45 @@
 | 1. Databas (Supabase MCP) | ✅ |
 | 2. Maskiner & Inställningar | ✅ |
 | 3. Prospekt + Anteckningar | ✅ |
-| 4. Företag & Kontakter | ✅ |
+| 4. Företag → Kunder & Kontakter | ✅ |
 | 5. Pipeline / Kanban | ✅ |
 | 6. Konverteringsflöde | ✅ |
 | 7. Dashboard | ✅ |
 | 8. Polish & Finslipning | ✅ |
 | 9. Fortnox-förberedelse | ✅ |
+| 10. Återförsäljare (egen flik) | ✅ |
+| 11. Supabase Auth (login + lösenord) | ✅ |
+| 12. Bugfix & kvarvarande | 🔧 |
 
-**13 routes** · **9 databastabeller** · **1 RPC-funktion** · **Felfri build**
-Admin: Kevin Forss (kevin@forsellsystem.com)
+**15 routes** · **9 databastabeller** · **2 RPC-funktioner** · **GitHub: forsellsystems/forsellsystem-crm**
+Admin: Kevin Forss (kevin@forsellsystem.com) — Lösenord: Forsell2026!
+
+### Fas 10: Återförsäljare ✅ KLAR
+- `is_reseller` boolean på companies — separerar kunder från återförsäljare
+- `reseller_id` FK på companies — kopplar kund till sin återförsäljare
+- `reseller_id` FK på deals — vilken återförsäljare affären går genom
+- Egen `/aterforsaljare` sida med lista, ny-dialog, detalj (`/aterforsaljare/[id]`)
+- Återförsäljare filtreras bort från kundlistan
+- Återförsäljare-dropdown vid skapande av kunder och affärer
+- Visas på pipeline-kort ("via Randek AB")
+- Prospekt som sub-item under Återförsäljare i sidebar
+
+### Fas 11: Supabase Auth ✅ KLAR
+- `auth_id` kolumn på users kopplad till `auth.users`
+- `create_user_with_password` RPC — skapar auth-användare + public user
+- Login-sida (`/login`) med e-post + lösenord
+- Middleware skyddar alla sidor (redirect till /login)
+- Lösenordsfält i "Ny användare"-dialogen (admin sätter lösenord)
+- Logga ut-knapp i sidebar
+
+### Fas 12: Bugfix & kvarvarande 🔧 PÅGÅR
+- [x] Ta bort anteckningar (kunder + återförsäljare)
+- [x] Ta bort kunder och återförsäljare
+- [x] Ta bort användare under Inställningar
+- [x] Borttagen "Inaktivera användare"-knapp
+- [ ] Kanban drag & drop sparar korrekt
+- [ ] Redigera affärer fungerar
+- [ ] Prospekt som sub-item i menyn under Återförsäljare
 
 ---
 
@@ -196,21 +226,27 @@ Koppla MCP till Supabase-projektet och skapa alla tabeller:
 
 ---
 
-## Fas 4: Företag & Kontakter ✅ KLAR
+## Fas 4: Kunder (f.d. Företag) & Kontakter ✅ KLAR
 
-### `/foretag`
+> **OBS:** "Företag" omdöpt till "Kunder" i hela UI:t. URL:erna är fortfarande `/foretag` internt.
+
+### `/foretag` (Kunder)
 - Tabell: namn, kundnummer, land, ansvarig
 - Sök på namn, kundnummer
+- **Filtrerar bort återförsäljare** (`is_reseller = false`)
+- Återförsäljare-dropdown vid skapande av kund
 
 ### `/foretag/ny`
 - Alla fält + validering
 - Ansvarig-dropdown (från users)
+- Återförsäljare-dropdown
 
 ### `/foretag/[id]`
-- Företagsinformation
+- Kundinformation
 - Kontaktlista (lägg till/redigera i dialog)
 - Kopplande affärer
-- Anteckningshistorik
+- Anteckningshistorik (med ta bort)
+- Ta bort kund
 
 ---
 

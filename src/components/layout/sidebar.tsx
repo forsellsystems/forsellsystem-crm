@@ -24,7 +24,7 @@ const navItems = [
   { href: "/pipeline", label: "PIPELINE", icon: Kanban },
   { href: "/foretag", label: "KUNDER", icon: Building2 },
   { href: "/aterforsaljare", label: "ÅTERFÖRSÄLJARE", icon: Handshake },
-  { href: "/prospekt", label: "PROSPEKT", icon: Users },
+  { href: "/prospekt", label: "PROSPEKT", icon: Users, indent: true },
   { href: "/maskiner", label: "MASKINER", icon: Wrench },
   { href: "/installningar", label: "INSTÄLLNINGAR", icon: Cog },
 ];
@@ -76,6 +76,7 @@ export function Sidebar() {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = item.icon;
+          const isIndented = "indent" in item && item.indent;
 
           return (
             <Link
@@ -84,6 +85,7 @@ export function Sidebar() {
               className={cn(
                 "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] font-medium tracking-[0.12em] transition-all duration-200",
                 "font-condensed",
+                isIndented && !collapsed && "ml-4 py-2 text-[10px] tracking-[0.1em]",
                 isActive
                   ? "bg-[#3D4E4A] text-white shadow-sm shadow-black/10"
                   : "text-[#8A9E99] hover:bg-[#3D4E4A]/60 hover:text-[#F0F2F1]"
@@ -91,7 +93,8 @@ export function Sidebar() {
             >
               <Icon
                 className={cn(
-                  "h-[18px] w-[18px] shrink-0 transition-colors",
+                  "shrink-0 transition-colors",
+                  isIndented ? "h-[15px] w-[15px]" : "h-[18px] w-[18px]",
                   isActive ? "text-[#C4883A]" : "text-[#6A7F7A] group-hover:text-[#8A9E99]"
                 )}
               />
