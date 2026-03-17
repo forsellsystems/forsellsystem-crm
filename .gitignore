@@ -30,8 +30,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+
+# claude code / mcp
+.claude/
+.mcp.json
+.agents/
+skills-lock.json
 
 # vercel
 .vercel
