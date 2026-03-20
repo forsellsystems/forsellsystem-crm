@@ -16,35 +16,35 @@ export function RecentDealsList({ deals }: RecentDealsListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Senaste affärer</CardTitle>
+        <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Senaste affärer</CardTitle>
       </CardHeader>
       <CardContent>
         {deals.length === 0 ? (
-          <p className="text-sm text-[#6B7672] text-center py-6">
+          <p className="text-sm text-[#6B6B6B] text-center py-6">
             Inga affärer ännu.
           </p>
         ) : (
-          <div className="divide-y divide-[#B8BFBB]/40">
+          <div className="divide-y divide-[#B8B8B8]/40">
             {deals.map((deal) => {
               const stage = getStage(deal.stage)
               return (
                 <Link
                   key={deal.id}
                   href={`/pipeline/${deal.id}`}
-                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:bg-[#F0F2F1] -mx-4 px-4 rounded transition-colors"
+                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:bg-[#F2F2F0] -mx-4 px-4 rounded transition-colors"
                 >
                   <div className="space-y-0.5">
-                    <p className="text-sm font-medium text-[#1A1F1D]">
+                    <p className="text-sm font-medium text-[#1A1A1A]">
                       {deal.company_name}
                     </p>
-                    <div className="flex items-center gap-2 text-xs text-[#6B7672]">
+                    <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
                       {deal.quote_number && <span>#{deal.quote_number}</span>}
                       <span>{formatRelativeTime(deal.updated_at)}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     {deal.value && (
-                      <span className="text-sm font-medium text-[#1A1F1D]">
+                      <span className="text-sm font-medium text-[#1A1A1A]">
                         {formatCurrency(deal.value)}
                       </span>
                     )}

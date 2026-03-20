@@ -55,6 +55,7 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
       currency: deal.currency as DealFormData['currency'],
       responsible_user_id: deal.responsible_user_id ?? '',
       reseller_id: deal.reseller_id ?? '',
+      quote_date: deal.quote_date ?? '',
       machine_ids: deal.machines.map((m) => m.id),
     },
   })
@@ -109,6 +110,13 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
               <Label htmlFor="edit-deal-quote">Offertnummer</Label>
               <Input id="edit-deal-quote" {...register('quote_number')} />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-deal-quote-date">Offertdatum</Label>
+              <Input id="edit-deal-quote-date" type="date" {...register('quote_date')} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="edit-deal-value">Värde</Label>
               <div className="flex gap-2">
@@ -166,7 +174,7 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
             <Label>Produkter / Maskiner</Label>
             <div className="grid grid-cols-2 gap-2 max-h-[150px] overflow-y-auto border border-border rounded-lg p-2">
               {machines.map((m) => (
-                <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-[#F0F2F1] rounded p-1">
+                <label key={m.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-[#F2F2F0] rounded p-1">
                   <input type="checkbox" checked={selectedMachines.includes(m.id)} onChange={() => toggleMachine(m.id)} className="rounded border-border" />
                   <span className="truncate">{m.name}</span>
                 </label>

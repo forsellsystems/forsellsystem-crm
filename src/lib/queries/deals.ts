@@ -4,6 +4,7 @@ import type { Deal, DealWithRelations } from '@/lib/types/database'
 export type DealCard = {
   id: string
   quote_number: string | null
+  quote_date: string | null
   stage: string
   value: number | null
   currency: string
@@ -22,6 +23,7 @@ export async function getDealsByStage(): Promise<Record<string, DealCard[]>> {
     .select(
       '*, companies!deals_company_id_fkey(name), contacts!deals_contact_id_fkey(name), users!deals_responsible_user_id_fkey(name), reseller:companies!deals_reseller_id_fkey(name)'
     )
+    .order('quote_date', { ascending: false, nullsFirst: false })
     .order('sort_order')
     .order('created_at', { ascending: false })
 
@@ -33,6 +35,7 @@ export async function getDealsByStage(): Promise<Record<string, DealCard[]>> {
     const card: DealCard = {
       id: deal.id,
       quote_number: deal.quote_number,
+      quote_date: deal.quote_date,
       stage: deal.stage,
       value: deal.value,
       currency: deal.currency,

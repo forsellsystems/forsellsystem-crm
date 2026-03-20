@@ -19,6 +19,7 @@ export async function createDeal(data: DealFormData) {
       currency: validated.currency,
       responsible_user_id: validated.responsible_user_id || null,
       reseller_id: validated.reseller_id || null,
+      quote_date: validated.quote_date || null,
     })
     .select('id')
     .single()
@@ -55,6 +56,7 @@ export async function updateDeal(id: string, data: DealFormData) {
       currency: validated.currency,
       responsible_user_id: validated.responsible_user_id || null,
       reseller_id: validated.reseller_id || null,
+      quote_date: validated.quote_date || null,
     })
     .eq('id', id)
 

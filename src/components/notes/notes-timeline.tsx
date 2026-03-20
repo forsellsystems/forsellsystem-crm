@@ -11,7 +11,7 @@ interface NotesTimelineProps {
 export function NotesTimeline({ notes, entityType, entityId }: NotesTimelineProps) {
   if (notes.length === 0) {
     return (
-      <p className="text-sm text-[#6B7672] py-6 text-center">
+      <p className="text-sm text-[#6B6B6B] py-6 text-center">
         Inga anteckningar ännu.
       </p>
     )
@@ -22,11 +22,11 @@ export function NotesTimeline({ notes, entityType, entityId }: NotesTimelineProp
       {notes.map((note) => (
         <div
           key={note.id}
-          className="group relative pl-4 border-l-2 border-[#B8BFBB]/60"
+          className="group relative pl-4 border-l-2 border-[#B8B8B8]/60"
         >
-          <div className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-[#50645F]" />
+          <div className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-[#656565]" />
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs text-[#6B7672]">
+            <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
               <span>{formatDateTime(note.created_at)}</span>
               {note.author_name && (
                 <>
@@ -48,7 +48,7 @@ export function NotesTimeline({ notes, entityType, entityId }: NotesTimelineProp
                 entityId={entityId}
               />
             </div>
-            <p className="text-sm text-[#1A1F1D] whitespace-pre-wrap">
+            <p className="text-sm text-[#1A1A1A] whitespace-pre-wrap">
               {note.content}
             </p>
           </div>

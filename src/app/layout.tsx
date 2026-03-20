@@ -12,7 +12,7 @@ const barlow = Barlow({
 const barlowCondensed = Barlow_Condensed({
   variable: "--font-barlow-condensed",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const dmSerifDisplay = DM_Serif_Display({

@@ -1,6 +1,6 @@
 # Forsell System CRM2 — Implementeringsplan
 
-## Status: PÅGÅR (2026-03-17)
+## Status: ✅ ALLA FASER KLARA (2026-03-17)
 
 | Fas | Status |
 |---|---|
@@ -16,7 +16,7 @@
 | 9. Fortnox-förberedelse | ✅ |
 | 10. Återförsäljare (egen flik) | ✅ |
 | 11. Supabase Auth (login + lösenord) | ✅ |
-| 12. Bugfix & kvarvarande | 🔧 |
+| 12. Bugfix & UI-polish | ✅ |
 
 **15 routes** · **9 databastabeller** · **2 RPC-funktioner** · **GitHub: forsellsystems/forsellsystem-crm**
 Admin: Kevin Forss (kevin@forsellsystem.com) — Lösenord: Forsell2026!
@@ -39,14 +39,19 @@ Admin: Kevin Forss (kevin@forsellsystem.com) — Lösenord: Forsell2026!
 - Lösenordsfält i "Ny användare"-dialogen (admin sätter lösenord)
 - Logga ut-knapp i sidebar
 
-### Fas 12: Bugfix & kvarvarande 🔧 PÅGÅR
+### Fas 12: Bugfix & UI-polish ✅ KLAR
 - [x] Ta bort anteckningar (kunder + återförsäljare)
 - [x] Ta bort kunder och återförsäljare
 - [x] Ta bort användare under Inställningar
 - [x] Borttagen "Inaktivera användare"-knapp
-- [ ] Kanban drag & drop sparar korrekt
-- [ ] Redigera affärer fungerar
-- [ ] Prospekt som sub-item i menyn under Återförsäljare
+- [x] Kanban drag & drop sparar korrekt (borttagen revalidatePath)
+- [x] Redigera affärer — fixat DialogTrigger
+- [x] Prospekt som sub-item i menyn under Återförsäljare
+- [x] Pipeline: framåt/bakåt-knappar på kort
+- [x] Pipeline: förbättrad DnD (touch-stöd, closestCenter, distance 6)
+- [x] Pipeline: centrerad "Dra affärer hit"-text
+- [x] Dashboard: borttaget "Pipeline per steg"-diagram
+- [x] Sidebar: Prospekt-text samma storlek som övriga
 
 ---
 
@@ -387,21 +392,21 @@ src/
 ## Verifiering
 
 ### Per fas
-- [ ] Alla CRUD-operationer fungerar
-- [ ] Data visas korrekt i listor och detaljsidor
-- [ ] Formulärvalidering fångar ogiltiga värden
-- [ ] Laddningstillstånd visas
-- [ ] Navigation mellan relaterade entiteter fungerar
+- [x] Alla CRUD-operationer fungerar
+- [x] Data visas korrekt i listor och detaljsidor
+- [x] Formulärvalidering fångar ogiltiga värden
+- [x] Laddningstillstånd visas
+- [x] Navigation mellan relaterade entiteter fungerar
 
 ### Konverteringsflöde (kritiskt)
-- [ ] Skapa prospekt med 3+ anteckningar
-- [ ] Konvertera → företag, kontakt, affär skapas
-- [ ] Alla anteckningar finns på företag + affär med originaldatum
-- [ ] Prospekt markerat som konverterat
-- [ ] Dubbelkonvertering förhindras
+- [x] Skapa prospekt med 3+ anteckningar
+- [x] Konvertera → företag, kontakt, affär skapas
+- [x] Alla anteckningar finns på företag + affär med originaldatum
+- [x] Prospekt markerat som konverterat
+- [x] Dubbelkonvertering förhindras
 
 ### Kanban
-- [ ] Kort i rätt kolumner
-- [ ] Drag mellan kolumner uppdaterar stage + persisterar
-- [ ] Drag inom kolumn omsorterar + persisterar
-- [ ] Ny affär skapas i rätt kolumn
+- [x] Kort i rätt kolumner
+- [x] Drag mellan kolumner uppdaterar stage + persisterar
+- [x] Drag inom kolumn omsorterar + persisterar
+- [x] Ny affär skapas i rätt kolumn

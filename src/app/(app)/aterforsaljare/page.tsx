@@ -33,10 +33,10 @@ export default async function AterforsaljarePage() {
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-3xl text-[#1A1F1D]">
+          <h2 className="font-display text-3xl text-[#1A1A1A]">
             Återförsäljare
           </h2>
-          <p className="text-sm text-[#6B7672] mt-1">
+          <p className="text-sm text-[#6B6B6B] mt-1">
             Partners som säljer era maskiner
           </p>
         </div>
@@ -46,8 +46,8 @@ export default async function AterforsaljarePage() {
       {resellers.length === 0 ? (
         <Card>
           <CardContent>
-            <div className="flex flex-col items-center justify-center py-12 text-[#6B7672]">
-              <Handshake className="h-12 w-12 mb-4 text-[#B8BFBB]" />
+            <div className="flex flex-col items-center justify-center py-12 text-[#6B6B6B]">
+              <Handshake className="h-12 w-12 mb-4 text-[#B8B8B8]" />
               <p className="text-sm">Inga återförsäljare ännu.</p>
               <p className="text-xs mt-1">
                 Lägg till era återförsäljare för att koppla dem till affärer.
@@ -75,25 +75,25 @@ export default async function AterforsaljarePage() {
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/aterforsaljare/${reseller.id}`}
-                          className="font-medium text-[#50645F] hover:underline"
+                          className="font-medium text-[#656565] hover:underline"
                         >
                           {reseller.name}
                         </Link>
                         <Badge
                           variant="outline"
-                          className="text-[#C4883A] border-[#C4883A]/40 text-[10px]"
+                          className="text-[#D4A301] border-[#D4A301]/40 text-[10px]"
                         >
                           Återförsäljare
                         </Badge>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-[#6B7672]">
+                    <TableCell className="text-sm text-[#6B6B6B]">
                       {reseller.country}
                     </TableCell>
-                    <TableCell className="text-sm text-[#6B7672]">
+                    <TableCell className="text-sm text-[#6B6B6B]">
                       {reseller.email ?? '—'}
                     </TableCell>
-                    <TableCell className="text-sm text-[#6B7672]">
+                    <TableCell className="text-sm text-[#6B6B6B]">
                       {reseller.phone ?? '—'}
                     </TableCell>
                     <TableCell>

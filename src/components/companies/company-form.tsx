@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { COUNTRIES, FACTORY_TYPES, BUILDING_TYPES } from '@/lib/constants'
 import { companySchema, type CompanyFormData } from '@/lib/validations'
 import { createCompany, updateCompany } from '@/lib/actions/company-actions'
 import type { Company, User } from '@/lib/types/database'
@@ -24,6 +25,8 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CompanyFormData>({
     resolver: formResolver(companySchema),
@@ -32,6 +35,8 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
           name: company.name,
           customer_number: company.customer_number ?? '',
           org_number: company.org_number ?? '',
+          factory_type: company.factory_type ?? '',
+          building_types: company.building_types ?? [],
           country: company.country,
           phone: company.phone ?? '',
           email: company.email ?? '',
@@ -44,6 +49,8 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
           name: '',
           customer_number: '',
           org_number: '',
+          factory_type: '',
+          building_types: [],
           country: 'Sverige',
           phone: '',
           email: '',
@@ -103,9 +110,58 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="country">Land</Label>
-              <Input id="country" {...register('country')} />
+              <Label htmlFor="factory_type">Fabrikstyp</Label>
+              <select
+                id="factory_type"
+                className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                {...register('factory_type')}
+              >
+                <option value="">Välj fabrikstyp</option>
+                {FACTORY_TYPES.map((ft) => (
+                  <option key={ft.key} value={ft.key}>{ft.label}</option>
+                ))}
+              </select>
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="country">Land</Label>
+              <select
+                id="country"
+                className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                {...register('country')}
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label>Byggnadstyp</Label>
+            <div className="flex gap-4">
+              {BUILDING_TYPES.map((bt) => {
+                const selected = watch('building_types') ?? []
+                return (
+                  <label key={bt.key} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(bt.key)}
+                      onChange={() => {
+                        const next = selected.includes(bt.key)
+                          ? selected.filter((k: string) => k !== bt.key)
+                          : [...selected, bt.key]
+                        setValue('building_types', next)
+                      }}
+                      className="accent-[#656565]"
+                    />
+                    {bt.label}
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="responsible_user_id">Ansvarig</Label>
               <select
@@ -141,8 +197,8 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
             </div>
           )}
 
-          <div className="border-t border-[#B8BFBB]/40 pt-4 mt-2">
-            <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B7672] mb-3">
+          <div className="border-t border-[#B8B8B8]/40 pt-4 mt-2">
+            <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B6B6B] mb-3">
               Kontaktuppgifter
             </p>
           </div>

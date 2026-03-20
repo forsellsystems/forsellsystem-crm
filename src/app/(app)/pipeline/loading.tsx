@@ -18,7 +18,7 @@ export default function PipelineLoading() {
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-4 w-6 rounded-full" />
             </div>
-            <div className="space-y-2 p-2 rounded-lg bg-[#F0F2F1]/50 min-h-[200px]">
+            <div className="space-y-2 p-2 rounded-lg bg-[#F2F2F0]/50 min-h-[200px]">
               {Array.from({ length: Math.max(1, 3 - i) }).map((_, j) => (
                 <Skeleton key={j} className="h-24 w-full rounded-lg" />
               ))}

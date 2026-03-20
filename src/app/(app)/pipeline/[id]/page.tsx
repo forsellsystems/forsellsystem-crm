@@ -53,7 +53,7 @@ export default async function DealDetailPage({
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="font-display text-3xl text-[#1A1F1D]">
+              <h2 className="font-display text-3xl text-[#1A1A1A]">
                 {deal.quote_number
                   ? `Affär #${deal.quote_number}`
                   : 'Affär'}
@@ -61,14 +61,14 @@ export default async function DealDetailPage({
               <Badge
                 style={{
                   backgroundColor:
-                    PIPELINE_STAGES[currentStageIndex]?.color ?? '#50645F',
+                    PIPELINE_STAGES[currentStageIndex]?.color ?? '#656565',
                   color: 'white',
                 }}
               >
                 {PIPELINE_STAGES[currentStageIndex]?.label ?? deal.stage}
               </Badge>
             </div>
-            <p className="text-sm text-[#6B7672] mt-1">
+            <p className="text-sm text-[#6B6B6B] mt-1">
               {deal.company_name} &middot; Skapad {formatDate(deal.created_at)}
             </p>
           </div>
@@ -93,7 +93,7 @@ export default async function DealDetailPage({
             className="flex-1 h-2 rounded-full"
             style={{
               backgroundColor:
-                i <= currentStageIndex ? stage.color : '#B8BFBB40',
+                i <= currentStageIndex ? stage.color : '#B8B8B840',
             }}
           />
         ))}
@@ -104,12 +104,12 @@ export default async function DealDetailPage({
         <div className="lg:col-span-1 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Affärsdetaljer</CardTitle>
+              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Affärsdetaljer</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               {deal.value && (
                 <div className="flex justify-between">
-                  <span className="text-[#6B7672]">Värde</span>
+                  <span className="text-[#6B6B6B]">Värde</span>
                   <span className="font-semibold">
                     {formatCurrency(deal.value)} {deal.currency}
                   </span>
@@ -117,25 +117,31 @@ export default async function DealDetailPage({
               )}
               {deal.quote_number && (
                 <div className="flex justify-between">
-                  <span className="text-[#6B7672]">Offertnummer</span>
+                  <span className="text-[#6B6B6B]">Offertnummer</span>
                   <span>{deal.quote_number}</span>
+                </div>
+              )}
+              {deal.quote_date && (
+                <div className="flex justify-between">
+                  <span className="text-[#6B6B6B]">Offertdatum</span>
+                  <span>{formatDate(deal.quote_date)}</span>
                 </div>
               )}
               {deal.expected_close_date && (
                 <div className="flex justify-between">
-                  <span className="text-[#6B7672]">Förväntad avslut</span>
+                  <span className="text-[#6B6B6B]">Förväntad avslut</span>
                   <span>{formatDate(deal.expected_close_date)}</span>
                 </div>
               )}
               {deal.closed_at && (
                 <div className="flex justify-between">
-                  <span className="text-[#6B7672]">Avslutad</span>
+                  <span className="text-[#6B6B6B]">Avslutad</span>
                   <span>{formatDate(deal.closed_at)}</span>
                 </div>
               )}
               {deal.responsible_name && (
                 <div className="flex justify-between">
-                  <span className="text-[#6B7672]">Ansvarig</span>
+                  <span className="text-[#6B6B6B]">Ansvarig</span>
                   <span>{deal.responsible_name}</span>
                 </div>
               )}
@@ -145,26 +151,26 @@ export default async function DealDetailPage({
           {/* Company & Contact */}
           <Card>
             <CardHeader>
-              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Kopplingar</CardTitle>
+              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Kopplingar</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {deal.company_name && (
                 <Link
                   href={`/foretag/${deal.company_id}`}
-                  className="flex items-center gap-2 text-sm text-[#50645F] hover:underline"
+                  className="flex items-center gap-2 text-sm text-[#656565] hover:underline"
                 >
                   <Building2 className="size-4" />
                   {deal.company_name}
                 </Link>
               )}
               {deal.contact_name && (
-                <div className="flex items-center gap-2 text-sm text-[#6B7672]">
+                <div className="flex items-center gap-2 text-sm text-[#6B6B6B]">
                   <User className="size-4" />
                   {deal.contact_name}
                 </div>
               )}
               {deal.reseller_name && (
-                <div className="flex items-center gap-2 text-sm text-[#C4883A]">
+                <div className="flex items-center gap-2 text-sm text-[#D4A301]">
                   <Building2 className="size-4" />
                   <span>Återförsäljare: {deal.reseller_name}</span>
                 </div>
@@ -176,7 +182,7 @@ export default async function DealDetailPage({
           {deal.machines && deal.machines.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Produkter</CardTitle>
+                <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Produkter</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -185,10 +191,10 @@ export default async function DealDetailPage({
                       key={m.id}
                       className="flex items-center gap-2 text-sm"
                     >
-                      <Wrench className="size-3.5 text-[#6B7672]" />
+                      <Wrench className="size-3.5 text-[#6B6B6B]" />
                       <span>{m.name}</span>
                       {m.quantity > 1 && (
-                        <span className="text-xs text-[#6B7672]">
+                        <span className="text-xs text-[#6B6B6B]">
                           x{m.quantity}
                         </span>
                       )}
@@ -204,7 +210,7 @@ export default async function DealDetailPage({
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Anteckningar</CardTitle>
+              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Anteckningar</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <AddNoteForm entityType="deal" entityId={deal.id} />

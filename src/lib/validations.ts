@@ -28,11 +28,13 @@ export type UserFormData = z.infer<typeof userSchema>
 // ============================================
 export const prospectSchema = z.object({
   company_name: z.string().min(1, 'Företagsnamn krävs'),
-  factory_type: z.enum(['modulfabrik', 'vagg_tak_fabrik'], 'Fabrikstyp krävs'),
+  factory_type: z.enum(['modulfabrik', 'vagg_tak_fabrik']).optional().or(z.literal('')),
+  building_types: z.array(z.string()).optional(),
   country: z.string().min(1, 'Land krävs'),
   contact_person: z.string().optional(),
   email: z.string().email('Ogiltig e-postadress').optional().or(z.literal('')),
   phone: z.string().optional(),
+  description: z.string().optional(),
 })
 
 export type ProspectFormData = z.infer<typeof prospectSchema>
@@ -44,6 +46,8 @@ export const companySchema = z.object({
   name: z.string().min(1, 'Företagsnamn krävs'),
   customer_number: z.string().optional(),
   org_number: z.string().optional(),
+  factory_type: z.enum(['modulfabrik', 'vagg_tak_fabrik']).optional().or(z.literal('')),
+  building_types: z.array(z.string()).optional(),
   country: z.string().min(1, 'Land krävs'),
   phone: z.string().optional(),
   email: z.string().email('Ogiltig e-postadress').optional().or(z.literal('')),
@@ -76,11 +80,12 @@ export const dealSchema = z.object({
   quote_number: z.string().optional(),
   company_id: z.string().uuid('Företag krävs'),
   contact_id: z.string().uuid().optional().or(z.literal('')),
-  stage: z.enum(['kontakt', 'behovsanalys', 'offert', 'forhandling', 'avslutad_affar', 'avslutad_ingen_affar']),
+  stage: z.enum(['kontakt', 'offert', 'avslutad_affar', 'avslutad_ingen_affar']),
   value: z.coerce.number().min(0, 'Värde måste vara positivt').optional(),
   currency: z.enum(['SEK', 'EUR', 'USD', 'NOK', 'DKK']),
   responsible_user_id: z.string().uuid().optional().or(z.literal('')),
   reseller_id: z.string().uuid().optional().or(z.literal('')),
+  quote_date: z.string().optional().or(z.literal('')),
   machine_ids: z.array(z.string().uuid()).optional(),
 })
 

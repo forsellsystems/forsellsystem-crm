@@ -53,6 +53,7 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
       currency: 'SEK',
       responsible_user_id: '',
       reseller_id: '',
+      quote_date: '',
       machine_ids: [],
     },
   })
@@ -107,7 +108,7 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="bg-[#C4883A] hover:bg-[#B07830] text-white" />}>
+      <DialogTrigger render={<Button className="bg-[#F2BB01] hover:bg-[#B07830] text-white" />}>
         <Plus className="size-4" data-icon="inline-start" />
         Ny affär
       </DialogTrigger>
@@ -122,6 +123,13 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
               <Label htmlFor="deal-quote">Offertnummer</Label>
               <Input id="deal-quote" placeholder="OFF-001" {...register('quote_number')} />
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="deal-quote-date">Offertdatum</Label>
+              <Input id="deal-quote-date" type="date" {...register('quote_date')} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="deal-value">Värde</Label>
               <div className="flex gap-2">
@@ -214,7 +222,7 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
               {machines.map((m) => (
                 <label
                   key={m.id}
-                  className="flex items-center gap-2 text-sm cursor-pointer hover:bg-[#F0F2F1] rounded p-1"
+                  className="flex items-center gap-2 text-sm cursor-pointer hover:bg-[#F2F2F0] rounded p-1"
                 >
                   <input
                     type="checkbox"

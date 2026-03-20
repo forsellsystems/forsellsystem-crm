@@ -188,7 +188,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-6 gap-3">
+      <div className="grid grid-cols-4 gap-3">
         {PIPELINE_STAGES.map((stage, stageIndex) => {
           const cards = columns[stage.key] ?? []
           const totalValue = cards.reduce((sum, c) => sum + (c.value ?? 0), 0)
@@ -240,18 +240,18 @@ function KanbanColumn({
   return (
     <div className="min-w-0">
       <div className="mb-3">
-        <div className="flex items-center gap-2 mb-1">
+        <div className="flex items-center gap-2.5 mb-1">
           <div
-            className="w-2.5 h-2.5 rounded-full shrink-0"
+            className="w-3 h-3 rounded-full shrink-0"
             style={{ backgroundColor: color }}
           />
-          <h3 className="font-condensed text-[11px] tracking-[0.1em] text-[#1A1F1D] truncate">{title}</h3>
-          <span className="text-xs text-[#6B7672] bg-[#F0F2F1] px-1.5 py-0.5 rounded-full shrink-0">
+          <h3 className="font-condensed text-sm tracking-[0.1em] text-[#1A1A1A] truncate">{title}</h3>
+          <span className="text-sm text-[#6B6B6B] bg-[#F2F2F0] px-2 py-0.5 rounded-full shrink-0">
             {count}
           </span>
         </div>
         {totalValue > 0 && (
-          <p className="text-xs text-[#6B7672] ml-4">
+          <p className="text-xs text-[#6B6B6B] ml-4">
             {formatCurrency(totalValue)}
           </p>
         )}
@@ -264,8 +264,8 @@ function KanbanColumn({
       >
         <div
           ref={setNodeRef}
-          className={`space-y-2 min-h-[200px] p-2 rounded-lg transition-colors ${
-            isOver ? 'bg-[#50645F]/10 ring-2 ring-[#50645F]/20' : 'bg-[#F0F2F1]/50'
+          className={`w-full space-y-2 min-h-[200px] p-2 rounded-lg transition-colors ${
+            isOver ? 'bg-[#656565]/10 ring-2 ring-[#656565]/20' : 'bg-[#F2F2F0]/50'
           }`}
         >
           {cards.map((card) => (
@@ -277,7 +277,7 @@ function KanbanColumn({
             />
           ))}
           {cards.length === 0 && (
-            <div className={`flex items-center justify-center min-h-[176px] text-xs ${isOver ? 'text-[#50645F]' : 'text-[#B8BFBB]'}`}>
+            <div className={`flex items-center justify-center min-h-[176px] text-xs ${isOver ? 'text-[#656565]' : 'text-[#B8B8B8]'}`}>
               {isOver ? 'Släpp här' : 'Dra affärer hit'}
             </div>
           )}
@@ -312,7 +312,7 @@ function SortableDealCard({
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style} className="w-full" {...attributes} {...listeners}>
       <DealCardComponent
         card={card}
         stageIndex={stageIndex}
@@ -338,61 +338,64 @@ function DealCardComponent({
 
   return (
     <Card
-      className={`p-3 cursor-grab active:cursor-grabbing group/card hover:ring-1 hover:ring-[#50645F]/30 transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-[#50645F]/40' : ''}`}
+      className={`p-3 cursor-grab active:cursor-grabbing group/card hover:ring-1 hover:ring-[#656565]/30 transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-[#656565]/40' : ''}`}
     >
-      <div className="space-y-2">
-        <Link href={`/pipeline/${card.id}`} onClick={(e) => isDragging && e.preventDefault()}>
-          <p className="text-sm font-medium text-[#1A1F1D] truncate hover:text-[#50645F] transition-colors">
-            {card.company_name}
-          </p>
-        </Link>
-        {card.quote_number && (
-          <p className="text-xs text-[#6B7672]">#{card.quote_number}</p>
+      <Link href={`/pipeline/${card.id}`} onClick={(e) => isDragging && e.preventDefault()} className="block space-y-2">
+        <p className="text-sm font-medium text-[#1A1A1A] truncate group-hover/card:text-[#656565] transition-colors">
+          {card.company_name}
+        </p>
+        {(card.quote_number || card.quote_date) && (
+          <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
+            {card.quote_number && <span>#{card.quote_number}</span>}
+            {card.quote_date && (
+              <span>{new Date(card.quote_date).toLocaleDateString('sv-SE')}</span>
+            )}
+          </div>
         )}
         <div className="flex items-center justify-between">
           {card.value ? (
-            <span className="text-sm font-semibold text-[#50645F]">
+            <span className="text-sm font-semibold text-[#656565]">
               {formatCurrency(card.value)}
             </span>
           ) : (
-            <span className="text-xs text-[#B8BFBB]">Inget värde</span>
+            <span className="text-xs text-[#B8B8B8]">Inget värde</span>
           )}
           {card.responsible_name && (
-            <span className="text-xs text-[#6B7672] truncate max-w-[80px]">
+            <span className="text-xs text-[#6B6B6B] truncate max-w-[80px]">
               {card.responsible_name}
             </span>
           )}
         </div>
         {card.contact_name && (
-          <p className="text-xs text-[#6B7672]">{card.contact_name}</p>
+          <p className="text-xs text-[#6B6B6B]">{card.contact_name}</p>
         )}
         {card.reseller_name && (
-          <p className="text-[10px] text-[#C4883A]">via {card.reseller_name}</p>
+          <p className="text-[10px] text-[#D4A301]">via {card.reseller_name}</p>
         )}
+      </Link>
 
         {/* Move buttons */}
         {onMoveCard && !isDragging && (
-          <div className="flex items-center justify-between pt-1 border-t border-[#F0F2F1]">
+          <div className="flex items-center justify-between pt-1 border-t border-[#F2F2F0]">
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isFirst) onMoveCard(card.id, 'prev') }}
               disabled={isFirst}
-              className="p-1 rounded hover:bg-[#F0F2F1] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              className="p-1 rounded hover:bg-[#F2F2F0] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
               title="Flytta bakåt"
             >
-              <ChevronLeft className="size-3.5 text-[#6B7672]" />
+              <ChevronLeft className="size-3.5 text-[#6B6B6B]" />
             </button>
-            <span className="text-[9px] text-[#B8BFBB] font-condensed tracking-wider">FLYTTA</span>
+            <span className="text-[9px] text-[#B8B8B8] font-condensed tracking-wider">FLYTTA</span>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isLast) onMoveCard(card.id, 'next') }}
               disabled={isLast}
-              className="p-1 rounded hover:bg-[#F0F2F1] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+              className="p-1 rounded hover:bg-[#F2F2F0] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
               title="Flytta framåt"
             >
-              <ChevronRight className="size-3.5 text-[#6B7672]" />
+              <ChevronRight className="size-3.5 text-[#6B6B6B]" />
             </button>
           </div>
         )}
-      </div>
     </Card>
   )
 }

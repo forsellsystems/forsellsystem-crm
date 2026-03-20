@@ -26,7 +26,7 @@ export function ProspectFilters() {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="relative flex-1 min-w-[200px] max-w-sm">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#6B7672]" />
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#6B6B6B]" />
         <Input
           placeholder="Sök företag eller kontakt..."
           defaultValue={searchParams.get('search') ?? ''}

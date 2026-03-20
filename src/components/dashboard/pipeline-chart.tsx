@@ -34,25 +34,25 @@ export function PipelineChart({ data }: PipelineChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Pipeline per steg</CardTitle>
+        <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Pipeline per steg</CardTitle>
       </CardHeader>
       <CardContent>
         {chartData.every((d) => d.value === 0 && d.count === 0) ? (
-          <div className="flex items-center justify-center h-[250px] text-sm text-[#6B7672]">
+          <div className="flex items-center justify-center h-[250px] text-sm text-[#6B6B6B]">
             Inga aktiva affärer i pipelinen ännu.
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#B8BFBB40" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#B8B8B840" />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 12, fill: '#6B7672' }}
-                axisLine={{ stroke: '#B8BFBB' }}
+                tick={{ fontSize: 12, fill: '#6B6B6B' }}
+                axisLine={{ stroke: '#B8B8B8' }}
               />
               <YAxis
-                tick={{ fontSize: 12, fill: '#6B7672' }}
-                axisLine={{ stroke: '#B8BFBB' }}
+                tick={{ fontSize: 12, fill: '#6B6B6B' }}
+                axisLine={{ stroke: '#B8B8B8' }}
                 tickFormatter={(v) =>
                   v >= 1000000
                     ? `${(v / 1000000).toFixed(1)}M`
@@ -69,10 +69,10 @@ export function PipelineChart({ data }: PipelineChartProps) {
                     maximumFractionDigits: 0,
                   }).format(Number(value))
                 }
-                labelStyle={{ color: '#1A1F1D', fontWeight: 600 }}
+                labelStyle={{ color: '#1A1A1A', fontWeight: 600 }}
                 contentStyle={{
                   borderRadius: 8,
-                  border: '1px solid #B8BFBB',
+                  border: '1px solid #B8B8B8',
                   fontSize: 13,
                 }}
               />

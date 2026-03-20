@@ -12,8 +12,8 @@ export default async function MaskinerPage() {
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-3xl text-[#1A1F1D]">Maskiner</h2>
-          <p className="text-sm text-[#6B7672] mt-1">
+          <h2 className="font-display text-3xl text-[#1A1A1A]">Maskiner</h2>
+          <p className="text-sm text-[#6B6B6B] mt-1">
             Produktkatalog — maskiner och utrustning
           </p>
         </div>
@@ -23,8 +23,8 @@ export default async function MaskinerPage() {
       {machines.length === 0 ? (
         <Card>
           <CardContent>
-            <div className="flex flex-col items-center justify-center py-12 text-[#6B7672]">
-              <Wrench className="h-12 w-12 mb-4 text-[#B8BFBB]" />
+            <div className="flex flex-col items-center justify-center py-12 text-[#6B6B6B]">
+              <Wrench className="h-12 w-12 mb-4 text-[#B8B8B8]" />
               <p className="text-sm">Inga maskiner ännu.</p>
               <p className="text-xs mt-1">
                 Klicka på &ldquo;Ny maskin&rdquo; för att lägga till din första.
@@ -47,10 +47,10 @@ export default async function MaskinerPage() {
           ).map(([category, categoryMachines]) => (
             <Card key={category}>
               <CardHeader>
-                <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">{category}</CardTitle>
+                <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">{category}</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="divide-y divide-[#B8BFBB]/40">
+                <div className="divide-y divide-[#B8B8B8]/40">
                   {categoryMachines.map((machine) => (
                     <div
                       key={machine.id}
@@ -58,7 +58,7 @@ export default async function MaskinerPage() {
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-[#1A1F1D]">
+                          <span className="font-medium text-[#1A1A1A]">
                             {machine.name}
                           </span>
                           {!machine.is_active && (
@@ -66,7 +66,7 @@ export default async function MaskinerPage() {
                           )}
                         </div>
                         {machine.description && (
-                          <p className="text-sm text-[#6B7672]">
+                          <p className="text-sm text-[#6B6B6B]">
                             {machine.description}
                           </p>
                         )}

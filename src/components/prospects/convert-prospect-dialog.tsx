@@ -75,7 +75,7 @@ export function ConvertProspectDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button className="bg-[#C4883A] hover:bg-[#B07830] text-white">
+          <Button className="bg-[#F2BB01] hover:bg-[#B07830] text-white">
             <ArrowRight className="size-4" data-icon="inline-start" />
             Konvertera till affär
           </Button>
@@ -100,8 +100,8 @@ export function ConvertProspectDialog({
                 onClick={() => setMode('new')}
                 className={`flex-1 text-sm py-1.5 rounded-lg border transition-colors ${
                   mode === 'new'
-                    ? 'border-[#50645F] bg-[#50645F]/10 text-[#50645F] font-medium'
-                    : 'border-border text-[#6B7672] hover:bg-[#F0F2F1]'
+                    ? 'border-[#656565] bg-[#656565]/10 text-[#656565] font-medium'
+                    : 'border-border text-[#6B6B6B] hover:bg-[#F2F2F0]'
                 }`}
               >
                 Skapa nytt
@@ -111,8 +111,8 @@ export function ConvertProspectDialog({
                 onClick={() => setMode('existing')}
                 className={`flex-1 text-sm py-1.5 rounded-lg border transition-colors ${
                   mode === 'existing'
-                    ? 'border-[#50645F] bg-[#50645F]/10 text-[#50645F] font-medium'
-                    : 'border-border text-[#6B7672] hover:bg-[#F0F2F1]'
+                    ? 'border-[#656565] bg-[#656565]/10 text-[#656565] font-medium'
+                    : 'border-border text-[#6B6B6B] hover:bg-[#F2F2F0]'
                 }`}
               >
                 Välj befintligt
@@ -158,8 +158,8 @@ export function ConvertProspectDialog({
             </div>
           )}
 
-          <div className="border-t border-[#B8BFBB]/40 pt-4">
-            <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B7672] mb-3">
+          <div className="border-t border-[#B8B8B8]/40 pt-4">
+            <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B6B6B] mb-3">
               Kontaktperson
             </p>
           </div>
@@ -222,7 +222,7 @@ export function ConvertProspectDialog({
               (mode === 'new' && !companyName.trim()) ||
               (mode === 'existing' && !existingCompanyId)
             }
-            className="bg-[#C4883A] hover:bg-[#B07830] text-white"
+            className="bg-[#F2BB01] hover:bg-[#B07830] text-white"
           >
             {isSubmitting ? 'Konverterar...' : 'Konvertera'}
           </Button>

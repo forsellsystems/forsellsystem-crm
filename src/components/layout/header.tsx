@@ -18,13 +18,13 @@ export function Header() {
   const page = pageTitles[basePath] || { title: "Forsell System", subtitle: "CRM" };
 
   return (
-    <header className="flex h-14 items-center border-b border-[#B8BFBB]/60 bg-white/80 backdrop-blur-sm px-8">
+    <header className="flex h-14 items-center border-b border-[#B8B8B8]/60 bg-white/80 backdrop-blur-sm px-8">
       <div className="flex items-center gap-3">
-        <span className="font-condensed text-[10px] text-[#8A9E99] tracking-[0.15em]">
+        <span className="font-condensed text-[10px] text-[#9A9A9A] tracking-[0.15em]">
           {page.subtitle}
         </span>
-        <div className="h-3 w-px bg-[#B8BFBB]" />
-        <h1 className="text-sm font-semibold text-[#1A1F1D] tracking-wide">
+        <div className="h-3 w-px bg-[#B8B8B8]" />
+        <h1 className="text-sm font-semibold text-[#1A1A1A] tracking-wide">
           {page.title}
         </h1>
       </div>

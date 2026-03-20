@@ -12,7 +12,7 @@ export default function NyttProspektPage() {
             <ArrowLeft className="size-4" />
           </Button>
         </Link>
-        <h2 className="font-display text-3xl text-[#1A1F1D]">Nytt prospekt</h2>
+        <h2 className="font-display text-3xl text-[#1A1A1A]">Nytt prospekt</h2>
       </div>
       <ProspectForm />
     </div>

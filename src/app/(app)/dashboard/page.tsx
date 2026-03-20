@@ -17,8 +17,8 @@ export default async function DashboardPage() {
     <div className="space-y-8 animate-fade-in-up">
       {/* Page heading with display font */}
       <div>
-        <h2 className="font-display text-3xl text-[#1A1F1D]">Dashboard</h2>
-        <p className="text-sm text-[#6B7672] mt-1">
+        <h2 className="font-display text-3xl text-[#1A1A1A]">Dashboard</h2>
+        <p className="text-sm text-[#6B6B6B] mt-1">
           Överblick över försäljningen
         </p>
       </div>

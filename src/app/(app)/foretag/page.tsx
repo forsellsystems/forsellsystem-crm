@@ -26,13 +26,13 @@ export default async function ForetagPage({
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-3xl text-[#1A1F1D]">Kunder</h2>
-          <p className="text-sm text-[#6B7672] mt-1">
+          <h2 className="font-display text-3xl text-[#1A1A1A]">Kunder</h2>
+          <p className="text-sm text-[#6B6B6B] mt-1">
             Alla kunder och kundrelationer
           </p>
         </div>
         <Link href="/foretag/ny">
-          <Button className="bg-[#C4883A] hover:bg-[#B07830] text-white">
+          <Button className="bg-[#F2BB01] hover:bg-[#B07830] text-white">
             <Plus className="size-4" data-icon="inline-start" />
             Ny kund
           </Button>
@@ -46,8 +46,8 @@ export default async function ForetagPage({
       {companies.length === 0 ? (
         <Card>
           <CardContent>
-            <div className="flex flex-col items-center justify-center py-12 text-[#6B7672]">
-              <Building2 className="h-12 w-12 mb-4 text-[#B8BFBB]" />
+            <div className="flex flex-col items-center justify-center py-12 text-[#6B6B6B]">
+              <Building2 className="h-12 w-12 mb-4 text-[#B8B8B8]" />
               <p className="text-sm">Inga kunder hittades.</p>
               <p className="text-xs mt-1">
                 Kunder skapas automatiskt vid konvertering av prospekt.
@@ -73,18 +73,18 @@ export default async function ForetagPage({
                     <TableCell>
                       <Link
                         href={`/foretag/${company.id}`}
-                        className="font-medium text-[#50645F] hover:underline"
+                        className="font-medium text-[#656565] hover:underline"
                       >
                         {company.name}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-sm text-[#6B7672]">
+                    <TableCell className="text-sm text-[#6B6B6B]">
                       {company.customer_number ?? '—'}
                     </TableCell>
-                    <TableCell className="text-sm text-[#6B7672]">
+                    <TableCell className="text-sm text-[#6B6B6B]">
                       {company.country}
                     </TableCell>
-                    <TableCell className="text-sm text-[#6B7672]">
+                    <TableCell className="text-sm text-[#6B6B6B]">
                       {company.responsible_name ?? '—'}
                     </TableCell>
                   </TableRow>

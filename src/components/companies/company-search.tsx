@@ -24,7 +24,7 @@ export function CompanySearch() {
 
   return (
     <div className="relative max-w-sm">
-      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#6B7672]" />
+      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#6B6B6B]" />
       <Input
         placeholder="Sök företag eller kundnummer..."
         defaultValue={searchParams.get('search') ?? ''}

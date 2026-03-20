@@ -29,8 +29,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#2A3835]">
-      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_30%_40%,#50645F_0%,transparent_50%)]" />
+    <div className="min-h-screen flex items-center justify-center bg-[#1A1A1A]">
+      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_30%_40%,#333333_0%,transparent_50%)]" />
 
       <div className="relative w-full max-w-sm mx-4">
         {/* Logo */}
@@ -48,8 +48,8 @@ export default function LoginPage() {
         {/* Login card */}
         <div className="bg-white rounded-xl p-6 shadow-xl">
           <div className="text-center mb-6">
-            <h1 className="font-display text-2xl text-[#1A1F1D]">Logga in</h1>
-            <p className="text-sm text-[#6B7672] mt-1">Forsell System CRM</p>
+            <h1 className="font-display text-2xl text-[#1A1A1A]">Logga in</h1>
+            <p className="text-sm text-[#6B6B6B] mt-1">Forsell System CRM</p>
           </div>
 
           <form onSubmit={handleSubmit} className="grid gap-4">
@@ -84,7 +84,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#50645F] hover:bg-[#3D4E4A]"
+              className="w-full bg-[#656565] hover:bg-[#4A4A4A]"
             >
               {isLoading ? 'Loggar in...' : 'Logga in'}
             </Button>
@@ -92,7 +92,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-[10px] text-[#6A7F7A] mt-6 font-condensed tracking-[0.15em]">
+        <p className="text-center text-[10px] text-[#808080] mt-6 font-condensed tracking-[0.15em]">
           FORSELL SYSTEM AB
         </p>
       </div>

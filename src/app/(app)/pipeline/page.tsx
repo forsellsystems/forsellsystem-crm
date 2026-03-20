@@ -18,8 +18,8 @@ export default async function PipelinePage() {
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-3xl text-[#1A1F1D]">Pipeline</h2>
-          <p className="text-sm text-[#6B7672] mt-1">
+          <h2 className="font-display text-3xl text-[#1A1A1A]">Pipeline</h2>
+          <p className="text-sm text-[#6B6B6B] mt-1">
             Överblick över alla aktiva affärer
           </p>
         </div>

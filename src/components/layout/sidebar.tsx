@@ -36,15 +36,15 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "relative flex h-screen flex-col bg-[#2A3835] text-[#F0F2F1] transition-all duration-300 ease-in-out",
+        "relative flex h-screen flex-col bg-[#1A1A1A] text-[#FAFAFA] transition-all duration-300 ease-in-out",
         collapsed ? "w-16" : "w-60"
       )}
     >
       {/* Subtle texture overlay */}
-      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_20%_50%,#50645F_0%,transparent_50%)]" />
+      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(circle_at_20%_50%,#333333_0%,transparent_50%)]" />
 
       {/* Logo area */}
-      <div className="relative z-10 flex items-center justify-between px-4 py-5 border-b border-[#3D4E4A]/60">
+      <div className="relative z-10 flex items-center justify-between px-4 py-5 border-b border-[#333333]/60">
         {!collapsed && (
           <Link href="/dashboard" className="flex items-center">
             <Image
@@ -59,13 +59,13 @@ export function Sidebar() {
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="rounded-md p-1.5 hover:bg-[#3D4E4A] transition-colors"
+          className="rounded-md p-1.5 hover:bg-[#333333] transition-colors"
           aria-label={collapsed ? "Expandera meny" : "Minimera meny"}
         >
           {collapsed ? (
-            <ChevronRight className="h-4 w-4 text-[#8A9E99]" />
+            <ChevronRight className="h-4 w-4 text-[#9A9A9A]" />
           ) : (
-            <ChevronLeft className="h-4 w-4 text-[#8A9E99]" />
+            <ChevronLeft className="h-4 w-4 text-[#9A9A9A]" />
           )}
         </button>
       </div>
@@ -83,19 +83,19 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[11px] font-medium tracking-[0.12em] transition-all duration-200",
+                "group flex items-center gap-3 px-3 py-2.5 text-[11px] font-medium tracking-[0.12em] transition-all duration-200",
                 "font-condensed",
                 isIndented && !collapsed && "opacity-90",
                 isActive
-                  ? "bg-[#3D4E4A] text-white shadow-sm shadow-black/10"
-                  : "text-[#8A9E99] hover:bg-[#3D4E4A]/60 hover:text-[#F0F2F1]"
+                  ? "text-white border-l-2 border-[#F2BB01] rounded-none bg-[#333333]/40"
+                  : "text-[#9A9A9A] hover:bg-[#333333]/60 hover:text-[#FAFAFA] rounded-lg"
               )}
             >
               <Icon
                 className={cn(
                   "shrink-0 transition-colors",
                   "h-[18px] w-[18px]",
-                  isActive ? "text-[#C4883A]" : "text-[#6A7F7A] group-hover:text-[#8A9E99]"
+                  isActive ? "text-[#F2BB01]" : "text-[#808080] group-hover:text-[#9A9A9A]"
                 )}
               />
               {!collapsed && <span>{item.label}</span>}
@@ -105,25 +105,25 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="relative z-10 border-t border-[#3D4E4A]/60 px-2 py-3">
+      <div className="relative z-10 border-t border-[#333333]/60 px-2 py-3">
         <form action={logout}>
           <button
             type="submit"
             className={cn(
               "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[11px] font-medium tracking-[0.12em] transition-all duration-200",
-              "font-condensed text-[#8A9E99] hover:bg-[#3D4E4A]/60 hover:text-[#F0F2F1]"
+              "font-condensed text-[#9A9A9A] hover:bg-[#333333]/60 hover:text-[#FAFAFA]"
             )}
           >
-            <LogOut className="h-[18px] w-[18px] shrink-0 text-[#6A7F7A]" />
+            <LogOut className="h-[18px] w-[18px] shrink-0 text-[#808080]" />
             {!collapsed && <span>LOGGA UT</span>}
           </button>
         </form>
         {!collapsed && (
           <div className="px-3 mt-3">
-            <p className="font-condensed text-[9px] text-[#6A7F7A] tracking-[0.2em]">
+            <p className="font-condensed text-[9px] text-[#808080] tracking-[0.2em]">
               FORSELL SYSTEM AB
             </p>
-            <p className="text-[11px] text-[#50645F] mt-0.5 font-display italic">
+            <p className="text-[11px] text-[#656565] mt-0.5 font-display italic">
               Maskiner som transporterar värde
             </p>
           </div>

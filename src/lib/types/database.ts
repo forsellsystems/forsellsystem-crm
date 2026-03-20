@@ -16,6 +16,8 @@ export type Company = {
   name: string;
   customer_number: string | null;
   org_number: string | null;
+  factory_type: "modulfabrik" | "vagg_tak_fabrik" | null;
+  building_types: string[];
   country: string;
   phone: string | null;
   email: string | null;
@@ -25,6 +27,7 @@ export type Company = {
   is_reseller: boolean;
   reseller_id: string | null;
   fortnox_customer_id: string | null;
+  description: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -44,7 +47,8 @@ export type Contact = {
 export type Prospect = {
   id: string;
   company_name: string;
-  factory_type: "modulfabrik" | "vagg_tak_fabrik";
+  factory_type: "modulfabrik" | "vagg_tak_fabrik" | null;
+  building_types: string[];
   country: string;
   contact_person: string | null;
   email: string | null;
@@ -53,6 +57,8 @@ export type Prospect = {
   converted_at: string | null;
   converted_company_id: string | null;
   converted_deal_id: string | null;
+  website: string | null;
+  description: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -72,12 +78,13 @@ export type Deal = {
   quote_number: string | null;
   company_id: string;
   contact_id: string | null;
-  stage: "kontakt" | "behovsanalys" | "offert" | "forhandling" | "avslutad_affar" | "avslutad_ingen_affar";
+  stage: "kontakt" | "offert" | "avslutad_affar" | "avslutad_ingen_affar";
   value: number | null;
   currency: string;
   responsible_user_id: string | null;
   prospect_id: string | null;
   reseller_id: string | null;
+  quote_date: string | null;
   closed_at: string | null;
   expected_close_date: string | null;
   sort_order: number;

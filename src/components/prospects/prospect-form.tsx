@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FACTORY_TYPES } from '@/lib/constants'
+import { FACTORY_TYPES, BUILDING_TYPES, COUNTRIES } from '@/lib/constants'
 import { prospectSchema, type ProspectFormData } from '@/lib/validations'
 import { createProspect, updateProspect } from '@/lib/actions/prospect-actions'
 import type { Prospect } from '@/lib/types/database'
@@ -23,13 +23,16 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ProspectFormData>({
     resolver: formResolver(prospectSchema),
     defaultValues: prospect
       ? {
           company_name: prospect.company_name,
-          factory_type: prospect.factory_type,
+          factory_type: prospect.factory_type ?? '',
+          building_types: prospect.building_types ?? [],
           country: prospect.country,
           contact_person: prospect.contact_person ?? '',
           email: prospect.email ?? '',
@@ -37,7 +40,8 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
         }
       : {
           company_name: '',
-          factory_type: 'modulfabrik',
+          factory_type: '',
+          building_types: [],
           country: 'Sverige',
           contact_person: '',
           email: '',
@@ -91,6 +95,7 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
                 className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
                 {...register('factory_type')}
               >
+                <option value="">Välj fabrikstyp</option>
                 {FACTORY_TYPES.map((ft) => (
                   <option key={ft.key} value={ft.key}>
                     {ft.label}
@@ -106,7 +111,15 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
 
             <div className="grid gap-2">
               <Label htmlFor="country">Land</Label>
-              <Input id="country" {...register('country')} />
+              <select
+                id="country"
+                className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                {...register('country')}
+              >
+                {COUNTRIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
               {errors.country && (
                 <p className="text-xs text-[#8B3D3D]">
                   {errors.country.message}
@@ -115,8 +128,33 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
             </div>
           </div>
 
-          <div className="border-t border-[#B8BFBB]/40 pt-4 mt-2">
-            <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B7672] mb-3">
+          <div className="grid gap-2">
+            <Label>Byggnadstyp</Label>
+            <div className="flex gap-4">
+              {BUILDING_TYPES.map((bt) => {
+                const selected = watch('building_types') ?? []
+                return (
+                  <label key={bt.key} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(bt.key)}
+                      onChange={() => {
+                        const next = selected.includes(bt.key)
+                          ? selected.filter((k: string) => k !== bt.key)
+                          : [...selected, bt.key]
+                        setValue('building_types', next)
+                      }}
+                      className="accent-[#656565]"
+                    />
+                    {bt.label}
+                  </label>
+                )
+              })}
+            </div>
+          </div>
+
+          <div className="border-t border-[#B8B8B8]/40 pt-4 mt-2">
+            <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B6B6B] mb-3">
               Kontaktuppgifter
             </p>
           </div>

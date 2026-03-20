@@ -16,7 +16,7 @@ export default function ForetagLoading() {
         <CardContent className="p-0">
           <div className="space-y-0">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-[#B8BFBB]/40 last:border-0">
+              <div key={i} className="flex items-center gap-4 px-4 py-3 border-b border-[#B8B8B8]/40 last:border-0">
                 <Skeleton className="h-4 w-40" />
                 <Skeleton className="h-4 w-20" />
                 <Skeleton className="h-4 w-20" />

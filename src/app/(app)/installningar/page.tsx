@@ -15,25 +15,25 @@ export default async function InstallningarPage() {
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
-        <h2 className="font-display text-3xl text-[#1A1F1D]">Inställningar</h2>
-        <p className="text-sm text-[#6B7672] mt-1">
+        <h2 className="font-display text-3xl text-[#1A1A1A]">Inställningar</h2>
+        <p className="text-sm text-[#6B6B6B] mt-1">
           Hantera användare och systemkonfiguration
         </p>
       </div>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Användare</CardTitle>
+          <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Användare</CardTitle>
           <UserDialog />
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-[#6B7672]">
-              <Users className="h-12 w-12 mb-4 text-[#B8BFBB]" />
+            <div className="flex flex-col items-center justify-center py-12 text-[#6B6B6B]">
+              <Users className="h-12 w-12 mb-4 text-[#B8B8B8]" />
               <p className="text-sm">Inga användare ännu.</p>
             </div>
           ) : (
-            <div className="divide-y divide-[#B8BFBB]/40">
+            <div className="divide-y divide-[#B8B8B8]/40">
               {users.map((user) => (
                 <div
                   key={user.id}
@@ -42,7 +42,7 @@ export default async function InstallningarPage() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`font-medium ${user.is_active ? 'text-[#1A1F1D]' : 'text-[#B8BFBB]'}`}
+                        className={`font-medium ${user.is_active ? 'text-[#1A1A1A]' : 'text-[#B8B8B8]'}`}
                       >
                         {user.name}
                       </span>
@@ -57,7 +57,7 @@ export default async function InstallningarPage() {
                         <Badge variant="outline">Inaktiv</Badge>
                       )}
                     </div>
-                    <p className="text-sm text-[#6B7672]">{user.email}</p>
+                    <p className="text-sm text-[#6B6B6B]">{user.email}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <EditUserButton user={user} />

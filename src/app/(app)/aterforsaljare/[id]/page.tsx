@@ -60,17 +60,17 @@ export default async function ResellerDetailPage({
           </Link>
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="font-display text-3xl text-[#1A1F1D]">
+              <h2 className="font-display text-3xl text-[#1A1A1A]">
                 {reseller.name}
               </h2>
               <Badge
                 variant="outline"
-                className="text-[#C4883A] border-[#C4883A]/40"
+                className="text-[#D4A301] border-[#D4A301]/40"
               >
                 Återförsäljare
               </Badge>
             </div>
-            <p className="text-sm text-[#6B7672] mt-1">
+            <p className="text-sm text-[#6B6B6B] mt-1">
               {reseller.country} &middot; Skapad {formatDate(reseller.created_at)}
             </p>
           </div>
@@ -87,35 +87,35 @@ export default async function ResellerDetailPage({
         <div className="lg:col-span-1 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Kontaktuppgifter</CardTitle>
+              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Kontaktuppgifter</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               {reseller.email && (
                 <div className="flex items-center gap-2">
-                  <Mail className="size-4 text-[#6B7672]" />
-                  <a href={`mailto:${reseller.email}`} className="text-[#50645F] hover:underline">
+                  <Mail className="size-4 text-[#6B6B6B]" />
+                  <a href={`mailto:${reseller.email}`} className="text-[#656565] hover:underline">
                     {reseller.email}
                   </a>
                 </div>
               )}
               {reseller.phone && (
                 <div className="flex items-center gap-2">
-                  <Phone className="size-4 text-[#6B7672]" />
-                  <a href={`tel:${reseller.phone}`} className="text-[#50645F] hover:underline">
+                  <Phone className="size-4 text-[#6B6B6B]" />
+                  <a href={`tel:${reseller.phone}`} className="text-[#656565] hover:underline">
                     {reseller.phone}
                   </a>
                 </div>
               )}
               {reseller.website && (
                 <div className="flex items-center gap-2">
-                  <Globe className="size-4 text-[#6B7672]" />
-                  <a href={reseller.website} target="_blank" rel="noopener noreferrer" className="text-[#50645F] hover:underline">
+                  <Globe className="size-4 text-[#6B6B6B]" />
+                  <a href={reseller.website} target="_blank" rel="noopener noreferrer" className="text-[#656565] hover:underline">
                     {reseller.website}
                   </a>
                 </div>
               )}
               {!reseller.email && !reseller.phone && !reseller.website && (
-                <p className="text-[#6B7672]">Inga kontaktuppgifter registrerade.</p>
+                <p className="text-[#6B6B6B]">Inga kontaktuppgifter registrerade.</p>
               )}
             </CardContent>
           </Card>
@@ -123,22 +123,22 @@ export default async function ResellerDetailPage({
           {/* Customers through this reseller */}
           <Card>
             <CardHeader>
-              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Kunder via denna återförsäljare</CardTitle>
+              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Kunder via denna återförsäljare</CardTitle>
             </CardHeader>
             <CardContent>
               {reseller.customers.length === 0 ? (
-                <p className="text-sm text-[#6B7672] text-center py-4">
+                <p className="text-sm text-[#6B6B6B] text-center py-4">
                   Inga kunder kopplade ännu.
                 </p>
               ) : (
-                <div className="divide-y divide-[#B8BFBB]/40">
+                <div className="divide-y divide-[#B8B8B8]/40">
                   {reseller.customers.map((customer: { id: string; name: string; country: string }) => (
                     <Link
                       key={customer.id}
                       href={`/foretag/${customer.id}`}
-                      className="flex items-center gap-2 py-2.5 first:pt-0 last:pb-0 text-sm text-[#50645F] hover:underline"
+                      className="flex items-center gap-2 py-2.5 first:pt-0 last:pb-0 text-sm text-[#656565] hover:underline"
                     >
-                      <Building2 className="size-3.5 text-[#6B7672]" />
+                      <Building2 className="size-3.5 text-[#6B6B6B]" />
                       {customer.name}
                     </Link>
                   ))}
@@ -154,21 +154,21 @@ export default async function ResellerDetailPage({
           {reseller.deals.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Affärer via denna återförsäljare</CardTitle>
+                <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Affärer via denna återförsäljare</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="divide-y divide-[#B8BFBB]/40">
+                <div className="divide-y divide-[#B8B8B8]/40">
                   {reseller.deals.map((deal: { id: string; quote_number: string | null; stage: string; value: number | null; created_at: string; company_name: string }) => (
                     <Link
                       key={deal.id}
                       href={`/pipeline/${deal.id}`}
-                      className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:bg-[#F0F2F1] -mx-4 px-4 rounded transition-colors"
+                      className="flex items-center justify-between py-3 first:pt-0 last:pb-0 hover:bg-[#F2F2F0] -mx-4 px-4 rounded transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <Briefcase className="size-4 text-[#6B7672]" />
+                        <Briefcase className="size-4 text-[#6B6B6B]" />
                         <div>
                           <p className="text-sm font-medium">{deal.company_name}</p>
-                          <p className="text-xs text-[#6B7672]">
+                          <p className="text-xs text-[#6B6B6B]">
                             {deal.quote_number ? `#${deal.quote_number} · ` : ''}
                             {formatDate(deal.created_at)}
                           </p>
@@ -194,7 +194,7 @@ export default async function ResellerDetailPage({
           {/* Notes */}
           <Card>
             <CardHeader>
-              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B7672]">Anteckningar</CardTitle>
+              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Anteckningar</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <AddNoteForm entityType="company" entityId={reseller.id} />

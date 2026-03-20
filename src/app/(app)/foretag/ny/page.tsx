@@ -16,7 +16,7 @@ export default async function NyttForetagPage() {
             <ArrowLeft className="size-4" />
           </Button>
         </Link>
-        <h2 className="font-display text-3xl text-[#1A1F1D]">Ny kund</h2>
+        <h2 className="font-display text-3xl text-[#1A1A1A]">Ny kund</h2>
       </div>
       <CompanyForm users={users} resellers={resellers} />
     </div>
