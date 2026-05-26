@@ -162,7 +162,7 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="edit-deal-heat">Värmegrad</Label>
+            <Label htmlFor="edit-deal-heat">Status</Label>
             <select id="edit-deal-heat" className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50" {...register('heat')}>
               <option value="">— Ingen</option>
               {DEAL_HEAT_LEVELS.map((h) => (

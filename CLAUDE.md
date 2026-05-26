@@ -1,7 +1,7 @@
-# Forsell System CRM2
+# Forsell Systems CRM2
 
 ## Project
-B2B CRM for Forsell System AB — industrial machinery manufacturer for prefab house factories.
+B2B CRM for Forsell Systems AB — industrial machinery manufacturer for prefab house factories.
 Swedish UI. Long sales cycles. Custom pipeline.
 
 ## Tech Stack
@@ -70,7 +70,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - 4 stages: kontakt → offert → avslutad_affar → avslutad_ingen_affar
 - Behovsanalys and Förhandling removed
 - quote_date field on deals — shown on kanban cards and deal detail
-- heat field on deals (1=Het/röd, 2=Varm/orange, 3=Kall/grå, nullable) — colored dot next to value on cards
+- heat field on deals (DB column; UI-label "Status"; values 1=Het/röd, 2=Varm/orange, 3=Kall/grå, nullable) — colored dot next to value on cards
 - Cards sorted: heat ASC (hottest first, nulls last), then quote_date DESC, then sort_order
 - Entire card is clickable (links to deal detail)
 - Move buttons (chevrons) for quick stage changes

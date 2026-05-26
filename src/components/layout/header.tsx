@@ -15,7 +15,7 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
 export function Header() {
   const pathname = usePathname();
   const basePath = "/" + (pathname.split("/")[1] || "dashboard");
-  const page = pageTitles[basePath] || { title: "Forsell System", subtitle: "CRM" };
+  const page = pageTitles[basePath] || { title: "Forsell Systems", subtitle: "CRM" };
 
   return (
     <header className="flex h-14 items-center border-b border-[#B8B8B8]/60 bg-white/80 backdrop-blur-sm px-8">

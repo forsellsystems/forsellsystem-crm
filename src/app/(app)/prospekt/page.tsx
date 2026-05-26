@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
   Table,
   TableBody,
@@ -23,22 +22,16 @@ const CUSTOMER_TABS = [
   { label: 'Prospekt', href: '/prospekt' },
 ]
 
-const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
-  active: { label: 'Aktiv', variant: 'default' },
-  converted: { label: 'Konverterad', variant: 'secondary' },
-  archived: { label: 'Arkiverad', variant: 'outline' },
-}
-
 export default async function ProspektPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; status?: string; factory_type?: string }>
+  searchParams: Promise<{ search?: string; factory_type?: string }>
 }) {
   const params = await searchParams
   const prospects = await getProspects({
     search: params.search,
-    status: params.status,
     factory_type: params.factory_type,
+    status: 'active',
     prospect_type: 'customer',
   })
 
@@ -91,43 +84,34 @@ export default async function ProspektPage({
                   <TableHead>Fabrikstyp</TableHead>
                   <TableHead>Land</TableHead>
                   <TableHead>Kontaktperson</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead>Skapad</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {prospects.map((prospect) => {
-                  const status = statusLabels[prospect.status]
-                  return (
-                    <TableRow key={prospect.id}>
-                      <TableCell>
-                        <Link
-                          href={`/prospekt/${prospect.id}`}
-                          className="font-medium text-[#656565] hover:underline"
-                        >
-                          {prospect.company_name}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm text-[#6B6B6B]">
-                        {getFactoryLabel(prospect.factory_type)}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#6B6B6B]">
-                        {prospect.country}
-                      </TableCell>
-                      <TableCell className="text-sm text-[#6B6B6B]">
-                        {prospect.contact_person ?? '—'}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={status?.variant ?? 'outline'}>
-                          {status?.label ?? prospect.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-[#6B6B6B]">
-                        {formatDate(prospect.created_at)}
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                {prospects.map((prospect) => (
+                  <TableRow key={prospect.id}>
+                    <TableCell>
+                      <Link
+                        href={`/prospekt/${prospect.id}`}
+                        className="font-medium text-[#656565] hover:underline"
+                      >
+                        {prospect.company_name}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-sm text-[#6B6B6B]">
+                      {getFactoryLabel(prospect.factory_type)}
+                    </TableCell>
+                    <TableCell className="text-sm text-[#6B6B6B]">
+                      {prospect.country}
+                    </TableCell>
+                    <TableCell className="text-sm text-[#6B6B6B]">
+                      {prospect.contact_person ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-[#6B6B6B]">
+                      {formatDate(prospect.created_at)}
+                    </TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </CardContent>

@@ -47,17 +47,6 @@ export function ProspectFilters() {
           </option>
         ))}
       </select>
-
-      <select
-        className="flex h-8 rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
-        defaultValue={searchParams.get('status') ?? 'all'}
-        onChange={(e) => updateFilter('status', e.target.value)}
-      >
-        <option value="all">Alla statusar</option>
-        <option value="active">Aktiva</option>
-        <option value="converted">Konverterade</option>
-        <option value="archived">Arkiverade</option>
-      </select>
     </div>
   )
 }

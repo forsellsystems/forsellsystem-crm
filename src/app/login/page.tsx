@@ -36,8 +36,8 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Image
-            src="/forsell-logo-white.png"
-            alt="Forsell System"
+            src="/forsellsystems.png"
+            alt="Forsell Systems"
             width={180}
             height={52}
             className="h-auto w-[180px] opacity-90"
@@ -49,7 +49,7 @@ export default function LoginPage() {
         <div className="bg-white rounded-xl p-6 shadow-xl">
           <div className="text-center mb-6">
             <h1 className="font-display text-2xl text-[#1A1A1A]">Logga in</h1>
-            <p className="text-sm text-[#6B6B6B] mt-1">Forsell System CRM</p>
+            <p className="text-sm text-[#6B6B6B] mt-1">Forsell Systems CRM</p>
           </div>
 
           <form onSubmit={handleSubmit} className="grid gap-4">

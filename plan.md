@@ -1,4 +1,4 @@
-# Forsell System CRM2 — Implementeringsplan
+# Forsell Systems CRM2 — Implementeringsplan
 
 ## Status: ✅ ALLA FASER KLARA (2026-03-17)
 
@@ -56,7 +56,7 @@ Admin: Kevin Forss (kevin@forsellsystem.com) — Lösenord: Forsell2026!
 ---
 
 ## Context
-Forsell System tillverkar maskiner för husprefabfabriker (elementhantering & modultransport). De behöver ett skräddarsytt B2B-CRM för sin säljprocess med långa säljcykler.
+Forsell Systems tillverkar maskiner för husprefabfabriker (elementhantering & modultransport). De behöver ett skräddarsytt B2B-CRM för sin säljprocess med långa säljcykler.
 
 **Kärnflöde:** Prospect → Företag + Kontakt + Affär (pipeline)
 

@@ -150,7 +150,7 @@ export default async function DealDetailPage({
                 if (!heat) return null
                 return (
                   <div className="flex justify-between items-center">
-                    <span className="text-[#6B6B6B]">Värmegrad</span>
+                    <span className="text-[#6B6B6B]">Status</span>
                     <span className="flex items-center gap-1.5">
                       <span
                         className="inline-block size-2 rounded-full"

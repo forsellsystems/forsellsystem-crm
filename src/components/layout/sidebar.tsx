@@ -52,8 +52,8 @@ export function Sidebar() {
         {!collapsed && (
           <Link href="/dashboard" className="flex items-center">
             <Image
-              src="/forsell-logo-white.png"
-              alt="Forsell System"
+              src="/forsellsystems.png"
+              alt="Forsell Systems"
               width={130}
               height={38}
               className="h-auto w-[130px] opacity-90 hover:opacity-100 transition-opacity"
@@ -127,10 +127,7 @@ export function Sidebar() {
         {!collapsed && (
           <div className="px-3 mt-3">
             <p className="font-condensed text-[9px] text-[#808080] tracking-[0.2em]">
-              FORSELL SYSTEM AB
-            </p>
-            <p className="text-[11px] text-[#656565] mt-0.5 font-display italic">
-              Maskiner som transporterar värde
+              FORSELL SYSTEMS AB
             </p>
           </div>
         )}

@@ -22,8 +22,8 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Forsell System CRM",
-  description: "CRM-system för Forsell System AB — Maskiner som transporterar värde",
+  title: "Forsell Systems CRM",
+  description: "CRM-system för Forsell Systems AB",
 };
 
 export default function RootLayout({
