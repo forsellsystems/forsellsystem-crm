@@ -7,6 +7,14 @@ export const PIPELINE_STAGES = [
 
 export type PipelineStage = (typeof PIPELINE_STAGES)[number]["key"];
 
+export const DEAL_HEAT_LEVELS = [
+  { value: 1, label: "Het", color: "#D9534F" },
+  { value: 2, label: "Varm", color: "#E89B3F" },
+  { value: 3, label: "Kall", color: "#6B6B6B" },
+] as const;
+
+export type DealHeat = (typeof DEAL_HEAT_LEVELS)[number]["value"];
+
 export const FACTORY_TYPES = [
   { key: "modulfabrik", label: "Modulfabrik" },
   { key: "vagg_tak_fabrik", label: "Vägg & takfabrik" },

@@ -8,6 +8,7 @@ export type DealCard = {
   stage: string
   value: number | null
   currency: string
+  heat: number | null
   sort_order: number
   company_id: string
   company_name: string
@@ -23,6 +24,7 @@ export async function getDealsByStage(): Promise<Record<string, DealCard[]>> {
     .select(
       '*, companies!deals_company_id_fkey(name), contacts!deals_contact_id_fkey(name), users!deals_responsible_user_id_fkey(name), reseller:companies!deals_reseller_id_fkey(name)'
     )
+    .order('heat', { ascending: true, nullsFirst: false })
     .order('quote_date', { ascending: false, nullsFirst: false })
     .order('sort_order')
     .order('created_at', { ascending: false })
@@ -39,6 +41,7 @@ export async function getDealsByStage(): Promise<Record<string, DealCard[]>> {
       stage: deal.stage,
       value: deal.value,
       currency: deal.currency,
+      heat: deal.heat,
       sort_order: deal.sort_order,
       company_id: deal.company_id,
       company_name:

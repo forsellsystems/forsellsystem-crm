@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { CURRENCIES } from '@/lib/constants'
+import { CURRENCIES, DEAL_HEAT_LEVELS } from '@/lib/constants'
 import { dealSchema, type DealFormData } from '@/lib/validations'
 import { createDeal } from '@/lib/actions/deal-actions'
 import type { User, Machine } from '@/lib/types/database'
@@ -54,6 +54,7 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
       responsible_user_id: '',
       reseller_id: '',
       quote_date: '',
+      heat: null,
       machine_ids: [],
     },
   })
@@ -196,6 +197,22 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
               <option value="">Ingen ansvarig</option>
               {users.map((u) => (
                 <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="deal-heat">Värmegrad</Label>
+            <select
+              id="deal-heat"
+              className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+              {...register('heat')}
+            >
+              <option value="">— Ingen</option>
+              {DEAL_HEAT_LEVELS.map((h) => (
+                <option key={h.value} value={h.value}>
+                  {h.label}
+                </option>
               ))}
             </select>
           </div>

@@ -13,6 +13,12 @@ import { Handshake } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ResellerDialog } from '@/components/settings/reseller-dialog'
 import { RemoveResellerButton } from '@/components/settings/remove-reseller-button'
+import { ListTabs } from '@/components/layout/list-tabs'
+
+const RESELLER_TABS = [
+  { label: 'Återförsäljare', href: '/aterforsaljare' },
+  { label: 'Prospekt', href: '/aterforsaljar-prospekt' },
+]
 
 async function getResellersWithDetails() {
   const supabase = await createClient()
@@ -42,6 +48,8 @@ export default async function AterforsaljarePage() {
         </div>
         <ResellerDialog />
       </div>
+
+      <ListTabs items={RESELLER_TABS} />
 
       {resellers.length === 0 ? (
         <Card>

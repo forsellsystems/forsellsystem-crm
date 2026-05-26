@@ -24,7 +24,7 @@ import { CSS } from '@dnd-kit/utilities'
 import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Card } from '@/components/ui/card'
-import { PIPELINE_STAGES } from '@/lib/constants'
+import { PIPELINE_STAGES, DEAL_HEAT_LEVELS } from '@/lib/constants'
 import { formatCurrency } from '@/lib/utils'
 import { updateDealStage, updateDealSortOrders } from '@/lib/actions/deal-actions'
 import type { DealCard } from '@/lib/queries/deals'
@@ -354,13 +354,26 @@ function DealCardComponent({
               <p className="text-sm font-medium text-[#1A1A1A] truncate leading-tight">
                 {card.company_name}
               </p>
-              {card.value ? (
-                <span className="text-sm font-semibold text-[#656565] whitespace-nowrap shrink-0">
-                  {formatCurrency(card.value)}
-                </span>
-              ) : (
-                <span className="text-[10px] text-[#B8B8B8] shrink-0">&mdash;</span>
-              )}
+              <div className="flex items-center gap-1.5 shrink-0">
+                {card.heat != null && (() => {
+                  const heat = DEAL_HEAT_LEVELS.find(h => h.value === card.heat)
+                  if (!heat) return null
+                  return (
+                    <span
+                      className="inline-block size-2 rounded-full"
+                      style={{ backgroundColor: heat.color }}
+                      title={heat.label}
+                    />
+                  )
+                })()}
+                {card.value ? (
+                  <span className="text-sm font-semibold text-[#656565] whitespace-nowrap">
+                    {formatCurrency(card.value)}
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-[#B8B8B8]">&mdash;</span>
+                )}
+              </div>
             </div>
 
             {/* Rad 2: ansvarig + offertdatum */}

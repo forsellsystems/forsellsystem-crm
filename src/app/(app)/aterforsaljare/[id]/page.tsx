@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Mail, Phone, Globe, Building2, Briefcase } from 'lucide-react'
 import { DeleteCompanyButton } from '@/components/companies/delete-company-button'
+import { MoveToProspectButton } from '@/components/companies/move-to-prospect-button'
 import { createClient } from '@/lib/supabase/server'
 import { getNotes } from '@/lib/queries/notes'
 import { PIPELINE_STAGES } from '@/lib/constants'
@@ -75,11 +76,14 @@ export default async function ResellerDetailPage({
             </p>
           </div>
         </div>
-        <DeleteCompanyButton
-          companyId={reseller.id}
-          companyName={reseller.name}
-          redirectTo="/aterforsaljare"
-        />
+        <div className="flex items-center gap-2">
+          <MoveToProspectButton companyId={reseller.id} companyType="reseller" />
+          <DeleteCompanyButton
+            companyId={reseller.id}
+            companyName={reseller.name}
+            redirectTo="/aterforsaljare"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -14,7 +14,7 @@ import { getNotes } from '@/lib/queries/notes'
 import { getCompaniesForSelect, getResellers } from '@/lib/queries/companies'
 import { getActiveUsers } from '@/lib/queries/users'
 import { getMachines } from '@/lib/queries/machines'
-import { PIPELINE_STAGES } from '@/lib/constants'
+import { PIPELINE_STAGES, DEAL_HEAT_LEVELS } from '@/lib/constants'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
@@ -145,6 +145,22 @@ export default async function DealDetailPage({
                   <span>{deal.responsible_name}</span>
                 </div>
               )}
+              {deal.heat != null && (() => {
+                const heat = DEAL_HEAT_LEVELS.find(h => h.value === deal.heat)
+                if (!heat) return null
+                return (
+                  <div className="flex justify-between items-center">
+                    <span className="text-[#6B6B6B]">Värmegrad</span>
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className="inline-block size-2 rounded-full"
+                        style={{ backgroundColor: heat.color }}
+                      />
+                      {heat.label}
+                    </span>
+                  </div>
+                )
+              })()}
             </CardContent>
           </Card>
 

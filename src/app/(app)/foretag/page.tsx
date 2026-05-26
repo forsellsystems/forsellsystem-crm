@@ -12,7 +12,13 @@ import {
 import { Plus, Building2 } from 'lucide-react'
 import { getCompanies } from '@/lib/queries/companies'
 import { CompanySearch } from '@/components/companies/company-search'
+import { ListTabs } from '@/components/layout/list-tabs'
 import { Suspense } from 'react'
+
+const CUSTOMER_TABS = [
+  { label: 'Kunder', href: '/foretag' },
+  { label: 'Prospekt', href: '/prospekt' },
+]
 
 export default async function ForetagPage({
   searchParams,
@@ -38,6 +44,8 @@ export default async function ForetagPage({
           </Button>
         </Link>
       </div>
+
+      <ListTabs items={CUSTOMER_TABS} />
 
       <Suspense>
         <CompanySearch />

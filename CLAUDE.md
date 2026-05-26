@@ -35,7 +35,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - "Företag" renamed to "Kunder" in UI (routes still /foretag)
 - Återförsäljare = companies with is_reseller=true, separate /aterforsaljare pages
 - Two prospect types via prospect_type column: 'customer' (default, /prospekt) and 'reseller' (/aterforsaljar-prospekt)
-- Sidebar nesting: KUNDER → Kund-prospekt (indented), ÅTERFÖRSÄLJARE → Återförsäljar-prospekt (indented)
+- Prospekt-listor visas som tabbar inom KUNDER (/foretag, /prospekt) och ÅTERFÖRSÄLJARE (/aterforsaljare, /aterforsaljar-prospekt) via ListTabs-komponenten. Sidebar har bara KUNDER + ÅTERFÖRSÄLJARE; respektive post markeras aktiv även när prospekt-sidan visas (via alsoActiveOn på navItem).
 - Inline editing on detail cards (penna-ikon → redigera direkt på kortet, ej dialog)
 - Detail cards pattern: ProspectContactCard, ProspectDescription, ProspectDetailsCard (same for companies)
 - Country fields: always use COUNTRIES dropdown from constants.ts — Swedish names ("Sverige", "Kanada", "USA"), never ISO codes or English names. Stored as Swedish name string in DB.
@@ -45,7 +45,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 
 ## Prospect ↔ Company Flow
 - "Flytta till kund" / "Flytta till återförsäljare" button on prospect detail: creates company (is_reseller derived from prospect_type) + contact + copies notes, marks prospect as converted
-- "Flytta till prospekt" button on company detail: creates prospect from company data, copies notes, DELETES the company
+- "Flytta till prospekt" / "Flytta till återförsäljar-prospekt" button on company detail: type-aware (kund → kund-prospekt, återförsäljare → återförsäljar-prospekt). Creates prospect with prospect_type derived from is_reseller, copies notes, DELETES the company
 - "Skapa affär" button on company detail: opens NewDealDialog with company pre-selected
 - "Radera" button on prospect detail: permanently deletes prospect + its notes from DB
 - No dialog/confirmation on moves — direct action
@@ -70,7 +70,8 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - 4 stages: kontakt → offert → avslutad_affar → avslutad_ingen_affar
 - Behovsanalys and Förhandling removed
 - quote_date field on deals — shown on kanban cards and deal detail
-- Cards sorted by quote_date (newest first, nulls last)
+- heat field on deals (1=Het/röd, 2=Varm/orange, 3=Kall/grå, nullable) — colored dot next to value on cards
+- Cards sorted: heat ASC (hottest first, nulls last), then quote_date DESC, then sort_order
 - Entire card is clickable (links to deal detail)
 - Move buttons (chevrons) for quick stage changes
 - Drag & drop with optimistic updates
@@ -93,6 +94,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - factory_type on prospects and companies: nullable TEXT (modulfabrik | vagg_tak_fabrik | null)
 - building_types on prospects and companies: TEXT[] (stores keys: flerbostadshus, smahus)
 - prospect_type on prospects: TEXT NOT NULL DEFAULT 'customer', CHECK IN ('customer', 'reseller')
+- heat on deals: SMALLINT nullable, CHECK IN (1, 2, 3)
 
 ## Known Workarounds
 - Zod v4 + @hookform/resolvers incompatibility: use `formResolver()` from `src/lib/form-resolver.ts` instead of `zodResolver()` directly

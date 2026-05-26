@@ -15,7 +15,13 @@ import { getProspects } from '@/lib/queries/prospects'
 import { FACTORY_TYPES } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
 import { ProspectFilters } from '@/components/prospects/prospect-filters'
+import { ListTabs } from '@/components/layout/list-tabs'
 import { Suspense } from 'react'
+
+const RESELLER_TABS = [
+  { label: 'Återförsäljare', href: '/aterforsaljare' },
+  { label: 'Prospekt', href: '/aterforsaljar-prospekt' },
+]
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   active: { label: 'Aktiv', variant: 'default' },
@@ -43,7 +49,7 @@ export default async function AterforsaljarProspektPage({
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-3xl text-[#1A1A1A]">Återförsäljar-prospekt</h2>
+          <h2 className="font-display text-3xl text-[#1A1A1A]">Återförsäljare</h2>
           <p className="text-sm text-[#6B6B6B] mt-1">
             Hantera och kvalificera potentiella återförsäljare
           </p>
@@ -55,6 +61,8 @@ export default async function AterforsaljarProspektPage({
           </Button>
         </Link>
       </div>
+
+      <ListTabs items={RESELLER_TABS} />
 
       <Suspense>
         <ProspectFilters />

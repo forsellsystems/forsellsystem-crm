@@ -55,6 +55,8 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
 
   if (fetchError || !company) throw new Error('Kunde inte hämta kund')
 
+  const isReseller = company.is_reseller === true
+
   // 2. Get primary contact info
   const { data: contacts } = await supabase
     .from('contacts')
@@ -70,6 +72,7 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
     .from('prospects')
     .insert({
       company_name: company.name,
+      prospect_type: isReseller ? 'reseller' : 'customer',
       factory_type: company.factory_type || 'modulfabrik',
       building_types: company.building_types ?? [],
       country: company.country,
@@ -108,8 +111,13 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
   // 5. Delete company
   await supabase.from('companies').delete().eq('id', companyId)
 
-  revalidatePath('/foretag')
-  revalidatePath('/prospekt')
+  if (isReseller) {
+    revalidatePath('/aterforsaljare')
+    revalidatePath('/aterforsaljar-prospekt')
+  } else {
+    revalidatePath('/foretag')
+    revalidatePath('/prospekt')
+  }
 
   return prospect.id
 }

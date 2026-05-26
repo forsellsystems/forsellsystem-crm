@@ -19,13 +19,16 @@ import {
 import { logout } from "@/lib/actions/auth-actions";
 import { useState } from "react";
 
-const navItems = [
+const navItems: {
+  href: string
+  label: string
+  icon: typeof LayoutDashboard
+  alsoActiveOn?: string[]
+}[] = [
   { href: "/dashboard", label: "DASHBOARD", icon: LayoutDashboard },
   { href: "/pipeline", label: "PIPELINE", icon: Kanban },
-  { href: "/foretag", label: "KUNDER", icon: Building2 },
-  { href: "/prospekt", label: "KUND-PROSPEKT", icon: Users, indent: true },
-  { href: "/aterforsaljare", label: "ÅTERFÖRSÄLJARE", icon: Handshake },
-  { href: "/aterforsaljar-prospekt", label: "ÅTERFÖRSÄLJAR-PROSPEKT", icon: Users, indent: true },
+  { href: "/foretag", label: "KUNDER", icon: Building2, alsoActiveOn: ["/prospekt"] },
+  { href: "/aterforsaljare", label: "ÅTERFÖRSÄLJARE", icon: Handshake, alsoActiveOn: ["/aterforsaljar-prospekt"] },
   { href: "/maskiner", label: "MASKINER", icon: Wrench },
   { href: "/installningar", label: "INSTÄLLNINGAR", icon: Cog },
 ];
@@ -75,9 +78,12 @@ export function Sidebar() {
       <nav className="relative z-10 flex-1 space-y-0.5 px-2 py-4">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
+            pathname === item.href ||
+            pathname.startsWith(item.href + "/") ||
+            (item.alsoActiveOn?.some(
+              (p) => pathname === p || pathname.startsWith(p + "/")
+            ) ?? false);
           const Icon = item.icon;
-          const isIndented = "indent" in item && item.indent;
 
           return (
             <Link
@@ -86,7 +92,6 @@ export function Sidebar() {
               className={cn(
                 "group flex items-center gap-3 px-3 py-2.5 text-[11px] font-medium tracking-[0.12em] transition-all duration-200",
                 "font-condensed",
-                isIndented && !collapsed && "opacity-90",
                 isActive
                   ? "text-white border-l-2 border-[#F2BB01] rounded-none bg-[#333333]/40"
                   : "text-[#9A9A9A] hover:bg-[#333333]/60 hover:text-[#FAFAFA] rounded-lg"

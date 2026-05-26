@@ -87,6 +87,7 @@ export const dealSchema = z.object({
   responsible_user_id: z.string().uuid().optional().or(z.literal('')),
   reseller_id: z.string().uuid().optional().or(z.literal('')),
   quote_date: z.string().optional().or(z.literal('')),
+  heat: z.coerce.number().int().min(1).max(3).nullable().optional(),
   machine_ids: z.array(z.string().uuid()).optional(),
 })
 

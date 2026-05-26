@@ -88,6 +88,7 @@ export type Deal = {
   quote_date: string | null;
   closed_at: string | null;
   expected_close_date: string | null;
+  heat: 1 | 2 | 3 | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
