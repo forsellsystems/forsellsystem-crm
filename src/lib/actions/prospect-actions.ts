@@ -8,11 +8,13 @@ import { prospectSchema, type ProspectFormData } from '@/lib/validations'
 export async function createProspect(data: ProspectFormData) {
   const validated = prospectSchema.parse(data)
   const supabase = await createClient()
+  const prospectType = validated.prospect_type ?? 'customer'
 
   const { data: prospect, error } = await supabase
     .from('prospects')
     .insert({
       company_name: validated.company_name,
+      prospect_type: prospectType,
       factory_type: validated.factory_type || null,
       building_types: validated.building_types ?? [],
       country: validated.country,
@@ -24,8 +26,9 @@ export async function createProspect(data: ProspectFormData) {
     .single()
 
   if (error) throw new Error(`Kunde inte skapa prospekt: ${error.message}`)
-  revalidatePath('/prospekt')
-  redirect(`/prospekt/${prospect.id}`)
+  const basePath = prospectType === 'reseller' ? '/aterforsaljar-prospekt' : '/prospekt'
+  revalidatePath(basePath)
+  redirect(`${basePath}/${prospect.id}`)
 }
 
 export async function updateProspect(id: string, data: ProspectFormData) {
@@ -49,6 +52,8 @@ export async function updateProspect(id: string, data: ProspectFormData) {
   if (error) throw new Error(`Kunde inte uppdatera prospekt: ${error.message}`)
   revalidatePath(`/prospekt/${id}`)
   revalidatePath('/prospekt')
+  revalidatePath(`/aterforsaljar-prospekt/${id}`)
+  revalidatePath('/aterforsaljar-prospekt')
 }
 
 export async function updateProspectFields(
@@ -74,6 +79,8 @@ export async function updateProspectFields(
   if (error) throw new Error(`Kunde inte uppdatera prospekt: ${error.message}`)
   revalidatePath(`/prospekt/${id}`)
   revalidatePath('/prospekt')
+  revalidatePath(`/aterforsaljar-prospekt/${id}`)
+  revalidatePath('/aterforsaljar-prospekt')
 }
 
 export async function moveProspectToCompany(prospectId: string): Promise<string> {
@@ -88,6 +95,8 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
 
   if (fetchError || !prospect) throw new Error('Kunde inte hämta prospekt')
 
+  const isReseller = prospect.prospect_type === 'reseller'
+
   // 2. Create company
   const { data: company, error: companyError } = await supabase
     .from('companies')
@@ -101,12 +110,12 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
       website: prospect.website || null,
       description: prospect.description || null,
       prospect_id: prospectId,
-      is_reseller: false,
+      is_reseller: isReseller,
     })
     .select('id')
     .single()
 
-  if (companyError || !company) throw new Error(`Kunde inte skapa kund: ${companyError?.message}`)
+  if (companyError || !company) throw new Error(`Kunde inte skapa ${isReseller ? 'återförsäljare' : 'kund'}: ${companyError?.message}`)
 
   // 3. Create contact if contact_person exists
   if (prospect.contact_person) {
@@ -149,9 +158,10 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
     })
     .eq('id', prospectId)
 
-  revalidatePath('/prospekt')
-  revalidatePath(`/prospekt/${prospectId}`)
-  revalidatePath('/foretag')
+  const basePath = isReseller ? '/aterforsaljar-prospekt' : '/prospekt'
+  revalidatePath(basePath)
+  revalidatePath(`${basePath}/${prospectId}`)
+  revalidatePath(isReseller ? '/aterforsaljare' : '/foretag')
 
   return company.id
 }
@@ -173,4 +183,5 @@ export async function deleteProspect(id: string) {
 
   if (error) throw new Error(`Kunde inte radera prospekt: ${error.message}`)
   revalidatePath('/prospekt')
+  revalidatePath('/aterforsaljar-prospekt')
 }

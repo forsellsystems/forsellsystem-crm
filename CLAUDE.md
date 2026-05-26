@@ -29,12 +29,13 @@ Swedish UI. Long sales cycles. Custom pipeline.
 
 ## Key Conventions
 - Swedish UI text (all labels, messages, placeholders)
-- Swedish URLs (/prospekt, /foretag, /maskiner, /installningar, /aterforsaljare)
+- Swedish URLs (/prospekt, /foretag, /maskiner, /installningar, /aterforsaljare, /aterforsaljar-prospekt)
 - UUID primary keys everywhere
 - Notes are deletable
 - "Företag" renamed to "Kunder" in UI (routes still /foretag)
 - Återförsäljare = companies with is_reseller=true, separate /aterforsaljare pages
-- Prospekt is a sub-item under Återförsäljare in sidebar
+- Two prospect types via prospect_type column: 'customer' (default, /prospekt) and 'reseller' (/aterforsaljar-prospekt)
+- Sidebar nesting: KUNDER → Kund-prospekt (indented), ÅTERFÖRSÄLJARE → Återförsäljar-prospekt (indented)
 - Inline editing on detail cards (penna-ikon → redigera direkt på kortet, ej dialog)
 - Detail cards pattern: ProspectContactCard, ProspectDescription, ProspectDetailsCard (same for companies)
 - Country fields: always use COUNTRIES dropdown from constants.ts — Swedish names ("Sverige", "Kanada", "USA"), never ISO codes or English names. Stored as Swedish name string in DB.
@@ -43,7 +44,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - building_types: TEXT[] on both prospects and companies, multi-select checkboxes (flerbostadshus, smahus). Stores keys, not labels.
 
 ## Prospect ↔ Company Flow
-- "Flytta till kund" button on prospect detail: creates company + contact + copies notes, marks prospect as converted
+- "Flytta till kund" / "Flytta till återförsäljare" button on prospect detail: creates company (is_reseller derived from prospect_type) + contact + copies notes, marks prospect as converted
 - "Flytta till prospekt" button on company detail: creates prospect from company data, copies notes, DELETES the company
 - "Skapa affär" button on company detail: opens NewDealDialog with company pre-selected
 - "Radera" button on prospect detail: permanently deletes prospect + its notes from DB
@@ -91,6 +92,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - country column on prospects and companies: stores Swedish country names (not ISO codes)
 - factory_type on prospects and companies: nullable TEXT (modulfabrik | vagg_tak_fabrik | null)
 - building_types on prospects and companies: TEXT[] (stores keys: flerbostadshus, smahus)
+- prospect_type on prospects: TEXT NOT NULL DEFAULT 'customer', CHECK IN ('customer', 'reseller')
 
 ## Known Workarounds
 - Zod v4 + @hookform/resolvers incompatibility: use `formResolver()` from `src/lib/form-resolver.ts` instead of `zodResolver()` directly

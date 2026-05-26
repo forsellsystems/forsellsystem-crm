@@ -5,10 +5,14 @@ export async function getProspects(filters?: {
   status?: string
   factory_type?: string
   search?: string
+  prospect_type?: 'customer' | 'reseller'
 }): Promise<Prospect[]> {
   const supabase = await createClient()
   let query = supabase.from('prospects').select('*').order('created_at', { ascending: false })
 
+  if (filters?.prospect_type) {
+    query = query.eq('prospect_type', filters.prospect_type)
+  }
   if (filters?.status && filters.status !== 'all') {
     query = query.eq('status', filters.status)
   }

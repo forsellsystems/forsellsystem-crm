@@ -47,6 +47,7 @@ export type Contact = {
 export type Prospect = {
   id: string;
   company_name: string;
+  prospect_type: "customer" | "reseller";
   factory_type: "modulfabrik" | "vagg_tak_fabrik" | null;
   building_types: string[];
   country: string;

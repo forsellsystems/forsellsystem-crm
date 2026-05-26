@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Users } from 'lucide-react'
+import { Plus, Handshake } from 'lucide-react'
 import { getProspects } from '@/lib/queries/prospects'
 import { FACTORY_TYPES } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
@@ -23,7 +23,7 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
   archived: { label: 'Arkiverad', variant: 'outline' },
 }
 
-export default async function ProspektPage({
+export default async function AterforsaljarProspektPage({
   searchParams,
 }: {
   searchParams: Promise<{ search?: string; status?: string; factory_type?: string }>
@@ -33,7 +33,7 @@ export default async function ProspektPage({
     search: params.search,
     status: params.status,
     factory_type: params.factory_type,
-    prospect_type: 'customer',
+    prospect_type: 'reseller',
   })
 
   const getFactoryLabel = (key: string | null) =>
@@ -43,15 +43,15 @@ export default async function ProspektPage({
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-display text-3xl text-[#1A1A1A]">Kund-prospekt</h2>
+          <h2 className="font-display text-3xl text-[#1A1A1A]">Återförsäljar-prospekt</h2>
           <p className="text-sm text-[#6B6B6B] mt-1">
-            Hantera och kvalificera potentiella kunder
+            Hantera och kvalificera potentiella återförsäljare
           </p>
         </div>
-        <Link href="/prospekt/ny">
+        <Link href="/aterforsaljar-prospekt/ny">
           <Button className="bg-[#F2BB01] hover:bg-[#B07830] text-white">
             <Plus className="size-4" data-icon="inline-start" />
-            Nytt prospekt
+            Nytt återförsäljar-prospekt
           </Button>
         </Link>
       </div>
@@ -64,10 +64,10 @@ export default async function ProspektPage({
         <Card>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-12 text-[#6B6B6B]">
-              <Users className="h-12 w-12 mb-4 text-[#B8B8B8]" />
-              <p className="text-sm">Inga prospekt hittades.</p>
+              <Handshake className="h-12 w-12 mb-4 text-[#B8B8B8]" />
+              <p className="text-sm">Inga återförsäljar-prospekt hittades.</p>
               <p className="text-xs mt-1">
-                Klicka på &ldquo;Nytt prospekt&rdquo; för att skapa ditt
+                Klicka på &ldquo;Nytt återförsäljar-prospekt&rdquo; för att skapa ditt
                 första.
               </p>
             </div>
@@ -94,7 +94,7 @@ export default async function ProspektPage({
                     <TableRow key={prospect.id}>
                       <TableCell>
                         <Link
-                          href={`/prospekt/${prospect.id}`}
+                          href={`/aterforsaljar-prospekt/${prospect.id}`}
                           className="font-medium text-[#656565] hover:underline"
                         >
                           {prospect.company_name}

@@ -335,67 +335,73 @@ function DealCardComponent({
 }) {
   const isFirst = stageIndex === 0
   const isLast = stageIndex === PIPELINE_STAGES.length - 1
+  const stageColor = PIPELINE_STAGES.find(s => s.key === card.stage)?.color ?? '#656565'
 
   return (
     <Card
-      className={`p-3 cursor-grab active:cursor-grabbing group/card hover:ring-1 hover:ring-[#656565]/30 transition-shadow ${isDragging ? 'shadow-lg ring-2 ring-[#656565]/40' : ''}`}
+      className={`p-0 cursor-grab active:cursor-grabbing group/card hover:ring-1 hover:ring-[#656565]/30 transition-all rounded-lg overflow-hidden ${isDragging ? 'shadow-lg ring-2 ring-[#656565]/40' : ''}`}
     >
-      <Link href={`/pipeline/${card.id}`} onClick={(e) => isDragging && e.preventDefault()} className="block space-y-2">
-        <p className="text-sm font-medium text-[#1A1A1A] truncate group-hover/card:text-[#656565] transition-colors">
-          {card.company_name}
-        </p>
-        {(card.quote_number || card.quote_date) && (
-          <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
-            {card.quote_number && <span>#{card.quote_number}</span>}
-            {card.quote_date && (
-              <span>{new Date(card.quote_date).toLocaleDateString('sv-SE')}</span>
+      <div className="flex">
+        <div className="w-1 shrink-0 rounded-l-lg" style={{ backgroundColor: stageColor }} />
+        <div className="flex-1 min-w-0">
+          <Link
+            href={`/pipeline/${card.id}`}
+            onClick={(e) => isDragging && e.preventDefault()}
+            className="block px-2.5 py-2"
+          >
+            {/* Rad 1: företag + värde */}
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-medium text-[#1A1A1A] truncate leading-tight">
+                {card.company_name}
+              </p>
+              {card.value ? (
+                <span className="text-sm font-semibold text-[#656565] whitespace-nowrap shrink-0">
+                  {formatCurrency(card.value)}
+                </span>
+              ) : (
+                <span className="text-[10px] text-[#B8B8B8] shrink-0">&mdash;</span>
+              )}
+            </div>
+
+            {/* Rad 2: ansvarig + offertdatum */}
+            {(card.responsible_name || card.quote_date) && (
+              <div className="flex items-center justify-between gap-2 mt-1">
+                {card.responsible_name && (
+                  <span className="text-[10px] text-[#6B6B6B] truncate">{card.responsible_name}</span>
+                )}
+                {card.quote_date && (
+                  <span className="text-[10px] text-[#6B6B6B] whitespace-nowrap shrink-0">
+                    {new Date(card.quote_date).toLocaleDateString('sv-SE')}
+                  </span>
+                )}
+              </div>
             )}
-          </div>
-        )}
-        <div className="flex items-center justify-between">
-          {card.value ? (
-            <span className="text-sm font-semibold text-[#656565]">
-              {formatCurrency(card.value)}
-            </span>
-          ) : (
-            <span className="text-xs text-[#B8B8B8]">Inget värde</span>
-          )}
-          {card.responsible_name && (
-            <span className="text-xs text-[#6B6B6B] truncate max-w-[80px]">
-              {card.responsible_name}
-            </span>
+          </Link>
+
+          {/* Flytta-knappar */}
+          {onMoveCard && !isDragging && (
+            <div className="flex items-center justify-between px-2.5 pb-1.5">
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isFirst) onMoveCard(card.id, 'prev') }}
+                disabled={isFirst}
+                className="p-0.5 rounded hover:bg-[#F2F2F0] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                title="Flytta bakåt"
+              >
+                <ChevronLeft className="size-3 text-[#6B6B6B]" />
+              </button>
+              <span className="text-[8px] text-[#B8B8B8] font-condensed tracking-wider">FLYTTA</span>
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isLast) onMoveCard(card.id, 'next') }}
+                disabled={isLast}
+                className="p-0.5 rounded hover:bg-[#F2F2F0] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                title="Flytta framåt"
+              >
+                <ChevronRight className="size-3 text-[#6B6B6B]" />
+              </button>
+            </div>
           )}
         </div>
-        {card.contact_name && (
-          <p className="text-xs text-[#6B6B6B]">{card.contact_name}</p>
-        )}
-        {card.reseller_name && (
-          <p className="text-[10px] text-[#D4A301]">via {card.reseller_name}</p>
-        )}
-      </Link>
-
-        {/* Move buttons */}
-        {onMoveCard && !isDragging && (
-          <div className="flex items-center justify-between pt-1 border-t border-[#F2F2F0]">
-            <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isFirst) onMoveCard(card.id, 'prev') }}
-              disabled={isFirst}
-              className="p-1 rounded hover:bg-[#F2F2F0] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
-              title="Flytta bakåt"
-            >
-              <ChevronLeft className="size-3.5 text-[#6B6B6B]" />
-            </button>
-            <span className="text-[9px] text-[#B8B8B8] font-condensed tracking-wider">FLYTTA</span>
-            <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!isLast) onMoveCard(card.id, 'next') }}
-              disabled={isLast}
-              className="p-1 rounded hover:bg-[#F2F2F0] disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
-              title="Flytta framåt"
-            >
-              <ChevronRight className="size-3.5 text-[#6B6B6B]" />
-            </button>
-          </div>
-        )}
+      </div>
     </Card>
   )
 }

@@ -14,11 +14,13 @@ import type { Prospect } from '@/lib/types/database'
 
 interface ProspectFormProps {
   prospect?: Prospect
+  prospectType?: 'customer' | 'reseller'
 }
 
-export function ProspectForm({ prospect }: ProspectFormProps) {
+export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFormProps) {
   const [error, setError] = useState<string | null>(null)
   const isEditing = !!prospect
+  const effectiveType = prospect?.prospect_type ?? prospectType
 
   const {
     register,
@@ -31,6 +33,7 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
     defaultValues: prospect
       ? {
           company_name: prospect.company_name,
+          prospect_type: prospect.prospect_type,
           factory_type: prospect.factory_type ?? '',
           building_types: prospect.building_types ?? [],
           country: prospect.country,
@@ -40,6 +43,7 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
         }
       : {
           company_name: '',
+          prospect_type: prospectType,
           factory_type: '',
           building_types: [],
           country: 'Sverige',
@@ -55,7 +59,7 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
       if (isEditing) {
         await updateProspect(prospect.id, data)
       } else {
-        await createProspect(data)
+        await createProspect({ ...data, prospect_type: effectiveType })
       }
     } catch (err: unknown) {
       const digest = (err as { digest?: string })?.digest
@@ -64,11 +68,15 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
     }
   }
 
+  const isReseller = effectiveType === 'reseller'
+
   return (
     <Card className="max-w-2xl">
       <CardHeader>
         <CardTitle>
-          {isEditing ? 'Redigera prospekt' : 'Prospektinformation'}
+          {isEditing
+            ? (isReseller ? 'Redigera återförsäljar-prospekt' : 'Redigera prospekt')
+            : (isReseller ? 'Återförsäljar-prospekt' : 'Prospektinformation')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -203,7 +211,7 @@ export function ProspectForm({ prospect }: ProspectFormProps) {
                 ? 'Sparar...'
                 : isEditing
                   ? 'Spara ändringar'
-                  : 'Skapa prospekt'}
+                  : (isReseller ? 'Skapa återförsäljar-prospekt' : 'Skapa prospekt')}
             </Button>
           </div>
         </form>

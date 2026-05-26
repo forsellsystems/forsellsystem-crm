@@ -28,6 +28,7 @@ export type UserFormData = z.infer<typeof userSchema>
 // ============================================
 export const prospectSchema = z.object({
   company_name: z.string().min(1, 'Företagsnamn krävs'),
+  prospect_type: z.enum(['customer', 'reseller']).optional(),
   factory_type: z.enum(['modulfabrik', 'vagg_tak_fabrik']).optional().or(z.literal('')),
   building_types: z.array(z.string()).optional(),
   country: z.string().min(1, 'Land krävs'),

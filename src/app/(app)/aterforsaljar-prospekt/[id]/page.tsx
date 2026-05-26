@@ -1,9 +1,9 @@
 import Link from 'next/link'
-import { notFound, redirect } from 'next/navigation'
+import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Building2 } from 'lucide-react'
+import { ArrowLeft, Handshake } from 'lucide-react'
 import { getProspect } from '@/lib/queries/prospects'
 import { getNotes } from '@/lib/queries/notes'
 import { formatDate } from '@/lib/utils'
@@ -21,7 +21,7 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
   archived: { label: 'Arkiverad', variant: 'outline' },
 }
 
-export default async function ProspektDetailPage({
+export default async function AterforsaljarProspektDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>
@@ -32,8 +32,7 @@ export default async function ProspektDetailPage({
     getNotes('prospect', id),
   ])
 
-  if (!prospect) notFound()
-  if (prospect.prospect_type === 'reseller') redirect(`/aterforsaljar-prospekt/${id}`)
+  if (!prospect || prospect.prospect_type !== 'reseller') notFound()
 
   const status = statusLabels[prospect.status]
 
@@ -41,7 +40,7 @@ export default async function ProspektDetailPage({
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link href="/prospekt">
+          <Link href="/aterforsaljar-prospekt">
             <Button variant="ghost" size="icon-sm">
               <ArrowLeft className="size-4" />
             </Button>
@@ -65,14 +64,14 @@ export default async function ProspektDetailPage({
           {prospect.status === 'active' && (
             <>
               <DeleteProspectButton prospectId={prospect.id} />
-              <MoveToCompanyButton prospectId={prospect.id} />
+              <MoveToCompanyButton prospectId={prospect.id} prospectType="reseller" />
             </>
           )}
           {prospect.status === 'converted' && prospect.converted_company_id && (
-            <Link href={`/foretag/${prospect.converted_company_id}`}>
+            <Link href={`/aterforsaljare/${prospect.converted_company_id}`}>
               <Button variant="outline">
-                <Building2 className="size-4" data-icon="inline-start" />
-                Gå till kund
+                <Handshake className="size-4" data-icon="inline-start" />
+                Gå till återförsäljare
               </Button>
             </Link>
           )}
@@ -80,7 +79,6 @@ export default async function ProspektDetailPage({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Info */}
         <div className="lg:col-span-1 space-y-6">
           <ProspectContactCard
             prospect={prospect}
@@ -99,7 +97,6 @@ export default async function ProspektDetailPage({
           />
         </div>
 
-        {/* Notes */}
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>

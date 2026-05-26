@@ -23,8 +23,9 @@ const navItems = [
   { href: "/dashboard", label: "DASHBOARD", icon: LayoutDashboard },
   { href: "/pipeline", label: "PIPELINE", icon: Kanban },
   { href: "/foretag", label: "KUNDER", icon: Building2 },
+  { href: "/prospekt", label: "KUND-PROSPEKT", icon: Users, indent: true },
   { href: "/aterforsaljare", label: "ÅTERFÖRSÄLJARE", icon: Handshake },
-  { href: "/prospekt", label: "PROSPEKT", icon: Users, indent: true },
+  { href: "/aterforsaljar-prospekt", label: "ÅTERFÖRSÄLJAR-PROSPEKT", icon: Users, indent: true },
   { href: "/maskiner", label: "MASKINER", icon: Wrench },
   { href: "/installningar", label: "INSTÄLLNINGAR", icon: Cog },
 ];
