@@ -1,5 +1,4 @@
 export const PIPELINE_STAGES = [
-  { key: "kontakt", label: "Kontakt", color: "#656565" },
   { key: "offert", label: "Offert", color: "#F2BB01" },
   { key: "avslutad_affar", label: "Avslutad (affär)", color: "#333333" },
   { key: "avslutad_ingen_affar", label: "Avslutad (ingen affär)", color: "#8B3D3D" },
@@ -28,6 +27,25 @@ export const BUILDING_TYPES = [
 ] as const;
 
 export type BuildingType = (typeof BUILDING_TYPES)[number]["key"];
+
+export const PROJECT_TYPES = [
+  { key: "ny_husfabrik", label: "Ny husfabrik" },
+  { key: "ombyggnad", label: "Ombyggnad" },
+  { key: "utbyggnad", label: "Utbyggnad" },
+  { key: "maskininvestering", label: "Maskininvestering" },
+  { key: "annat", label: "Annat" },
+] as const;
+
+export type ProjectType = (typeof PROJECT_TYPES)[number]["key"];
+
+export const PROJECT_STATUSES = [
+  { key: "planerad", label: "Planerad", color: "#808080" },
+  { key: "pagaende", label: "Pågående", color: "#E89B3F" },
+  { key: "vilande", label: "Vilande", color: "#9A9A9A" },
+  { key: "avslutad", label: "Avslutad", color: "#333333" },
+] as const;
+
+export type ProjectStatus = (typeof PROJECT_STATUSES)[number]["key"];
 
 export const CURRENCIES = ["SEK", "EUR", "NOK", "DKK"] as const;
 

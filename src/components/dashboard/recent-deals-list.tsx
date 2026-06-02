@@ -39,7 +39,7 @@ export function RecentDealsList({ deals }: RecentDealsListProps) {
                     </p>
                     <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
                       {deal.quote_number && <span>#{deal.quote_number}</span>}
-                      <span>{formatRelativeTime(deal.updated_at)}</span>
+                      <span>{formatRelativeTime(deal.created_at)}</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">

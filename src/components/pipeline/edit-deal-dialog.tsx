@@ -33,6 +33,7 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [contacts, setContacts] = useState<{ id: string; name: string }[]>([])
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
   const [selectedMachines, setSelectedMachines] = useState<string[]>(
     deal.machines.map((m) => m.id)
   )
@@ -55,6 +56,7 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
       currency: deal.currency as DealFormData['currency'],
       responsible_user_id: deal.responsible_user_id ?? '',
       reseller_id: deal.reseller_id ?? '',
+      project_id: deal.project_id ?? '',
       quote_date: deal.quote_date ?? '',
       heat: deal.heat ?? null,
       machine_ids: deal.machines.map((m) => m.id),
@@ -64,11 +66,15 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
   const selectedCompanyId = watch('company_id')
 
   useEffect(() => {
-    if (!selectedCompanyId) { setContacts([]); return }
+    if (!selectedCompanyId) { setContacts([]); setProjects([]); return }
     fetch(`/api/contacts?company_id=${selectedCompanyId}`)
       .then((r) => r.ok ? r.json() : [])
       .then(setContacts)
       .catch(() => setContacts([]))
+    fetch(`/api/projects?company_id=${selectedCompanyId}`)
+      .then((r) => r.ok ? r.json() : [])
+      .then(setProjects)
+      .catch(() => setProjects([]))
   }, [selectedCompanyId])
 
   function toggleMachine(machineId: string) {
@@ -154,6 +160,14 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
           </div>
 
           <div className="grid gap-2">
+            <Label htmlFor="edit-deal-project">Projekt</Label>
+            <select id="edit-deal-project" className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50" {...register('project_id')} disabled={!selectedCompanyId}>
+              <option value="">{selectedCompanyId ? 'Inget projekt' : 'Välj kund först'}</option>
+              {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+
+          <div className="grid gap-2">
             <Label htmlFor="edit-deal-responsible">Ansvarig säljare</Label>
             <select id="edit-deal-responsible" className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50" {...register('responsible_user_id')}>
               <option value="">Ingen ansvarig</option>
@@ -173,9 +187,9 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
 
           {resellers.length > 0 && (
             <div className="grid gap-2">
-              <Label htmlFor="edit-deal-reseller">Återförsäljare</Label>
+              <Label htmlFor="edit-deal-reseller">Agent</Label>
               <select id="edit-deal-reseller" className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50" {...register('reseller_id')}>
-                <option value="">Ingen återförsäljare</option>
+                <option value="">Ingen agent</option>
                 {resellers.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
               </select>
             </div>

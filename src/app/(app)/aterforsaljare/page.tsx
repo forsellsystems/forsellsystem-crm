@@ -16,7 +16,7 @@ import { RemoveResellerButton } from '@/components/settings/remove-reseller-butt
 import { ListTabs } from '@/components/layout/list-tabs'
 
 const RESELLER_TABS = [
-  { label: 'Återförsäljare', href: '/aterforsaljare' },
+  { label: 'Agenter', href: '/aterforsaljare' },
   { label: 'Prospekt', href: '/aterforsaljar-prospekt' },
 ]
 
@@ -40,7 +40,7 @@ export default async function AterforsaljarePage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display text-3xl text-[#1A1A1A]">
-            Återförsäljare
+            Agenter
           </h2>
           <p className="text-sm text-[#6B6B6B] mt-1">
             Partners som säljer era maskiner
@@ -56,9 +56,9 @@ export default async function AterforsaljarePage() {
           <CardContent>
             <div className="flex flex-col items-center justify-center py-12 text-[#6B6B6B]">
               <Handshake className="h-12 w-12 mb-4 text-[#B8B8B8]" />
-              <p className="text-sm">Inga återförsäljare ännu.</p>
+              <p className="text-sm">Inga agenter ännu.</p>
               <p className="text-xs mt-1">
-                Lägg till era återförsäljare för att koppla dem till affärer.
+                Lägg till era agenter för att koppla dem till affärer.
               </p>
             </div>
           </CardContent>
@@ -91,7 +91,7 @@ export default async function AterforsaljarePage() {
                           variant="outline"
                           className="text-[#D4A301] border-[#D4A301]/40 text-[10px]"
                         >
-                          Återförsäljare
+                          Agent
                         </Badge>
                       </div>
                     </TableCell>

@@ -6,7 +6,13 @@ import { Input } from '@/components/ui/input'
 import { FACTORY_TYPES } from '@/lib/constants'
 import { Search } from 'lucide-react'
 
-export function ProspectFilters() {
+export function ProspectFilters({
+  basePath = '/prospekt',
+  showFactoryType = true,
+}: {
+  basePath?: string
+  showFactoryType?: boolean
+}) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -18,9 +24,9 @@ export function ProspectFilters() {
       } else {
         params.delete(key)
       }
-      router.push(`/prospekt?${params.toString()}`)
+      router.push(`${basePath}?${params.toString()}`)
     },
-    [router, searchParams]
+    [router, searchParams, basePath]
   )
 
   return (
@@ -35,18 +41,20 @@ export function ProspectFilters() {
         />
       </div>
 
-      <select
-        className="flex h-8 rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
-        defaultValue={searchParams.get('factory_type') ?? 'all'}
-        onChange={(e) => updateFilter('factory_type', e.target.value)}
-      >
-        <option value="all">Alla fabrikstyper</option>
-        {FACTORY_TYPES.map((ft) => (
-          <option key={ft.key} value={ft.key}>
-            {ft.label}
-          </option>
-        ))}
-      </select>
+      {showFactoryType && (
+        <select
+          className="flex h-8 rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+          defaultValue={searchParams.get('factory_type') ?? 'all'}
+          onChange={(e) => updateFilter('factory_type', e.target.value)}
+        >
+          <option value="all">Alla fabrikstyper</option>
+          {FACTORY_TYPES.map((ft) => (
+            <option key={ft.key} value={ft.key}>
+              {ft.label}
+            </option>
+          ))}
+        </select>
+      )}
     </div>
   )
 }

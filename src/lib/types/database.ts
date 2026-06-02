@@ -79,12 +79,13 @@ export type Deal = {
   quote_number: string | null;
   company_id: string;
   contact_id: string | null;
-  stage: "kontakt" | "offert" | "avslutad_affar" | "avslutad_ingen_affar";
+  stage: "offert" | "avslutad_affar" | "avslutad_ingen_affar";
   value: number | null;
   currency: string;
   responsible_user_id: string | null;
   prospect_id: string | null;
   reseller_id: string | null;
+  project_id: string | null;
   quote_date: string | null;
   closed_at: string | null;
   expected_close_date: string | null;
@@ -104,13 +105,31 @@ export type DealMachine = {
 
 export type Note = {
   id: string;
-  entity_type: "prospect" | "company" | "deal" | "contact";
+  entity_type: "prospect" | "company" | "deal" | "contact" | "project";
   entity_id: string;
   content: string;
   author_user_id: string | null;
   source_entity_type: string | null;
   source_entity_id: string | null;
   created_at: string;
+};
+
+export type Project = {
+  id: string;
+  entity_type: "prospect" | "company";
+  entity_id: string;
+  name: string | null;
+  project_type: string | null;
+  status: string | null;
+  description: string | null;
+  value: number | null;
+  value_unknown: boolean;
+  currency: string;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type ActivityLog = {
@@ -129,11 +148,12 @@ export type DealWithRelations = Deal & {
   contact_name?: string;
   responsible_name?: string;
   reseller_name?: string;
+  project_name?: string;
 };
 
 export type CompanyWithRelations = Company & {
   responsible_name?: string;
   reseller_name?: string;
   contacts?: Contact[];
-  deals?: Deal[];
+  deals?: (Deal & { reseller_name?: string | null })[];
 };

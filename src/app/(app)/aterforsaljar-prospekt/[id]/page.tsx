@@ -71,7 +71,7 @@ export default async function AterforsaljarProspektDetailPage({
             <Link href={`/aterforsaljare/${prospect.converted_company_id}`}>
               <Button variant="outline">
                 <Handshake className="size-4" data-icon="inline-start" />
-                Gå till återförsäljare
+                Gå till agent
               </Button>
             </Link>
           )}

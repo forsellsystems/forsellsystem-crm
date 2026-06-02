@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Deal, DealWithRelations } from '@/lib/types/database'
+import { PROJECT_TYPES } from '@/lib/constants'
 
 export type DealCard = {
   id: string
@@ -60,6 +61,40 @@ export async function getDealsByStage(): Promise<Record<string, DealCard[]>> {
   return grouped
 }
 
+export type ProjectDeal = {
+  id: string
+  quote_number: string | null
+  stage: string
+  value: number | null
+  project_id: string | null
+}
+
+/** Deals already linked to a given project. */
+export async function getProjectDeals(projectId: string): Promise<ProjectDeal[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('deals')
+    .select('id, quote_number, stage, value, project_id')
+    .eq('project_id', projectId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data ?? []
+}
+
+/** All deals for a company (candidates to link to a project). */
+export async function getCompanyDeals(companyId: string): Promise<ProjectDeal[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('deals')
+    .select('id, quote_number, stage, value, project_id')
+    .eq('company_id', companyId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data ?? []
+}
+
 export async function getDeal(id: string): Promise<
   | (DealWithRelations & {
       machines: { id: string; name: string; category: string; quantity: number }[]
@@ -72,7 +107,7 @@ export async function getDeal(id: string): Promise<
     supabase
       .from('deals')
       .select(
-        '*, companies!deals_company_id_fkey(name), contacts!deals_contact_id_fkey(name), users!deals_responsible_user_id_fkey(name), reseller:companies!deals_reseller_id_fkey(name)'
+        '*, companies!deals_company_id_fkey(name), contacts!deals_contact_id_fkey(name), users!deals_responsible_user_id_fkey(name), reseller:companies!deals_reseller_id_fkey(name), projects!deals_project_id_fkey(name, project_type)'
       )
       .eq('id', id)
       .single(),
@@ -95,6 +130,15 @@ export async function getDeal(id: string): Promise<
       (deal.users as { name: string } | null)?.name ?? undefined,
     reseller_name:
       (deal.reseller as { name: string } | null)?.name ?? undefined,
+    project_name: (() => {
+      const p = deal.projects as { name: string | null; project_type: string | null } | null
+      if (!p) return undefined
+      return (
+        p.name?.trim() ||
+        PROJECT_TYPES.find((t) => t.key === p.project_type)?.label ||
+        'Projekt'
+      )
+    })(),
     machines: (machinesRes.data ?? []).map((dm) => {
       const m = dm.machines as unknown as { id: string; name: string; category: string } | null
       return {

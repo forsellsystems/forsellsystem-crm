@@ -30,6 +30,19 @@ export async function getProspects(filters?: {
   return data ?? []
 }
 
+export async function getCustomerProspectsForSelect(): Promise<{ id: string; name: string }[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('prospects')
+    .select('id, company_name')
+    .eq('prospect_type', 'customer')
+    .eq('status', 'active')
+    .order('company_name')
+
+  if (error) throw error
+  return (data ?? []).map((p) => ({ id: p.id, name: p.company_name }))
+}
+
 export async function getProspect(id: string): Promise<Prospect | null> {
   const supabase = await createClient()
   const { data, error } = await supabase

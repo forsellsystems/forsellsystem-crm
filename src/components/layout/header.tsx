@@ -7,8 +7,9 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   "/prospekt": { title: "Prospekt", subtitle: "Potentiella kunder" },
   "/pipeline": { title: "Pipeline", subtitle: "Aktiva affärer" },
   "/foretag": { title: "Kunder", subtitle: "Kundregister" },
-  "/aterforsaljare": { title: "Återförsäljare", subtitle: "Partners" },
+  "/aterforsaljare": { title: "Agenter", subtitle: "Partners" },
   "/maskiner": { title: "Maskiner", subtitle: "Produktkatalog" },
+  "/logg": { title: "Logg", subtitle: "Försäljningsaktivitet" },
   "/installningar": { title: "Inställningar", subtitle: "System" },
 };
 

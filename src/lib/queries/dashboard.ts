@@ -21,7 +21,7 @@ export interface RecentDeal {
   currency: string
   company_name: string
   responsible_name: string | null
-  updated_at: string
+  created_at: string
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
@@ -68,7 +68,13 @@ export async function getPipelineSummary(): Promise<PipelineStageSummary[]> {
 
 export async function getRecentDeals(): Promise<RecentDeal[]> {
   const supabase = await createClient()
-  const { data, error } = await supabase.from('recent_deals').select('*')
+  const { data, error } = await supabase
+    .from('deals')
+    .select(
+      'id, quote_number, stage, value, currency, created_at, companies!deals_company_id_fkey(name), users!deals_responsible_user_id_fkey(name)'
+    )
+    .order('created_at', { ascending: false })
+    .limit(20)
 
   if (error) throw error
 
@@ -78,8 +84,10 @@ export async function getRecentDeals(): Promise<RecentDeal[]> {
     stage: d.stage,
     value: d.value,
     currency: d.currency,
-    company_name: d.company_name,
-    responsible_name: d.responsible_name,
-    updated_at: d.updated_at,
+    company_name:
+      (d.companies as unknown as { name: string } | null)?.name ?? 'Okänt företag',
+    responsible_name:
+      (d.users as unknown as { name: string } | null)?.name ?? null,
+    created_at: d.created_at,
   }))
 }

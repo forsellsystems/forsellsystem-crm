@@ -25,7 +25,7 @@ export function RemoveResellerButton({ companyId }: { companyId: string }) {
       size="icon-sm"
       onClick={handleRemove}
       disabled={loading}
-      title="Ta bort som återförsäljare"
+      title="Ta bort som agent"
     >
       <X className="size-3.5 text-[#8B3D3D]" />
     </Button>

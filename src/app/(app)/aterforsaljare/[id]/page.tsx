@@ -68,7 +68,7 @@ export default async function ResellerDetailPage({
                 variant="outline"
                 className="text-[#D4A301] border-[#D4A301]/40"
               >
-                Återförsäljare
+                Agent
               </Badge>
             </div>
             <p className="text-sm text-[#6B6B6B] mt-1">
@@ -127,7 +127,7 @@ export default async function ResellerDetailPage({
           {/* Customers through this reseller */}
           <Card>
             <CardHeader>
-              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Kunder via denna återförsäljare</CardTitle>
+              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Kunder via denna agent</CardTitle>
             </CardHeader>
             <CardContent>
               {reseller.customers.length === 0 ? (
@@ -158,7 +158,7 @@ export default async function ResellerDetailPage({
           {reseller.deals.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Affärer via denna återförsäljare</CardTitle>
+                <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Affärer via denna agent</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="divide-y divide-[#B8B8B8]/40">

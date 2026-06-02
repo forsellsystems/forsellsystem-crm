@@ -8,6 +8,7 @@ import {
   Building2,
   User,
   Wrench,
+  FolderKanban,
 } from 'lucide-react'
 import { getDeal } from '@/lib/queries/deals'
 import { getNotes } from '@/lib/queries/notes'
@@ -188,8 +189,17 @@ export default async function DealDetailPage({
               {deal.reseller_name && (
                 <div className="flex items-center gap-2 text-sm text-[#D4A301]">
                   <Building2 className="size-4" />
-                  <span>Återförsäljare: {deal.reseller_name}</span>
+                  <span>Agent: {deal.reseller_name}</span>
                 </div>
+              )}
+              {deal.project_id && deal.project_name && (
+                <Link
+                  href={`/projekt/${deal.project_id}`}
+                  className="flex items-center gap-2 text-sm text-[#656565] hover:underline"
+                >
+                  <FolderKanban className="size-4" />
+                  {deal.project_name}
+                </Link>
               )}
             </CardContent>
           </Card>

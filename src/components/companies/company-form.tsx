@@ -181,13 +181,13 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
 
           {resellers.length > 0 && (
             <div className="grid gap-2">
-              <Label htmlFor="reseller_id">Återförsäljare</Label>
+              <Label htmlFor="reseller_id">Agent</Label>
               <select
                 id="reseller_id"
                 className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
                 {...register('reseller_id')}
               >
-                <option value="">Ingen återförsäljare</option>
+                <option value="">Ingen agent</option>
                 {resellers.map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.name}

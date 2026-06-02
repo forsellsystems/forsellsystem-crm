@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prospectSchema, type ProspectFormData } from '@/lib/validations'
+import { logActivity, deleteActivityForEntity } from '@/lib/actions/activity-actions'
 
 export async function createProspect(data: ProspectFormData) {
   const validated = prospectSchema.parse(data)
@@ -27,6 +28,14 @@ export async function createProspect(data: ProspectFormData) {
 
   if (error) throw new Error(`Kunde inte skapa prospekt: ${error.message}`)
   const basePath = prospectType === 'reseller' ? '/aterforsaljar-prospekt' : '/prospekt'
+
+  await logActivity(supabase, {
+    action: 'prospect_created',
+    entity_type: 'prospect',
+    entity_id: prospect.id,
+    metadata: { label: validated.company_name, href: `${basePath}/${prospect.id}` },
+  })
+
   revalidatePath(basePath)
   redirect(`${basePath}/${prospect.id}`)
 }
@@ -115,7 +124,17 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
     .select('id')
     .single()
 
-  if (companyError || !company) throw new Error(`Kunde inte skapa ${isReseller ? 'återförsäljare' : 'kund'}: ${companyError?.message}`)
+  if (companyError || !company) throw new Error(`Kunde inte skapa ${isReseller ? 'agent' : 'kund'}: ${companyError?.message}`)
+
+  await logActivity(supabase, {
+    action: 'company_created',
+    entity_type: 'company',
+    entity_id: company.id,
+    metadata: {
+      label: prospect.company_name,
+      href: isReseller ? `/aterforsaljare/${company.id}` : `/foretag/${company.id}`,
+    },
+  })
 
   // 3. Create contact if contact_person exists
   if (prospect.contact_person) {
@@ -148,7 +167,29 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
     )
   }
 
-  // 5. Mark prospect as converted
+  // 5. Copy projects from prospect to company
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('entity_type', 'prospect')
+    .eq('entity_id', prospectId)
+
+  if (projects && projects.length > 0) {
+    await supabase.from('projects').insert(
+      projects.map((project) => ({
+        entity_type: 'company' as const,
+        entity_id: company.id,
+        project_type: project.project_type,
+        status: project.status,
+        description: project.description,
+        value: project.value,
+        value_unknown: project.value_unknown,
+        currency: project.currency,
+      }))
+    )
+  }
+
+  // 6. Mark prospect as converted
   await supabase
     .from('prospects')
     .update({
@@ -169,12 +210,31 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
 export async function deleteProspect(id: string) {
   const supabase = await createClient()
 
-  // Delete related notes first
+  // Clean up child projects (their notes + activity), then the prospect's own notes + activity
+  const { data: childProjects } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('entity_type', 'prospect')
+    .eq('entity_id', id)
+  const projectIds = (childProjects ?? []).map((p) => p.id)
+  if (projectIds.length > 0) {
+    await supabase.from('notes').delete().eq('entity_type', 'project').in('entity_id', projectIds)
+    await deleteActivityForEntity(supabase, 'project', projectIds)
+  }
+
   await supabase
     .from('notes')
     .delete()
     .eq('entity_type', 'prospect')
     .eq('entity_id', id)
+
+  await supabase
+    .from('projects')
+    .delete()
+    .eq('entity_type', 'prospect')
+    .eq('entity_id', id)
+
+  await deleteActivityForEntity(supabase, 'prospect', id)
 
   const { error } = await supabase
     .from('prospects')

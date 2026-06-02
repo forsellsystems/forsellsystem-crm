@@ -81,11 +81,12 @@ export const dealSchema = z.object({
   quote_number: z.string().optional(),
   company_id: z.string().uuid('Företag krävs'),
   contact_id: z.string().uuid().optional().or(z.literal('')),
-  stage: z.enum(['kontakt', 'offert', 'avslutad_affar', 'avslutad_ingen_affar']),
+  stage: z.enum(['offert', 'avslutad_affar', 'avslutad_ingen_affar']),
   value: z.coerce.number().min(0, 'Värde måste vara positivt').optional(),
   currency: z.enum(['SEK', 'EUR', 'USD', 'NOK', 'DKK']),
   responsible_user_id: z.string().uuid().optional().or(z.literal('')),
   reseller_id: z.string().uuid().optional().or(z.literal('')),
+  project_id: z.string().uuid().optional().or(z.literal('')),
   quote_date: z.string().optional().or(z.literal('')),
   heat: z.coerce.number().int().min(1).max(3).nullable().optional(),
   machine_ids: z.array(z.string().uuid()).optional(),
@@ -94,10 +95,30 @@ export const dealSchema = z.object({
 export type DealFormData = z.infer<typeof dealSchema>
 
 // ============================================
+// PROJECTS
+// ============================================
+export const projectSchema = z.object({
+  entity_type: z.enum(['prospect', 'company']),
+  entity_id: z.string().uuid(),
+  name: z.string().optional(),
+  project_type: z.string().optional().or(z.literal('')),
+  status: z.string().optional().or(z.literal('')),
+  description: z.string().optional(),
+  value: z.coerce.number().min(0, 'Värde måste vara positivt').optional(),
+  value_unknown: z.boolean().optional(),
+  currency: z.string().optional(),
+  contact_name: z.string().optional(),
+  contact_email: z.string().email('Ogiltig e-postadress').optional().or(z.literal('')),
+  contact_phone: z.string().optional(),
+})
+
+export type ProjectFormData = z.infer<typeof projectSchema>
+
+// ============================================
 // NOTES
 // ============================================
 export const noteSchema = z.object({
-  entity_type: z.enum(['prospect', 'company', 'deal', 'contact']),
+  entity_type: z.enum(['prospect', 'company', 'deal', 'contact', 'project']),
   entity_id: z.string().uuid(),
   content: z.string().min(1, 'Anteckning krävs'),
 })

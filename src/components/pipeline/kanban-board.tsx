@@ -22,7 +22,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Handshake } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { PIPELINE_STAGES, DEAL_HEAT_LEVELS } from '@/lib/constants'
 import { formatCurrency } from '@/lib/utils'
@@ -188,7 +188,7 @@ export function KanbanBoard({ initialData }: KanbanBoardProps) {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         {PIPELINE_STAGES.map((stage, stageIndex) => {
           const cards = columns[stage.key] ?? []
           const totalValue = cards.reduce((sum, c) => sum + (c.value ?? 0), 0)
@@ -387,6 +387,14 @@ function DealCardComponent({
                     {new Date(card.quote_date).toLocaleDateString('sv-SE')}
                   </span>
                 )}
+              </div>
+            )}
+
+            {/* Rad 3: agent */}
+            {card.reseller_name && (
+              <div className="flex items-center gap-1 mt-1 text-[10px] text-[#D4A301]">
+                <Handshake className="size-3 shrink-0" />
+                <span className="truncate">{card.reseller_name}</span>
               </div>
             )}
           </Link>

@@ -14,7 +14,7 @@ export async function createReseller(data: { name: string; country: string; emai
     is_reseller: true,
   })
 
-  if (error) throw new Error(`Kunde inte skapa återförsäljare: ${error.message}`)
+  if (error) throw new Error(`Kunde inte skapa agent: ${error.message}`)
   revalidatePath('/aterforsaljare')
   revalidatePath('/pipeline')
 }
@@ -27,7 +27,7 @@ export async function removeReseller(companyId: string) {
     .update({ is_reseller: false })
     .eq('id', companyId)
 
-  if (error) throw new Error(`Kunde inte ta bort återförsäljare: ${error.message}`)
+  if (error) throw new Error(`Kunde inte ta bort agent: ${error.message}`)
   revalidatePath('/aterforsaljare')
   revalidatePath('/pipeline')
 }

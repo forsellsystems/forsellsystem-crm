@@ -8,12 +8,14 @@ import {
   LayoutDashboard,
   Users,
   Kanban,
+  FolderKanban,
   Building2,
   Handshake,
   Cog,
   ChevronLeft,
   ChevronRight,
   Wrench,
+  History,
   LogOut,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth-actions";
@@ -27,9 +29,11 @@ const navItems: {
 }[] = [
   { href: "/dashboard", label: "DASHBOARD", icon: LayoutDashboard },
   { href: "/pipeline", label: "PIPELINE", icon: Kanban },
+  { href: "/projekt", label: "PROJEKT", icon: FolderKanban },
   { href: "/foretag", label: "KUNDER", icon: Building2, alsoActiveOn: ["/prospekt"] },
-  { href: "/aterforsaljare", label: "ÅTERFÖRSÄLJARE", icon: Handshake, alsoActiveOn: ["/aterforsaljar-prospekt"] },
+  { href: "/aterforsaljare", label: "AGENTER", icon: Handshake, alsoActiveOn: ["/aterforsaljar-prospekt"] },
   { href: "/maskiner", label: "MASKINER", icon: Wrench },
+  { href: "/logg", label: "LOGG", icon: History },
   { href: "/installningar", label: "INSTÄLLNINGAR", icon: Cog },
 ];
 

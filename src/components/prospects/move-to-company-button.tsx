@@ -19,7 +19,7 @@ export function MoveToCompanyButton({
 
   const isReseller = prospectType === 'reseller'
   const targetPath = isReseller ? '/aterforsaljare' : '/foretag'
-  const label = isReseller ? 'Flytta till återförsäljare' : 'Flytta till kund'
+  const label = isReseller ? 'Flytta till agent' : 'Flytta till kund'
 
   function handleClick() {
     startTransition(async () => {

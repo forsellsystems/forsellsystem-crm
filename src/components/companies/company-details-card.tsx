@@ -13,8 +13,10 @@ import type { Company, CompanyWithRelations } from '@/lib/types/database'
 
 export function CompanyDetailsCard({
   company,
+  resellers = [],
 }: {
   company: CompanyWithRelations
+  resellers?: { id: string; name: string }[]
 }) {
   const [editing, setEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -23,6 +25,7 @@ export function CompanyDetailsCard({
     building_types: company.building_types ?? [] as string[],
     country: company.country,
     customer_number: company.customer_number ?? '',
+    reseller_id: company.reseller_id ?? '',
   })
 
   const factoryLabel =
@@ -39,6 +42,7 @@ export function CompanyDetailsCard({
       building_types: company.building_types ?? [],
       country: company.country,
       customer_number: company.customer_number ?? '',
+      reseller_id: company.reseller_id ?? '',
     })
     setEditing(true)
   }
@@ -125,6 +129,20 @@ export function CompanyDetailsCard({
                 onChange={(e) => setValues((v) => ({ ...v, customer_number: e.target.value }))}
               />
             </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="inline-reseller" className="text-xs text-[#6B6B6B]">Agent</Label>
+              <select
+                id="inline-reseller"
+                className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                value={values.reseller_id}
+                onChange={(e) => setValues((v) => ({ ...v, reseller_id: e.target.value }))}
+              >
+                <option value="">Ingen agent</option>
+                {resellers.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
+            </div>
             <div className="flex justify-end gap-1">
               <Button variant="ghost" size="icon-sm" onClick={handleCancel} disabled={isPending}>
                 <X className="size-4" />
@@ -166,7 +184,7 @@ export function CompanyDetailsCard({
             )}
             {company.reseller_name && (
               <div className="flex justify-between">
-                <span className="text-[#6B6B6B]">Återförsäljare</span>
+                <span className="text-[#6B6B6B]">Agent</span>
                 <span className="text-[#D4A301] font-medium">{company.reseller_name}</span>
               </div>
             )}

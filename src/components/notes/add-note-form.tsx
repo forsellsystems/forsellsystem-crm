@@ -7,7 +7,7 @@ import { Send } from 'lucide-react'
 import { createNote } from '@/lib/actions/note-actions'
 
 interface AddNoteFormProps {
-  entityType: 'prospect' | 'company' | 'deal' | 'contact'
+  entityType: 'prospect' | 'company' | 'deal' | 'contact' | 'project'
   entityId: string
 }
 

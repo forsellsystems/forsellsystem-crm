@@ -26,12 +26,14 @@ interface NewDealDialogProps {
   resellers: { id: string; name: string }[]
   users: User[]
   machines: Machine[]
+  triggerStyle?: 'cta' | 'icon'
 }
 
-export function NewDealDialog({ companies, resellers, users, machines }: NewDealDialogProps) {
+export function NewDealDialog({ companies, resellers, users, machines, triggerStyle = 'cta' }: NewDealDialogProps) {
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [contacts, setContacts] = useState<{ id: string; name: string }[]>([])
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
   const [selectedMachines, setSelectedMachines] = useState<string[]>([])
   const router = useRouter()
 
@@ -48,11 +50,12 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
       quote_number: '',
       company_id: '',
       contact_id: '',
-      stage: 'kontakt',
+      stage: 'offert',
       value: undefined,
       currency: 'SEK',
       responsible_user_id: '',
       reseller_id: '',
+      project_id: '',
       quote_date: '',
       heat: null,
       machine_ids: [],
@@ -61,27 +64,28 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
 
   const selectedCompanyId = watch('company_id')
 
-  // Fetch contacts when company changes
+  // Fetch contacts + projects when company changes
   useEffect(() => {
     if (!selectedCompanyId) {
       setContacts([])
+      setProjects([])
       return
     }
 
-    async function fetchContacts() {
+    async function fetchForCompany() {
       try {
-        const res = await fetch(
-          `/api/contacts?company_id=${selectedCompanyId}`
-        )
-        if (res.ok) {
-          const data = await res.json()
-          setContacts(data)
-        }
+        const [contactsRes, projectsRes] = await Promise.all([
+          fetch(`/api/contacts?company_id=${selectedCompanyId}`),
+          fetch(`/api/projects?company_id=${selectedCompanyId}`),
+        ])
+        setContacts(contactsRes.ok ? await contactsRes.json() : [])
+        setProjects(projectsRes.ok ? await projectsRes.json() : [])
       } catch {
         setContacts([])
+        setProjects([])
       }
     }
-    fetchContacts()
+    fetchForCompany()
   }, [selectedCompanyId])
 
   function toggleMachine(machineId: string) {
@@ -109,10 +113,16 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="bg-[#F2BB01] hover:bg-[#B07830] text-white" />}>
-        <Plus className="size-4" data-icon="inline-start" />
-        Ny affär
-      </DialogTrigger>
+      {triggerStyle === 'icon' ? (
+        <DialogTrigger render={<Button variant="ghost" size="icon-sm" />}>
+          <Plus className="size-4" />
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger render={<Button className="bg-[#F2BB01] hover:bg-[#B07830] text-white" />}>
+          <Plus className="size-4" data-icon="inline-start" />
+          Ny affär
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Ny affär</DialogTitle>
@@ -188,6 +198,23 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
           </div>
 
           <div className="grid gap-2">
+            <Label htmlFor="deal-project">Projekt</Label>
+            <select
+              id="deal-project"
+              className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+              {...register('project_id')}
+              disabled={!selectedCompanyId}
+            >
+              <option value="">
+                {selectedCompanyId ? 'Inget projekt' : 'Välj företag först'}
+              </option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid gap-2">
             <Label htmlFor="deal-responsible">Ansvarig säljare</Label>
             <select
               id="deal-responsible"
@@ -219,13 +246,13 @@ export function NewDealDialog({ companies, resellers, users, machines }: NewDeal
 
           {resellers.length > 0 && (
             <div className="grid gap-2">
-              <Label htmlFor="deal-reseller">Återförsäljare</Label>
+              <Label htmlFor="deal-reseller">Agent</Label>
               <select
                 id="deal-reseller"
                 className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
                 {...register('reseller_id')}
               >
-                <option value="">Ingen återförsäljare</option>
+                <option value="">Ingen agent</option>
                 {resellers.map((r) => (
                   <option key={r.id} value={r.id}>{r.name}</option>
                 ))}

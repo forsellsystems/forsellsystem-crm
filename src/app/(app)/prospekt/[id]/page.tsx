@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Building2 } from 'lucide-react'
 import { getProspect } from '@/lib/queries/prospects'
 import { getNotes } from '@/lib/queries/notes'
+import { getProjects } from '@/lib/queries/projects'
 import { formatDate } from '@/lib/utils'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
@@ -14,6 +15,7 @@ import { MoveToCompanyButton } from '@/components/prospects/move-to-company-butt
 import { ProspectDescription } from '@/components/prospects/prospect-description'
 import { ProspectContactCard } from '@/components/prospects/prospect-contact-card'
 import { ProspectDetailsCard } from '@/components/prospects/prospect-details-card'
+import { ProjectsCard } from '@/components/projects/projects-card'
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   active: { label: 'Aktiv', variant: 'default' },
@@ -27,9 +29,10 @@ export default async function ProspektDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [prospect, notes] = await Promise.all([
+  const [prospect, notes, projects] = await Promise.all([
     getProspect(id),
     getNotes('prospect', id),
+    getProjects('prospect', id),
   ])
 
   if (!prospect) notFound()
@@ -99,8 +102,16 @@ export default async function ProspektDetailPage({
           />
         </div>
 
-        {/* Notes */}
-        <div className="lg:col-span-2">
+        {/* Right column */}
+        <div className="lg:col-span-2 space-y-6">
+          <ProjectsCard
+            entityType="prospect"
+            entityId={prospect.id}
+            projects={projects}
+            editable={prospect.status === 'active'}
+          />
+
+          {/* Notes */}
           <Card>
             <CardHeader>
               <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Anteckningar</CardTitle>

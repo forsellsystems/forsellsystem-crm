@@ -54,11 +54,11 @@ export function ResellerDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button size="sm" />}>
         <Plus className="size-3.5" data-icon="inline-start" />
-        Ny återförsäljare
+        Ny agent
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Ny återförsäljare</DialogTitle>
+          <DialogTitle>Ny agent</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-4">
@@ -106,7 +106,7 @@ export function ResellerDialog() {
 
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting || !name.trim()}>
-              {isSubmitting ? 'Sparar...' : 'Skapa återförsäljare'}
+              {isSubmitting ? 'Sparar...' : 'Skapa agent'}
             </Button>
           </DialogFooter>
         </form>

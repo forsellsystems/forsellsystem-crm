@@ -3,7 +3,7 @@ import type { Company, CompanyWithRelations, Contact, Deal } from '@/lib/types/d
 
 export async function getCompanies(filters?: {
   search?: string
-}): Promise<(Company & { responsible_name: string | null })[]> {
+}): Promise<(Company & { responsible_name: string | null; reseller_name: string | null })[]> {
   const supabase = await createClient()
   let query = supabase
     .from('companies')
@@ -20,11 +20,21 @@ export async function getCompanies(filters?: {
   const { data, error } = await query
   if (error) throw error
 
+  // Resolve agent (reseller) names via a lookup map (self-join not supported via PostgREST)
+  const { data: resellers } = await supabase
+    .from('companies')
+    .select('id, name')
+    .eq('is_reseller', true)
+  const resellerMap = new Map((resellers ?? []).map((r) => [r.id, r.name]))
+
   return (data ?? []).map((company) => ({
     ...company,
     responsible_name: (company.users as { name: string } | null)?.name ?? null,
+    reseller_name: company.reseller_id
+      ? (resellerMap.get(company.reseller_id) ?? null)
+      : null,
     users: undefined,
-  })) as (Company & { responsible_name: string | null })[]
+  })) as (Company & { responsible_name: string | null; reseller_name: string | null })[]
 }
 
 export async function getCompany(id: string): Promise<CompanyWithRelations | null> {
@@ -44,7 +54,7 @@ export async function getCompany(id: string): Promise<CompanyWithRelations | nul
       .order('name'),
     supabase
       .from('deals')
-      .select('*')
+      .select('*, reseller:companies!deals_reseller_id_fkey(name)')
       .eq('company_id', id)
       .order('created_at', { ascending: false }),
   ])
@@ -69,7 +79,11 @@ export async function getCompany(id: string): Promise<CompanyWithRelations | nul
     responsible_name: (company.users as { name: string } | null)?.name ?? null,
     reseller_name: resellerName,
     contacts: (contactsRes.data ?? []) as Contact[],
-    deals: (dealsRes.data ?? []) as Deal[],
+    deals: (dealsRes.data ?? []).map((d) => ({
+      ...d,
+      reseller_name: (d.reseller as { name: string } | null)?.name ?? null,
+      reseller: undefined,
+    })) as (Deal & { reseller_name: string | null })[],
   } as CompanyWithRelations
 }
 
@@ -90,6 +104,18 @@ export async function getCompaniesForSelect(): Promise<{ id: string; name: strin
   const { data, error } = await supabase
     .from('companies')
     .select('id, name')
+    .order('name')
+
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getCustomerCompaniesForSelect(): Promise<{ id: string; name: string }[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('companies')
+    .select('id, name')
+    .eq('is_reseller', false)
     .order('name')
 
   if (error) throw error

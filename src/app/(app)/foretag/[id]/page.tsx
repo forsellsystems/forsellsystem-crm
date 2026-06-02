@@ -8,9 +8,11 @@ import {
   User,
   Briefcase,
   Star,
+  Handshake,
 } from 'lucide-react'
 import { getCompany, getResellers } from '@/lib/queries/companies'
 import { getNotes } from '@/lib/queries/notes'
+import { getProjects } from '@/lib/queries/projects'
 import { getActiveUsers } from '@/lib/queries/users'
 import { getMachines } from '@/lib/queries/machines'
 import { PIPELINE_STAGES } from '@/lib/constants'
@@ -24,6 +26,7 @@ import { CompanyDescriptionCard } from '@/components/companies/company-descripti
 import { CompanyDetailsCard } from '@/components/companies/company-details-card'
 import { MoveToProspectButton } from '@/components/companies/move-to-prospect-button'
 import { NewDealDialog } from '@/components/pipeline/new-deal-dialog'
+import { ProjectsCard } from '@/components/projects/projects-card'
 
 export default async function ForetagDetailPage({
   params,
@@ -31,9 +34,10 @@ export default async function ForetagDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [company, notes, resellers, users, machines] = await Promise.all([
+  const [company, notes, projects, resellers, users, machines] = await Promise.all([
     getCompany(id),
     getNotes('company', id),
+    getProjects('company', id),
     getResellers(),
     getActiveUsers(),
     getMachines(),
@@ -67,12 +71,6 @@ export default async function ForetagDetailPage({
         </div>
         <div className="flex items-center gap-2">
           <MoveToProspectButton companyId={company.id} />
-          <NewDealDialog
-            companies={[{ id: company.id, name: company.name }]}
-            resellers={resellers}
-            users={users}
-            machines={machines}
-          />
           <DeleteCompanyButton companyId={company.id} companyName={company.name} />
         </div>
       </div>
@@ -87,7 +85,7 @@ export default async function ForetagDetailPage({
             description={company.description}
           />
 
-          <CompanyDetailsCard company={company} />
+          <CompanyDetailsCard company={company} resellers={resellers} />
 
           {/* Contacts */}
           <Card>
@@ -141,13 +139,30 @@ export default async function ForetagDetailPage({
 
         {/* Right column */}
         <div className="lg:col-span-2 space-y-6">
+          <ProjectsCard
+            entityType="company"
+            entityId={company.id}
+            projects={projects}
+          />
+
           {/* Deals */}
-          {company.deals && company.deals.length > 0 && (
-            <Card>
-              <CardHeader>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
                 <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Affärer</CardTitle>
-              </CardHeader>
-              <CardContent>
+                <NewDealDialog
+                  companies={[{ id: company.id, name: company.name }]}
+                  resellers={resellers}
+                  users={users}
+                  machines={machines}
+                  triggerStyle="icon"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              {!company.deals || company.deals.length === 0 ? (
+                <p className="text-sm text-[#6B6B6B]">Inga affärer ännu.</p>
+              ) : (
                 <div className="divide-y divide-[#B8B8B8]/40">
                   {company.deals.map((deal) => (
                     <Link
@@ -164,6 +179,12 @@ export default async function ForetagDetailPage({
                           <p className="text-xs text-[#6B6B6B]">
                             {formatDate(deal.created_at)}
                           </p>
+                          {deal.reseller_name && (
+                            <p className="flex items-center gap-1 text-[10px] text-[#D4A301] mt-0.5">
+                              <Handshake className="size-3 shrink-0" />
+                              {deal.reseller_name}
+                            </p>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -179,9 +200,9 @@ export default async function ForetagDetailPage({
                     </Link>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+            </CardContent>
+          </Card>
 
           {/* Notes */}
           <Card>

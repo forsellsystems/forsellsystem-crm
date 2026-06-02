@@ -26,6 +26,8 @@ export function ProspectDetailsCard({
     country: prospect.country,
   })
 
+  const isReseller = prospect.prospect_type === 'reseller'
+
   const factoryLabel =
     FACTORY_TYPES.find((ft) => ft.key === prospect.factory_type)?.label ?? null
 
@@ -69,41 +71,45 @@ export function ProspectDetailsCard({
       <CardContent>
         {editing ? (
           <div className="space-y-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="inline-factory" className="text-xs text-[#6B6B6B]">Fabrikstyp</Label>
-              <select
-                id="inline-factory"
-                className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
-                value={values.factory_type}
-                onChange={(e) => setValues((v) => ({ ...v, factory_type: e.target.value }))}
-              >
-                <option value="">Välj fabrikstyp</option>
-                {FACTORY_TYPES.map((ft) => (
-                  <option key={ft.key} value={ft.key}>{ft.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="grid gap-1.5">
-              <Label className="text-xs text-[#6B6B6B]">Byggnadstyp</Label>
-              <div className="flex gap-3">
-                {BUILDING_TYPES.map((bt) => (
-                  <label key={bt.key} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={values.building_types.includes(bt.key)}
-                      onChange={() => {
-                        const next = values.building_types.includes(bt.key)
-                          ? values.building_types.filter((k) => k !== bt.key)
-                          : [...values.building_types, bt.key]
-                        setValues((v) => ({ ...v, building_types: next }))
-                      }}
-                      className="accent-[#656565]"
-                    />
-                    {bt.label}
-                  </label>
-                ))}
+            {!isReseller && (
+              <div className="grid gap-1.5">
+                <Label htmlFor="inline-factory" className="text-xs text-[#6B6B6B]">Fabrikstyp</Label>
+                <select
+                  id="inline-factory"
+                  className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                  value={values.factory_type}
+                  onChange={(e) => setValues((v) => ({ ...v, factory_type: e.target.value }))}
+                >
+                  <option value="">Välj fabrikstyp</option>
+                  {FACTORY_TYPES.map((ft) => (
+                    <option key={ft.key} value={ft.key}>{ft.label}</option>
+                  ))}
+                </select>
               </div>
-            </div>
+            )}
+            {!isReseller && (
+              <div className="grid gap-1.5">
+                <Label className="text-xs text-[#6B6B6B]">Byggnadstyp</Label>
+                <div className="flex gap-3">
+                  {BUILDING_TYPES.map((bt) => (
+                    <label key={bt.key} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={values.building_types.includes(bt.key)}
+                        onChange={() => {
+                          const next = values.building_types.includes(bt.key)
+                            ? values.building_types.filter((k) => k !== bt.key)
+                            : [...values.building_types, bt.key]
+                          setValues((v) => ({ ...v, building_types: next }))
+                        }}
+                        className="accent-[#656565]"
+                      />
+                      {bt.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="grid gap-1.5">
               <Label htmlFor="inline-country" className="text-xs text-[#6B6B6B]">Land</Label>
               <select
@@ -128,13 +134,13 @@ export function ProspectDetailsCard({
           </div>
         ) : (
           <div className="space-y-3 text-sm">
-            {factoryLabel && (
+            {!isReseller && factoryLabel && (
               <div className="flex justify-between">
                 <span className="text-[#6B6B6B]">Fabrikstyp</span>
                 <span>{factoryLabel}</span>
               </div>
             )}
-            {buildingLabels && (
+            {!isReseller && buildingLabels && (
               <div className="flex justify-between">
                 <span className="text-[#6B6B6B]">Byggnadstyp</span>
                 <span>{buildingLabels}</span>

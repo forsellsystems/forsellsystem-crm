@@ -75,8 +75,8 @@ export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFo
       <CardHeader>
         <CardTitle>
           {isEditing
-            ? (isReseller ? 'Redigera återförsäljar-prospekt' : 'Redigera prospekt')
-            : (isReseller ? 'Återförsäljar-prospekt' : 'Prospektinformation')}
+            ? (isReseller ? 'Redigera agent-prospekt' : 'Redigera prospekt')
+            : (isReseller ? 'Agent-prospekt' : 'Prospektinformation')}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -95,27 +95,29 @@ export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFo
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="factory_type">Fabrikstyp</Label>
-              <select
-                id="factory_type"
-                className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
-                {...register('factory_type')}
-              >
-                <option value="">Välj fabrikstyp</option>
-                {FACTORY_TYPES.map((ft) => (
-                  <option key={ft.key} value={ft.key}>
-                    {ft.label}
-                  </option>
-                ))}
-              </select>
-              {errors.factory_type && (
-                <p className="text-xs text-[#8B3D3D]">
-                  {errors.factory_type.message}
-                </p>
-              )}
-            </div>
+          <div className={isReseller ? 'grid gap-2' : 'grid grid-cols-2 gap-4'}>
+            {!isReseller && (
+              <div className="grid gap-2">
+                <Label htmlFor="factory_type">Fabrikstyp</Label>
+                <select
+                  id="factory_type"
+                  className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                  {...register('factory_type')}
+                >
+                  <option value="">Välj fabrikstyp</option>
+                  {FACTORY_TYPES.map((ft) => (
+                    <option key={ft.key} value={ft.key}>
+                      {ft.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.factory_type && (
+                  <p className="text-xs text-[#8B3D3D]">
+                    {errors.factory_type.message}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div className="grid gap-2">
               <Label htmlFor="country">Land</Label>
@@ -136,30 +138,32 @@ export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFo
             </div>
           </div>
 
-          <div className="grid gap-2">
-            <Label>Byggnadstyp</Label>
-            <div className="flex gap-4">
-              {BUILDING_TYPES.map((bt) => {
-                const selected = watch('building_types') ?? []
-                return (
-                  <label key={bt.key} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selected.includes(bt.key)}
-                      onChange={() => {
-                        const next = selected.includes(bt.key)
-                          ? selected.filter((k: string) => k !== bt.key)
-                          : [...selected, bt.key]
-                        setValue('building_types', next)
-                      }}
-                      className="accent-[#656565]"
-                    />
-                    {bt.label}
-                  </label>
-                )
-              })}
+          {!isReseller && (
+            <div className="grid gap-2">
+              <Label>Byggnadstyp</Label>
+              <div className="flex gap-4">
+                {BUILDING_TYPES.map((bt) => {
+                  const selected = watch('building_types') ?? []
+                  return (
+                    <label key={bt.key} className="flex items-center gap-1.5 text-sm cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selected.includes(bt.key)}
+                        onChange={() => {
+                          const next = selected.includes(bt.key)
+                            ? selected.filter((k: string) => k !== bt.key)
+                            : [...selected, bt.key]
+                          setValue('building_types', next)
+                        }}
+                        className="accent-[#656565]"
+                      />
+                      {bt.label}
+                    </label>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="border-t border-[#B8B8B8]/40 pt-4 mt-2">
             <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B6B6B] mb-3">
@@ -211,7 +215,7 @@ export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFo
                 ? 'Sparar...'
                 : isEditing
                   ? 'Spara ändringar'
-                  : (isReseller ? 'Skapa återförsäljar-prospekt' : 'Skapa prospekt')}
+                  : (isReseller ? 'Skapa agent-prospekt' : 'Skapa prospekt')}
             </Button>
           </div>
         </form>

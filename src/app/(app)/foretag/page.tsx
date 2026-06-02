@@ -73,6 +73,7 @@ export default async function ForetagPage({
                   <TableHead>Kundnummer</TableHead>
                   <TableHead>Land</TableHead>
                   <TableHead>Ansvarig</TableHead>
+                  <TableHead>Agent</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -94,6 +95,13 @@ export default async function ForetagPage({
                     </TableCell>
                     <TableCell className="text-sm text-[#6B6B6B]">
                       {company.responsible_name ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {company.reseller_name ? (
+                        <span className="text-[#D4A301] font-medium">{company.reseller_name}</span>
+                      ) : (
+                        <span className="text-[#6B6B6B]">—</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
