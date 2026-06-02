@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { format } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'
 import {
   History,
@@ -8,10 +9,14 @@ import {
   UserPlus,
   Briefcase,
   FolderKanban,
+  Mail,
+  Phone,
+  Users,
+  FileText,
 } from 'lucide-react'
 import { getActivityLog, type ActivityLogEntry } from '@/lib/queries/activity'
 import { PIPELINE_STAGES } from '@/lib/constants'
-import { formatRelativeTime } from '@/lib/utils'
+import { formatTime, formatDayLabel } from '@/lib/utils'
 
 const stageLabel = (key?: string) =>
   PIPELINE_STAGES.find((s) => s.key === key)?.label ?? key ?? ''
@@ -25,7 +30,37 @@ const actionIcon: Record<string, typeof History> = {
   project_created: FolderKanban,
 }
 
-function EntryText({ entry }: { entry: ActivityLogEntry }) {
+const kindMeta: Record<string, { icon: typeof History; label: string }> = {
+  mejl: { icon: Mail, label: 'Mejl' },
+  samtal: { icon: Phone, label: 'Samtal' },
+  mote: { icon: Users, label: 'Möte' },
+  offert: { icon: FileText, label: 'Offert' },
+  notering: { icon: MessageSquare, label: 'Notering' },
+}
+
+// Which level (kund / prospekt / affär / projekt) the comment was added on
+const levelLabel = (entityType: string): string =>
+  ({
+    company: 'Kund',
+    prospect: 'Prospekt',
+    deal: 'Affär',
+    project: 'Projekt',
+    contact: 'Kontakt',
+  })[entityType] ?? entityType
+
+function ParentLink({ entry }: { entry: ActivityLogEntry }) {
+  const { label, href } = entry.metadata
+  if (!label) return null
+  return href ? (
+    <Link href={href} className="text-[#656565] hover:underline">
+      {label}
+    </Link>
+  ) : (
+    <span>{label}</span>
+  )
+}
+
+function NonNoteText({ entry }: { entry: ActivityLogEntry }) {
   const m = entry.metadata
   const label = m.href ? (
     <Link href={m.href} className="font-medium text-[#656565] hover:underline">
@@ -34,10 +69,7 @@ function EntryText({ entry }: { entry: ActivityLogEntry }) {
   ) : (
     <span className="font-medium">{m.label}</span>
   )
-
   switch (entry.action) {
-    case 'note_added':
-      return <>La till kommentar på {label}</>
     case 'deal_stage_changed':
       return (
         <>
@@ -57,54 +89,116 @@ function EntryText({ entry }: { entry: ActivityLogEntry }) {
   }
 }
 
+function EntryRow({ entry }: { entry: ActivityLogEntry }) {
+  const isNote = entry.action === 'note_added'
+  const ai = isNote ? entry.metadata.ai : undefined
+  const Icon = ai
+    ? kindMeta[ai.kind]?.icon ?? MessageSquare
+    : actionIcon[entry.action] ?? History
+
+  return (
+    <div className="flex gap-3">
+      <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-[#F2F2F0]">
+        <Icon className="size-3.5 text-[#656565]" />
+      </div>
+      <div className="min-w-0 space-y-0.5">
+        {isNote ? (
+          <>
+            <p className="text-sm text-[#1A1A1A]">
+              {ai
+                ? `${kindMeta[ai.kind]?.label ?? 'Notering'}${ai.person ? ` till ${ai.person}` : ''}`
+                : 'La till kommentar'}
+            </p>
+            {ai?.summary?.trim() ? (
+              <p className="text-sm text-[#6B6B6B]">{ai.summary}</p>
+            ) : entry.metadata.snippet ? (
+              <p className="text-xs text-[#6B6B6B] italic truncate">
+                &ldquo;{entry.metadata.snippet}&rdquo;
+              </p>
+            ) : null}
+            <div className="flex items-center gap-2 text-xs text-[#6B6B6B] flex-wrap">
+              <span>
+                {levelLabel(entry.entity_type)}: <ParentLink entry={entry} />
+              </span>
+              <span>&middot;</span>
+              <span>{entry.user_name ?? 'System'}</span>
+              <span>&middot;</span>
+              <span>{formatTime(entry.created_at)}</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-[#1A1A1A]">
+              <NonNoteText entry={entry} />
+            </p>
+            <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
+              <span>{entry.user_name ?? 'System'}</span>
+              <span>&middot;</span>
+              <span>{formatTime(entry.created_at)}</span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+type DayGroup = { key: string; label: string; entries: ActivityLogEntry[] }
+
+function groupByDay(entries: ActivityLogEntry[]): DayGroup[] {
+  const groups: DayGroup[] = []
+  for (const entry of entries) {
+    const key = format(new Date(entry.created_at), 'yyyy-MM-dd')
+    const last = groups[groups.length - 1]
+    if (!last || last.key !== key) {
+      groups.push({ key, label: formatDayLabel(entry.created_at), entries: [entry] })
+    } else {
+      last.entries.push(entry)
+    }
+  }
+  return groups
+}
+
 export default async function LoggPage() {
   const entries = await getActivityLog()
+  const groups = groupByDay(entries)
 
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div>
         <h2 className="font-display text-3xl text-[#1A1A1A]">Logg</h2>
-        <p className="text-sm text-[#6B6B6B] mt-1">Senaste försäljningsaktiviteterna</p>
+        <p className="text-sm text-[#6B6B6B] mt-1">Försäljningsaktivitet per dag</p>
       </div>
 
-      <Card>
-        <CardContent>
-          {entries.length === 0 ? (
+      {entries.length === 0 ? (
+        <Card>
+          <CardContent>
             <div className="flex flex-col items-center justify-center py-12 text-[#6B6B6B]">
               <History className="h-12 w-12 mb-4 text-[#B8B8B8]" />
               <p className="text-sm">Ingen aktivitet ännu.</p>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {entries.map((entry) => {
-                const Icon = actionIcon[entry.action] ?? History
-                return (
-                  <div key={entry.id} className="flex gap-3">
-                    <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-[#F2F2F0]">
-                      <Icon className="size-3.5 text-[#656565]" />
-                    </div>
-                    <div className="min-w-0 space-y-0.5">
-                      <p className="text-sm text-[#1A1A1A]">
-                        <EntryText entry={entry} />
-                      </p>
-                      {entry.action === 'note_added' && entry.metadata.snippet && (
-                        <p className="text-xs text-[#6B6B6B] italic truncate">
-                          &ldquo;{entry.metadata.snippet}&rdquo;
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
-                        <span>{entry.user_name ?? 'System'}</span>
-                        <span>&middot;</span>
-                        <span>{formatRelativeTime(entry.created_at)}</span>
-                      </div>
-                    </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
+          {groups.map((group) => (
+            <div key={group.key}>
+              <h3 className="font-condensed text-xs uppercase tracking-[0.12em] text-[#6B6B6B] mb-3">
+                {group.label}
+              </h3>
+              <Card>
+                <CardContent>
+                  <div className="space-y-4">
+                    {group.entries.map((entry) => (
+                      <EntryRow key={entry.id} entry={entry} />
+                    ))}
                   </div>
-                )
-              })}
+                </CardContent>
+              </Card>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

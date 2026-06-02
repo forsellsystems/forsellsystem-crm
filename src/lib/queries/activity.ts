@@ -11,6 +11,11 @@ export type ActivityLogEntry = {
     snippet?: string
     from?: string
     to?: string
+    ai?: {
+      kind: string
+      person: string | null
+      summary: string
+    }
   }
   user_name: string | null
   created_at: string

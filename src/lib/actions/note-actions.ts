@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { noteSchema, type NoteFormData } from '@/lib/validations'
 import { getCurrentUserId, logActivity } from '@/lib/actions/activity-actions'
+import { analyzeComment } from '@/lib/ai/analyze-comment'
 
 type DbClient = Awaited<ReturnType<typeof createClient>>
 
@@ -80,6 +81,7 @@ export async function createNote(data: NoteFormData) {
   if (error) throw new Error(`Kunde inte spara anteckning: ${error.message}`)
 
   const parent = await resolveNoteParent(supabase, validated.entity_type, validated.entity_id)
+  const ai = await analyzeComment(validated.content)
   await logActivity(supabase, {
     action: 'note_added',
     entity_type: validated.entity_type,
@@ -88,6 +90,7 @@ export async function createNote(data: NoteFormData) {
       label: parent.label,
       href: parent.href,
       snippet: validated.content.slice(0, 80),
+      ai: ai ?? undefined,
     },
   })
 

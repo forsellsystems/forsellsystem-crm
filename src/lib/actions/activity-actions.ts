@@ -8,6 +8,11 @@ export type ActivityMetadata = {
   snippet?: string
   from?: string
   to?: string
+  ai?: {
+    kind: string
+    person: string | null
+    summary: string
+  }
 }
 
 /** Resolve the current public.users.id from the authenticated session (via auth_id). */
