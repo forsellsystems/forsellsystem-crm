@@ -55,6 +55,7 @@ export type Prospect = {
   email: string | null;
   phone: string | null;
   status: "active" | "converted" | "archived";
+  reseller_id: string | null;
   converted_at: string | null;
   converted_company_id: string | null;
   converted_deal_id: string | null;

@@ -14,9 +14,11 @@ import type { Prospect } from '@/lib/types/database'
 export function ProspectDetailsCard({
   prospect,
   editable = true,
+  resellers = [],
 }: {
   prospect: Prospect
   editable?: boolean
+  resellers?: { id: string; name: string }[]
 }) {
   const [editing, setEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -24,12 +26,17 @@ export function ProspectDetailsCard({
     factory_type: prospect.factory_type ?? '',
     building_types: prospect.building_types ?? [] as string[],
     country: prospect.country,
+    reseller_id: prospect.reseller_id ?? '',
   })
 
   const isReseller = prospect.prospect_type === 'reseller'
 
   const factoryLabel =
     FACTORY_TYPES.find((ft) => ft.key === prospect.factory_type)?.label ?? null
+
+  const resellerName = prospect.reseller_id
+    ? resellers.find((r) => r.id === prospect.reseller_id)?.name ?? null
+    : null
 
   const buildingLabels = (prospect.building_types ?? [])
     .map((key) => BUILDING_TYPES.find((bt) => bt.key === key)?.label)
@@ -41,6 +48,7 @@ export function ProspectDetailsCard({
       factory_type: prospect.factory_type ?? '',
       building_types: prospect.building_types ?? [],
       country: prospect.country,
+      reseller_id: prospect.reseller_id ?? '',
     })
     setEditing(true)
   }
@@ -123,6 +131,22 @@ export function ProspectDetailsCard({
                 ))}
               </select>
             </div>
+            {!isReseller && resellers.length > 0 && (
+              <div className="grid gap-1.5">
+                <Label htmlFor="inline-reseller" className="text-xs text-[#6B6B6B]">Agent</Label>
+                <select
+                  id="inline-reseller"
+                  className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                  value={values.reseller_id}
+                  onChange={(e) => setValues((v) => ({ ...v, reseller_id: e.target.value }))}
+                >
+                  <option value="">Ingen agent</option>
+                  {resellers.map((r) => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="flex justify-end gap-1">
               <Button variant="ghost" size="icon-sm" onClick={handleCancel} disabled={isPending}>
                 <X className="size-4" />
@@ -150,6 +174,12 @@ export function ProspectDetailsCard({
               <span className="text-[#6B6B6B]">Land</span>
               <span>{prospect.country}</span>
             </div>
+            {!isReseller && resellerName && (
+              <div className="flex justify-between">
+                <span className="text-[#6B6B6B]">Agent</span>
+                <span className="text-[#D4A301] font-medium">{resellerName}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Skapad</span>
               <span>{formatDate(prospect.created_at)}</span>

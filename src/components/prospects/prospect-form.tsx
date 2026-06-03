@@ -15,9 +15,10 @@ import type { Prospect } from '@/lib/types/database'
 interface ProspectFormProps {
   prospect?: Prospect
   prospectType?: 'customer' | 'reseller'
+  resellers?: { id: string; name: string }[]
 }
 
-export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFormProps) {
+export function ProspectForm({ prospect, prospectType = 'customer', resellers = [] }: ProspectFormProps) {
   const [error, setError] = useState<string | null>(null)
   const isEditing = !!prospect
   const effectiveType = prospect?.prospect_type ?? prospectType
@@ -40,6 +41,7 @@ export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFo
           contact_person: prospect.contact_person ?? '',
           email: prospect.email ?? '',
           phone: prospect.phone ?? '',
+          reseller_id: prospect.reseller_id ?? '',
         }
       : {
           company_name: '',
@@ -50,6 +52,7 @@ export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFo
           contact_person: '',
           email: '',
           phone: '',
+          reseller_id: '',
         },
   })
 
@@ -162,6 +165,24 @@ export function ProspectForm({ prospect, prospectType = 'customer' }: ProspectFo
                   )
                 })}
               </div>
+            </div>
+          )}
+
+          {!isReseller && resellers.length > 0 && (
+            <div className="grid gap-2">
+              <Label htmlFor="reseller_id">Agent</Label>
+              <select
+                id="reseller_id"
+                className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                {...register('reseller_id')}
+              >
+                <option value="">Ingen agent</option>
+                {resellers.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 

@@ -22,6 +22,7 @@ export async function createProspect(data: ProspectFormData) {
       contact_person: validated.contact_person || null,
       email: validated.email || null,
       phone: validated.phone || null,
+      reseller_id: validated.reseller_id || null,
     })
     .select('id')
     .single()
@@ -55,6 +56,7 @@ export async function updateProspect(id: string, data: ProspectFormData) {
       email: validated.email || null,
       phone: validated.phone || null,
       description: validated.description || null,
+      reseller_id: validated.reseller_id || null,
     })
     .eq('id', id)
 
@@ -67,7 +69,7 @@ export async function updateProspect(id: string, data: ProspectFormData) {
 
 export async function updateProspectFields(
   id: string,
-  fields: Partial<Record<'contact_person' | 'email' | 'phone' | 'website' | 'description' | 'factory_type' | 'country', string | null> & { building_types: string[] }>
+  fields: Partial<Record<'contact_person' | 'email' | 'phone' | 'website' | 'description' | 'factory_type' | 'country' | 'reseller_id', string | null> & { building_types: string[] }>
 ) {
   const supabase = await createClient()
 
@@ -118,6 +120,7 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
       phone: prospect.phone || null,
       website: prospect.website || null,
       description: prospect.description || null,
+      reseller_id: prospect.reseller_id || null,
       prospect_id: prospectId,
       is_reseller: isReseller,
     })

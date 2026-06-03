@@ -2,8 +2,11 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { ProspectForm } from '@/components/prospects/prospect-form'
+import { getResellers } from '@/lib/queries/companies'
 
-export default function NyttProspektPage() {
+export default async function NyttProspektPage() {
+  const resellers = await getResellers()
+
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center gap-4">
@@ -14,7 +17,7 @@ export default function NyttProspektPage() {
         </Link>
         <h2 className="font-display text-3xl text-[#1A1A1A]">Nytt prospekt</h2>
       </div>
-      <ProspectForm />
+      <ProspectForm resellers={resellers} />
     </div>
   )
 }

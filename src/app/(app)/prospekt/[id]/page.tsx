@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Building2 } from 'lucide-react'
 import { getProspect } from '@/lib/queries/prospects'
+import { getResellers } from '@/lib/queries/companies'
 import { getNotes } from '@/lib/queries/notes'
 import { getProjects } from '@/lib/queries/projects'
 import { formatDate } from '@/lib/utils'
@@ -29,10 +30,11 @@ export default async function ProspektDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [prospect, notes, projects] = await Promise.all([
+  const [prospect, notes, projects, resellers] = await Promise.all([
     getProspect(id),
     getNotes('prospect', id),
     getProjects('prospect', id),
+    getResellers(),
   ])
 
   if (!prospect) notFound()
@@ -99,6 +101,7 @@ export default async function ProspektDetailPage({
           <ProspectDetailsCard
             prospect={prospect}
             editable={prospect.status === 'active'}
+            resellers={resellers}
           />
         </div>
 

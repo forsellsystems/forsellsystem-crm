@@ -110,6 +110,7 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
       phone: primaryContact?.phone || company.phone || null,
       website: company.website || null,
       description: company.description || null,
+      reseller_id: company.reseller_id || null,
       status: 'active',
     })
     .select('id')

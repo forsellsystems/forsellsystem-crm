@@ -36,6 +36,7 @@ export const prospectSchema = z.object({
   email: z.string().email('Ogiltig e-postadress').optional().or(z.literal('')),
   phone: z.string().optional(),
   description: z.string().optional(),
+  reseller_id: z.string().uuid().optional().or(z.literal('')),
 })
 
 export type ProspectFormData = z.infer<typeof prospectSchema>
