@@ -16,7 +16,7 @@ export type Company = {
   name: string;
   customer_number: string | null;
   org_number: string | null;
-  factory_type: "modulfabrik" | "vagg_tak_fabrik" | null;
+  factory_type: "modulfabrik" | "vagg_tak_fabrik" | "badrum" | null;
   building_types: string[];
   country: string;
   phone: string | null;
@@ -48,7 +48,7 @@ export type Prospect = {
   id: string;
   company_name: string;
   prospect_type: "customer" | "reseller";
-  factory_type: "modulfabrik" | "vagg_tak_fabrik" | null;
+  factory_type: "modulfabrik" | "vagg_tak_fabrik" | "badrum" | null;
   building_types: string[];
   country: string;
   contact_person: string | null;

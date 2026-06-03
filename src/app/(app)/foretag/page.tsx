@@ -13,6 +13,7 @@ import { Plus, Building2 } from 'lucide-react'
 import { getCompanies } from '@/lib/queries/companies'
 import { CompanySearch } from '@/components/companies/company-search'
 import { ListTabs } from '@/components/layout/list-tabs'
+import { FACTORY_TYPES } from '@/lib/constants'
 import { Suspense } from 'react'
 
 const CUSTOMER_TABS = [
@@ -20,13 +21,19 @@ const CUSTOMER_TABS = [
   { label: 'Prospekt', href: '/prospekt' },
 ]
 
+const getFactoryLabel = (key: string | null) =>
+  FACTORY_TYPES.find((ft) => ft.key === key)?.label ?? '—'
+
 export default async function ForetagPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string }>
+  searchParams: Promise<{ search?: string; factory_type?: string }>
 }) {
   const params = await searchParams
-  const companies = await getCompanies({ search: params.search })
+  const companies = await getCompanies({
+    search: params.search,
+    factory_type: params.factory_type,
+  })
 
   return (
     <div className="space-y-6 animate-fade-in-up">
@@ -71,6 +78,7 @@ export default async function ForetagPage({
                 <TableRow>
                   <TableHead>Kund</TableHead>
                   <TableHead>Kundnummer</TableHead>
+                  <TableHead>Fabrikstyp</TableHead>
                   <TableHead>Land</TableHead>
                   <TableHead>Ansvarig</TableHead>
                   <TableHead>Agent</TableHead>
@@ -89,6 +97,9 @@ export default async function ForetagPage({
                     </TableCell>
                     <TableCell className="text-sm text-[#6B6B6B]">
                       {company.customer_number ?? '—'}
+                    </TableCell>
+                    <TableCell className="text-sm text-[#6B6B6B]">
+                      {getFactoryLabel(company.factory_type)}
                     </TableCell>
                     <TableCell className="text-sm text-[#6B6B6B]">
                       {company.country}

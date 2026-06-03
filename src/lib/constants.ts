@@ -17,6 +17,7 @@ export type DealHeat = (typeof DEAL_HEAT_LEVELS)[number]["value"];
 export const FACTORY_TYPES = [
   { key: "modulfabrik", label: "Modulfabrik" },
   { key: "vagg_tak_fabrik", label: "Vägg & takfabrik" },
+  { key: "badrum", label: "Badrum" },
 ] as const;
 
 export type FactoryType = (typeof FACTORY_TYPES)[number]["key"];

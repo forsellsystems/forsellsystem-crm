@@ -3,19 +3,20 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback } from 'react'
 import { Input } from '@/components/ui/input'
+import { FACTORY_TYPES } from '@/lib/constants'
 import { Search } from 'lucide-react'
 
 export function CompanySearch() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const updateSearch = useCallback(
-    (value: string) => {
+  const updateFilter = useCallback(
+    (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
-      if (value) {
-        params.set('search', value)
+      if (value && value !== 'all') {
+        params.set(key, value)
       } else {
-        params.delete('search')
+        params.delete(key)
       }
       router.push(`/foretag?${params.toString()}`)
     },
@@ -23,14 +24,29 @@ export function CompanySearch() {
   )
 
   return (
-    <div className="relative max-w-sm">
-      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#6B6B6B]" />
-      <Input
-        placeholder="Sök företag eller kundnummer..."
-        defaultValue={searchParams.get('search') ?? ''}
-        onChange={(e) => updateSearch(e.target.value)}
-        className="pl-9"
-      />
+    <div className="flex flex-wrap items-center gap-3">
+      <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-[#6B6B6B]" />
+        <Input
+          placeholder="Sök företag eller kundnummer..."
+          defaultValue={searchParams.get('search') ?? ''}
+          onChange={(e) => updateFilter('search', e.target.value)}
+          className="pl-9"
+        />
+      </div>
+
+      <select
+        className="flex h-8 rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+        defaultValue={searchParams.get('factory_type') ?? 'all'}
+        onChange={(e) => updateFilter('factory_type', e.target.value)}
+      >
+        <option value="all">Alla fabrikstyper</option>
+        {FACTORY_TYPES.map((ft) => (
+          <option key={ft.key} value={ft.key}>
+            {ft.label}
+          </option>
+        ))}
+      </select>
     </div>
   )
 }

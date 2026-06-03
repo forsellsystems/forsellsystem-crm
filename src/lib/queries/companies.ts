@@ -3,6 +3,7 @@ import type { Company, CompanyWithRelations, Contact, Deal } from '@/lib/types/d
 
 export async function getCompanies(filters?: {
   search?: string
+  factory_type?: string
 }): Promise<(Company & { responsible_name: string | null; reseller_name: string | null })[]> {
   const supabase = await createClient()
   let query = supabase
@@ -15,6 +16,9 @@ export async function getCompanies(filters?: {
     query = query.or(
       `name.ilike.%${filters.search}%,customer_number.ilike.%${filters.search}%`
     )
+  }
+  if (filters?.factory_type && filters.factory_type !== 'all') {
+    query = query.eq('factory_type', filters.factory_type)
   }
 
   const { data, error } = await query
