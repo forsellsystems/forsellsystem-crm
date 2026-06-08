@@ -111,7 +111,12 @@ function NoteRow({ entry }: { entry: ActivityLogEntry }) {
 
 function MeetingRow({ entry }: { entry: ActivityLogEntry }) {
   const m = entry.metadata
-  const date = m.meeting_date ? formatDate(m.meeting_date) : null
+  const time = m.meeting_time ? m.meeting_time.slice(0, 5) : null
+  const date = m.meeting_date
+    ? `${formatDate(m.meeting_date)}${time ? ` kl ${time}` : ''}`
+    : time
+      ? `kl ${time}`
+      : null
   const secondary = [date, m.snippet].filter(Boolean).join(' · ')
   const heading = `Möte${m.title ? `: ${m.title}` : ''}`
 

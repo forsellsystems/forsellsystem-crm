@@ -139,6 +139,7 @@ export type Meeting = {
   entity_id: string | null;
   title: string | null;
   meeting_date: string | null;
+  meeting_time: string | null;
   status: string | null;
   agenda: string | null;
   notes: string | null;

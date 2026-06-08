@@ -11,6 +11,7 @@ import { MEETING_STATUSES } from '@/lib/constants'
 export type MeetingFormValues = {
   title: string
   meeting_date: string
+  meeting_time: string
   status: string
   agenda: string
   notes: string
@@ -33,6 +34,7 @@ export function MeetingForm({
   const [values, setValues] = useState<MeetingFormValues>({
     title: initial?.title ?? '',
     meeting_date: initial?.meeting_date ?? '',
+    meeting_time: initial?.meeting_time ?? '',
     status: initial?.status ?? '',
     agenda: initial?.agenda ?? '',
     notes: initial?.notes ?? '',
@@ -59,18 +61,27 @@ export function MeetingForm({
           />
         </div>
         <div className="grid gap-1.5">
-          <Label className="text-xs text-[#6B6B6B]">Status</Label>
-          <select
-            className={selectClass}
-            value={values.status}
-            onChange={(e) => setValues((v) => ({ ...v, status: e.target.value }))}
-          >
-            <option value="">Välj status</option>
-            {MEETING_STATUSES.map((s) => (
-              <option key={s.key} value={s.key}>{s.label}</option>
-            ))}
-          </select>
+          <Label className="text-xs text-[#6B6B6B]">Tid (valfritt)</Label>
+          <Input
+            type="time"
+            value={values.meeting_time}
+            onChange={(e) => setValues((v) => ({ ...v, meeting_time: e.target.value }))}
+          />
         </div>
+      </div>
+
+      <div className="grid gap-1.5">
+        <Label className="text-xs text-[#6B6B6B]">Status</Label>
+        <select
+          className={selectClass}
+          value={values.status}
+          onChange={(e) => setValues((v) => ({ ...v, status: e.target.value }))}
+        >
+          <option value="">Välj status</option>
+          {MEETING_STATUSES.map((s) => (
+            <option key={s.key} value={s.key}>{s.label}</option>
+          ))}
+        </select>
       </div>
 
       <div className="grid gap-1.5">

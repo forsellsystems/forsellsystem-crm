@@ -66,7 +66,7 @@ async function syncMeetingActivity(
   try {
     const { data: m } = await supabase
       .from('meetings')
-      .select('title, meeting_date, notes, agenda')
+      .select('title, meeting_date, meeting_time, notes, agenda')
       .eq('id', meetingId)
       .single()
     if (!m) return
@@ -92,6 +92,7 @@ async function syncMeetingActivity(
       parent_href: parent.href || undefined,
       title: m.title?.trim() || undefined,
       meeting_date: m.meeting_date,
+      meeting_time: m.meeting_time || undefined,
       snippet: (m.notes?.trim() || m.agenda?.trim() || '').slice(0, 80) || undefined,
     }
     // Date the log row at the meeting's date (noon UTC avoids day-boundary drift).
@@ -129,6 +130,7 @@ export async function createMeeting(data: MeetingFormData): Promise<string> {
       entity_id: validated.entity_id ?? null,
       title: validated.title || null,
       meeting_date: validated.meeting_date || null,
+      meeting_time: validated.meeting_time || null,
       status: validated.status || null,
       agenda: validated.agenda || null,
       notes: validated.notes || null,
@@ -148,7 +150,7 @@ export async function updateMeeting(
   id: string,
   entityType: string | null,
   entityId: string | null,
-  fields: Partial<Record<'title' | 'meeting_date' | 'status' | 'agenda' | 'notes', string | null>>
+  fields: Partial<Record<'title' | 'meeting_date' | 'meeting_time' | 'status' | 'agenda' | 'notes', string | null>>
 ) {
   const supabase = await createClient()
 

@@ -12,6 +12,7 @@ export type ActivityLogEntry = {
     from?: string
     to?: string
     meeting_date?: string
+    meeting_time?: string
     title?: string
     parent_href?: string
     ai?: {

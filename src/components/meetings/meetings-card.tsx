@@ -71,7 +71,10 @@ export function MeetingsCard({
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {m.title?.trim() && m.meeting_date && (
-                      <span className="text-xs text-[#6B6B6B]">{formatDate(m.meeting_date)}</span>
+                      <span className="text-xs text-[#6B6B6B]">
+                        {formatDate(m.meeting_date)}
+                        {m.meeting_time ? ` ${m.meeting_time.slice(0, 5)}` : ''}
+                      </span>
                     )}
                     <ChevronRight className="size-4 text-[#B8B8B8]" />
                   </div>

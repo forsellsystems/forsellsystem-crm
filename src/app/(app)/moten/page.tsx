@@ -102,7 +102,12 @@ export default async function MotenPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-sm text-[#6B6B6B]">
-                        {m.meeting_date ? formatDate(m.meeting_date) : '—'}
+                        {[
+                          m.meeting_date ? formatDate(m.meeting_date) : null,
+                          m.meeting_time ? m.meeting_time.slice(0, 5) : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' ') || '—'}
                       </TableCell>
                       <TableCell className="text-sm text-[#6B6B6B]">
                         {status ? (

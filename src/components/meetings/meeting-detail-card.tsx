@@ -22,6 +22,7 @@ export function MeetingDetailCard({
   const isEmpty =
     !meeting.title?.trim() &&
     !meeting.meeting_date &&
+    !meeting.meeting_time &&
     !meeting.status &&
     !meeting.agenda?.trim() &&
     !meeting.notes?.trim()
@@ -31,12 +32,21 @@ export function MeetingDetailCard({
   const router = useRouter()
 
   const status = MEETING_STATUSES.find((s) => s.key === meeting.status)
+  const timeStr = meeting.meeting_time ? meeting.meeting_time.slice(0, 5) : null
+  const whenStr =
+    [
+      meeting.meeting_date ? formatDate(meeting.meeting_date) : null,
+      timeStr ? `kl ${timeStr}` : null,
+    ]
+      .filter(Boolean)
+      .join(' ') || '—'
 
   function handleSave(values: MeetingFormValues) {
     startTransition(async () => {
       await updateMeeting(meeting.id, meeting.entity_type, meeting.entity_id, {
         title: values.title || null,
         meeting_date: values.meeting_date || null,
+        meeting_time: values.meeting_time || null,
         status: values.status || null,
         agenda: values.agenda || null,
         notes: values.notes || null,
@@ -89,6 +99,7 @@ export function MeetingDetailCard({
             initial={{
               title: meeting.title ?? '',
               meeting_date: meeting.meeting_date ?? '',
+              meeting_time: meeting.meeting_time ? meeting.meeting_time.slice(0, 5) : '',
               status: meeting.status ?? '',
               agenda: meeting.agenda ?? '',
               notes: meeting.notes ?? '',
@@ -101,7 +112,7 @@ export function MeetingDetailCard({
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Datum</span>
-              <span>{meeting.meeting_date ? formatDate(meeting.meeting_date) : '—'}</span>
+              <span>{whenStr}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-[#6B6B6B]">Status</span>

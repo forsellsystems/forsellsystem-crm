@@ -123,6 +123,7 @@ export const meetingSchema = z.object({
   entity_id: z.string().uuid().optional(),
   title: z.string().optional(),
   meeting_date: z.string().optional().or(z.literal('')),
+  meeting_time: z.string().optional().or(z.literal('')),
   status: z.string().optional().or(z.literal('')),
   agenda: z.string().optional(),
   notes: z.string().optional(),
