@@ -119,8 +119,8 @@ export type ProjectFormData = z.infer<typeof projectSchema>
 // MEETINGS
 // ============================================
 export const meetingSchema = z.object({
-  entity_type: z.enum(['prospect', 'company']),
-  entity_id: z.string().uuid(),
+  entity_type: z.enum(['prospect', 'company']).optional(),
+  entity_id: z.string().uuid().optional(),
   title: z.string().optional(),
   meeting_date: z.string().optional().or(z.literal('')),
   status: z.string().optional().or(z.literal('')),

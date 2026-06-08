@@ -90,12 +90,16 @@ export default async function MotenPage() {
                         </Link>
                       </TableCell>
                       <TableCell className="text-sm">
-                        <Link
-                          href={m.entity_href}
-                          className="text-[#6B6B6B] hover:underline"
-                        >
-                          {m.entity_name}
-                        </Link>
+                        {m.entity_href ? (
+                          <Link
+                            href={m.entity_href}
+                            className="text-[#6B6B6B] hover:underline"
+                          >
+                            {m.entity_name}
+                          </Link>
+                        ) : (
+                          <span className="text-[#9A9A9A]">{m.entity_name}</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-sm text-[#6B6B6B]">
                         {m.meeting_date ? formatDate(m.meeting_date) : '—'}

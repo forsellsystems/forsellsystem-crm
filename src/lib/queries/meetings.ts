@@ -3,7 +3,7 @@ import type { Meeting, Todo } from '@/lib/types/database'
 
 export type MeetingWithEntity = Meeting & {
   entity_name: string
-  entity_href: string
+  entity_href: string | null
 }
 
 export type MeetingWithDetails = MeetingWithEntity & {
@@ -47,9 +47,9 @@ export async function getMeeting(id: string): Promise<MeetingWithDetails | null>
 
   if (error || !meeting) return null
 
-  let entity_name = 'Okänt'
-  let entity_href = '#'
-  if (meeting.entity_type === 'company') {
+  let entity_name = 'Internt'
+  let entity_href: string | null = null
+  if (meeting.entity_type === 'company' && meeting.entity_id) {
     const { data } = await supabase
       .from('companies')
       .select('name, is_reseller')
@@ -57,7 +57,7 @@ export async function getMeeting(id: string): Promise<MeetingWithDetails | null>
       .single()
     entity_name = data?.name ?? 'Okänt'
     entity_href = companyHref(meeting.entity_id, data?.is_reseller ?? false)
-  } else {
+  } else if (meeting.entity_type === 'prospect' && meeting.entity_id) {
     const { data } = await supabase
       .from('prospects')
       .select('company_name, prospect_type')
@@ -106,7 +106,7 @@ export async function getAllMeetings(): Promise<MeetingWithEntity[]> {
   )
 
   return meetings.map((m) => {
-    if (m.entity_type === 'company') {
+    if (m.entity_type === 'company' && m.entity_id) {
       const c = companyMap.get(m.entity_id)
       return {
         ...m,
@@ -114,11 +114,14 @@ export async function getAllMeetings(): Promise<MeetingWithEntity[]> {
         entity_href: companyHref(m.entity_id, c?.is_reseller ?? false),
       }
     }
-    const p = prospectMap.get(m.entity_id)
-    return {
-      ...m,
-      entity_name: p?.company_name ?? 'Okänt',
-      entity_href: prospectHref(m.entity_id, p?.prospect_type ?? 'customer'),
+    if (m.entity_type === 'prospect' && m.entity_id) {
+      const p = prospectMap.get(m.entity_id)
+      return {
+        ...m,
+        entity_name: p?.company_name ?? 'Okänt',
+        entity_href: prospectHref(m.entity_id, p?.prospect_type ?? 'customer'),
+      }
     }
+    return { ...m, entity_name: 'Internt', entity_href: null }
   })
 }

@@ -7,13 +7,15 @@ import { getCurrentUserId, deleteActivityForEntity } from '@/lib/actions/activit
 
 // Meetings live on all four entity surfaces, so we revalidate both candidate
 // detail-page paths for the entity (revalidating a non-matching path is a no-op).
-function revalidateEntity(entityType: string, entityId: string) {
-  if (entityType === 'company') {
-    revalidatePath(`/foretag/${entityId}`)
-    revalidatePath(`/aterforsaljare/${entityId}`)
-  } else {
-    revalidatePath(`/prospekt/${entityId}`)
-    revalidatePath(`/aterforsaljar-prospekt/${entityId}`)
+function revalidateEntity(entityType: string | null, entityId: string | null) {
+  if (entityType && entityId) {
+    if (entityType === 'company') {
+      revalidatePath(`/foretag/${entityId}`)
+      revalidatePath(`/aterforsaljare/${entityId}`)
+    } else {
+      revalidatePath(`/prospekt/${entityId}`)
+      revalidatePath(`/aterforsaljar-prospekt/${entityId}`)
+    }
   }
   revalidatePath('/moten')
 }
@@ -24,9 +26,10 @@ type DbClient = Awaited<ReturnType<typeof createClient>>
 // differs for kund/agent and kund-/agent-prospekt — same logic as queries/meetings.ts).
 async function resolveParent(
   supabase: DbClient,
-  entityType: string,
-  entityId: string
-): Promise<{ name: string; href: string }> {
+  entityType: string | null,
+  entityId: string | null
+): Promise<{ name: string; href: string | null }> {
+  if (!entityType || !entityId) return { name: 'Internt', href: null }
   if (entityType === 'company') {
     const { data } = await supabase
       .from('companies')
@@ -57,8 +60,8 @@ async function resolveParent(
 async function syncMeetingActivity(
   supabase: DbClient,
   meetingId: string,
-  entityType: string,
-  entityId: string
+  entityType: string | null,
+  entityId: string | null
 ) {
   try {
     const { data: m } = await supabase
@@ -86,7 +89,7 @@ async function syncMeetingActivity(
     const metadata = {
       label: parent.name,
       href: `/moten/${meetingId}`,
-      parent_href: parent.href,
+      parent_href: parent.href || undefined,
       title: m.title?.trim() || undefined,
       meeting_date: m.meeting_date,
       snippet: (m.notes?.trim() || m.agenda?.trim() || '').slice(0, 80) || undefined,
@@ -122,8 +125,8 @@ export async function createMeeting(data: MeetingFormData): Promise<string> {
   const { data: meeting, error } = await supabase
     .from('meetings')
     .insert({
-      entity_type: validated.entity_type,
-      entity_id: validated.entity_id,
+      entity_type: validated.entity_type ?? null,
+      entity_id: validated.entity_id ?? null,
       title: validated.title || null,
       meeting_date: validated.meeting_date || null,
       status: validated.status || null,
@@ -137,14 +140,14 @@ export async function createMeeting(data: MeetingFormData): Promise<string> {
 
   // A blank meeting isn't a loggable event yet — it's logged on save
   // (updateMeeting → syncMeetingActivity) once it has a date.
-  revalidateEntity(validated.entity_type, validated.entity_id)
+  revalidateEntity(validated.entity_type ?? null, validated.entity_id ?? null)
   return meeting.id
 }
 
 export async function updateMeeting(
   id: string,
-  entityType: string,
-  entityId: string,
+  entityType: string | null,
+  entityId: string | null,
   fields: Partial<Record<'title' | 'meeting_date' | 'status' | 'agenda' | 'notes', string | null>>
 ) {
   const supabase = await createClient()
@@ -164,7 +167,7 @@ export async function updateMeeting(
   revalidatePath('/logg')
 }
 
-export async function deleteMeeting(id: string, entityType: string, entityId: string) {
+export async function deleteMeeting(id: string, entityType: string | null, entityId: string | null) {
   const supabase = await createClient()
 
   await deleteActivityForEntity(supabase, 'meeting', id)

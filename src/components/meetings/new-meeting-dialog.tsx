@@ -35,15 +35,17 @@ export function NewMeetingDialog({
   const router = useRouter()
 
   async function handleCreate() {
-    if (!selected) return
-    const [entityType, entityId] = selected.split(':')
     setIsSubmitting(true)
     setError(null)
     try {
-      const id = await createMeeting({
-        entity_type: entityType as 'company' | 'prospect',
-        entity_id: entityId,
-      })
+      let entity_type: 'company' | 'prospect' | undefined
+      let entity_id: string | undefined
+      if (selected) {
+        const [t, i] = selected.split(':')
+        entity_type = t as 'company' | 'prospect'
+        entity_id = i
+      }
+      const id = await createMeeting({ entity_type, entity_id })
       setOpen(false)
       router.push(`/moten/${id}`)
     } catch (err) {
@@ -65,14 +67,14 @@ export function NewMeetingDialog({
 
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="meeting-entity">Bolag</Label>
+            <Label htmlFor="meeting-entity">Bolag (valfritt)</Label>
             <select
               id="meeting-entity"
               className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
               value={selected}
               onChange={(e) => setSelected(e.target.value)}
             >
-              <option value="">Välj bolag...</option>
+              <option value="">Internt möte (inget bolag)</option>
               {customers.length > 0 && (
                 <optgroup label="Kunder">
                   {customers.map((c) => (
@@ -107,7 +109,7 @@ export function NewMeetingDialog({
           {error && <p className="text-sm text-[#8B3D3D]">{error}</p>}
 
           <DialogFooter>
-            <Button onClick={handleCreate} disabled={isSubmitting || !selected}>
+            <Button onClick={handleCreate} disabled={isSubmitting}>
               {isSubmitting ? 'Skapar...' : 'Skapa'}
             </Button>
           </DialogFooter>

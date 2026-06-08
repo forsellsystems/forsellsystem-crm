@@ -31,19 +31,26 @@ export default async function MoteDetailPage({
         </Link>
         <div>
           <h2 className="font-display text-3xl text-[#1A1A1A]">{title}</h2>
-          <Link
-            href={meeting.entity_href}
-            className="flex items-center gap-1.5 text-sm text-[#656565] hover:underline mt-1"
-          >
-            <Building2 className="size-3.5" />
-            {meeting.entity_name}
-          </Link>
+          {meeting.entity_href ? (
+            <Link
+              href={meeting.entity_href}
+              className="flex items-center gap-1.5 text-sm text-[#656565] hover:underline mt-1"
+            >
+              <Building2 className="size-3.5" />
+              {meeting.entity_name}
+            </Link>
+          ) : (
+            <p className="flex items-center gap-1.5 text-sm text-[#6B6B6B] mt-1">
+              <Building2 className="size-3.5" />
+              {meeting.entity_name}
+            </p>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <MeetingDetailCard meeting={meeting} entityHref={meeting.entity_href} />
+          <MeetingDetailCard meeting={meeting} entityHref={meeting.entity_href ?? '/moten'} />
         </div>
 
         <div className="lg:col-span-2 space-y-6">

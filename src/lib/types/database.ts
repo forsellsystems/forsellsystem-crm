@@ -135,8 +135,8 @@ export type Project = {
 
 export type Meeting = {
   id: string;
-  entity_type: "prospect" | "company";
-  entity_id: string;
+  entity_type: "prospect" | "company" | null;
+  entity_id: string | null;
   title: string | null;
   meeting_date: string | null;
   status: string | null;
