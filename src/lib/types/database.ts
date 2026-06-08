@@ -146,13 +146,19 @@ export type Meeting = {
   updated_at: string;
 };
 
-export type MeetingActionPoint = {
+export type Todo = {
   id: string;
-  meeting_id: string;
   content: string;
   done: boolean;
+  due_date: string | null;
   sort_order: number;
+  entity_type: "company" | "prospect" | "deal" | "project" | null;
+  entity_id: string | null;
+  source: "comment" | "meeting" | "manual";
+  note_id: string | null;
+  meeting_id: string | null;
   created_at: string;
+  updated_at: string;
 };
 
 export type ActivityLog = {

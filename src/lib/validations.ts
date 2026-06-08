@@ -130,12 +130,17 @@ export const meetingSchema = z.object({
 
 export type MeetingFormData = z.infer<typeof meetingSchema>
 
-export const actionPointSchema = z.object({
-  meeting_id: z.string().uuid(),
+export const todoSchema = z.object({
   content: z.string().min(1, 'Text krävs'),
+  entity_type: z.enum(['company', 'prospect', 'deal', 'project']).optional(),
+  entity_id: z.string().uuid().optional(),
+  source: z.enum(['comment', 'meeting', 'manual']).optional(),
+  note_id: z.string().uuid().optional(),
+  meeting_id: z.string().uuid().optional(),
+  due_date: z.string().optional().or(z.literal('')),
 })
 
-export type ActionPointFormData = z.infer<typeof actionPointSchema>
+export type TodoFormData = z.infer<typeof todoSchema>
 
 // ============================================
 // NOTES

@@ -11,6 +11,9 @@ export type ActivityLogEntry = {
     snippet?: string
     from?: string
     to?: string
+    meeting_date?: string
+    title?: string
+    parent_href?: string
     ai?: {
       kind: string
       person: string | null

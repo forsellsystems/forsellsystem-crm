@@ -6,19 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import {
-  addActionPoint,
-  toggleActionPoint,
-  deleteActionPoint,
-} from '@/lib/actions/meeting-actions'
-import type { MeetingActionPoint } from '@/lib/types/database'
+import { createTodo, toggleTodo, deleteTodo } from '@/lib/actions/todo-actions'
+import type { Todo } from '@/lib/types/database'
 
 export function ActionPointsCard({
   meetingId,
   actionPoints,
 }: {
   meetingId: string
-  actionPoints: MeetingActionPoint[]
+  actionPoints: Todo[]
 }) {
   const [content, setContent] = useState('')
   const [isPending, startTransition] = useTransition()
@@ -29,19 +25,19 @@ export function ActionPointsCard({
     const value = content.trim()
     setContent('')
     startTransition(async () => {
-      await addActionPoint(meetingId, value)
+      await createTodo({ content: value, source: 'meeting', meeting_id: meetingId })
     })
   }
 
   function handleToggle(id: string, done: boolean) {
     startTransition(async () => {
-      await toggleActionPoint(id, meetingId, done)
+      await toggleTodo(id, done)
     })
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteActionPoint(id, meetingId)
+      await deleteTodo(id)
     })
   }
 

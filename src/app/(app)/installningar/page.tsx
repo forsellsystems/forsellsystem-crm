@@ -1,6 +1,7 @@
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users } from 'lucide-react'
+import { Users, Wrench, History, ChevronRight } from 'lucide-react'
 import { getUsers } from '@/lib/queries/users'
 import { USER_ROLES } from '@/lib/constants'
 import { UserDialog, EditUserButton } from '@/components/settings/user-dialog'
@@ -19,6 +20,38 @@ export default async function InstallningarPage() {
         <p className="text-sm text-[#6B6B6B] mt-1">
           Hantera användare och systemkonfiguration
         </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        {[
+          {
+            href: '/maskiner',
+            icon: Wrench,
+            title: 'Maskiner',
+            desc: 'Produktkatalog — maskiner och utrustning',
+          },
+          {
+            href: '/logg',
+            icon: History,
+            title: 'Logg',
+            desc: 'Försäljningsaktivitet per dag',
+          },
+        ].map(({ href, icon: Icon, title, desc }) => (
+          <Link key={href} href={href} className="group">
+            <Card className="transition-colors group-hover:ring-foreground/20">
+              <CardContent className="flex items-center gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#F2F2F0]">
+                  <Icon className="size-5 text-[#656565]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-[#1A1A1A]">{title}</p>
+                  <p className="text-xs text-[#6B6B6B] truncate">{desc}</p>
+                </div>
+                <ChevronRight className="size-4 text-[#B8B8B8] shrink-0" />
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
 
       <Card>

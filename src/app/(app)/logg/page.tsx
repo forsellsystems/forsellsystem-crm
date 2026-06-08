@@ -9,14 +9,12 @@ import {
   UserPlus,
   Briefcase,
   FolderKanban,
-  Mail,
-  Phone,
-  Users,
-  FileText,
+  CalendarDays,
+  ArrowLeft,
 } from 'lucide-react'
 import { getActivityLog, type ActivityLogEntry } from '@/lib/queries/activity'
 import { PIPELINE_STAGES } from '@/lib/constants'
-import { formatTime, formatDayLabel } from '@/lib/utils'
+import { formatTime, formatDate, formatDayLabel } from '@/lib/utils'
 
 const stageLabel = (key?: string) =>
   PIPELINE_STAGES.find((s) => s.key === key)?.label ?? key ?? ''
@@ -28,14 +26,6 @@ const actionIcon: Record<string, typeof History> = {
   prospect_created: UserPlus,
   deal_created: Briefcase,
   project_created: FolderKanban,
-}
-
-const kindMeta: Record<string, { icon: typeof History; label: string }> = {
-  mejl: { icon: Mail, label: 'Mejl' },
-  samtal: { icon: Phone, label: 'Samtal' },
-  mote: { icon: Users, label: 'Möte' },
-  offert: { icon: FileText, label: 'Offert' },
-  notering: { icon: MessageSquare, label: 'Notering' },
 }
 
 // Which level (kund / prospekt / affär / projekt) the comment was added on
@@ -89,57 +79,89 @@ function NonNoteText({ entry }: { entry: ActivityLogEntry }) {
   }
 }
 
-function EntryRow({ entry }: { entry: ActivityLogEntry }) {
-  const isNote = entry.action === 'note_added'
-  const ai = isNote ? entry.metadata.ai : undefined
-  const Icon = ai
-    ? kindMeta[ai.kind]?.icon ?? MessageSquare
-    : actionIcon[entry.action] ?? History
-
+function RowShell({ Icon, children }: { Icon: typeof History; children: React.ReactNode }) {
   return (
     <div className="flex gap-3">
       <div className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-[#F2F2F0]">
         <Icon className="size-3.5 text-[#656565]" />
       </div>
-      <div className="min-w-0 space-y-0.5">
-        {isNote ? (
-          <>
-            <p className="text-sm text-[#1A1A1A]">
-              {ai
-                ? `${kindMeta[ai.kind]?.label ?? 'Notering'}${ai.person ? ` till ${ai.person}` : ''}`
-                : 'La till kommentar'}
-            </p>
-            {ai?.summary?.trim() ? (
-              <p className="text-sm text-[#6B6B6B]">{ai.summary}</p>
-            ) : entry.metadata.snippet ? (
-              <p className="text-xs text-[#6B6B6B] italic truncate">
-                &ldquo;{entry.metadata.snippet}&rdquo;
-              </p>
-            ) : null}
-            <div className="flex items-center gap-2 text-xs text-[#6B6B6B] flex-wrap">
-              <span>
-                {levelLabel(entry.entity_type)}: <ParentLink entry={entry} />
-              </span>
-              <span>&middot;</span>
-              <span>{entry.user_name ?? 'System'}</span>
-              <span>&middot;</span>
-              <span>{formatTime(entry.created_at)}</span>
-            </div>
-          </>
-        ) : (
-          <>
-            <p className="text-sm text-[#1A1A1A]">
-              <NonNoteText entry={entry} />
-            </p>
-            <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
-              <span>{entry.user_name ?? 'System'}</span>
-              <span>&middot;</span>
-              <span>{formatTime(entry.created_at)}</span>
-            </div>
-          </>
-        )}
-      </div>
+      <div className="min-w-0 space-y-0.5">{children}</div>
     </div>
+  )
+}
+
+function NoteRow({ entry }: { entry: ActivityLogEntry }) {
+  const m = entry.metadata
+  // Comments are shown as-is — no interpretation/classification.
+  return (
+    <RowShell Icon={MessageSquare}>
+      <p className="text-sm text-[#1A1A1A]">{m.snippet || 'La till kommentar'}</p>
+      <div className="flex items-center gap-2 text-xs text-[#6B6B6B] flex-wrap">
+        <span>
+          {levelLabel(entry.entity_type)}: <ParentLink entry={entry} />
+        </span>
+        <span>&middot;</span>
+        <span>{entry.user_name ?? 'System'}</span>
+        <span>&middot;</span>
+        <span>{formatTime(entry.created_at)}</span>
+      </div>
+    </RowShell>
+  )
+}
+
+function MeetingRow({ entry }: { entry: ActivityLogEntry }) {
+  const m = entry.metadata
+  const date = m.meeting_date ? formatDate(m.meeting_date) : null
+  const secondary = [date, m.snippet].filter(Boolean).join(' · ')
+  const heading = `Möte${m.title ? `: ${m.title}` : ''}`
+
+  return (
+    <RowShell Icon={CalendarDays}>
+      <p className="text-sm text-[#1A1A1A]">
+        {m.href ? (
+          <Link href={m.href} className="font-medium text-[#656565] hover:underline">
+            {heading}
+          </Link>
+        ) : (
+          <span className="font-medium">{heading}</span>
+        )}
+      </p>
+      {secondary ? <p className="text-xs text-[#6B6B6B]">{secondary}</p> : null}
+      <div className="flex items-center gap-2 text-xs text-[#6B6B6B] flex-wrap">
+        {m.label ? (
+          <>
+            {m.parent_href ? (
+              <Link href={m.parent_href} className="text-[#656565] hover:underline">
+                {m.label}
+              </Link>
+            ) : (
+              <span>{m.label}</span>
+            )}
+            <span>&middot;</span>
+          </>
+        ) : null}
+        <span>{entry.user_name ?? 'System'}</span>
+      </div>
+    </RowShell>
+  )
+}
+
+function EntryRow({ entry }: { entry: ActivityLogEntry }) {
+  if (entry.action === 'note_added') return <NoteRow entry={entry} />
+  if (entry.action === 'meeting_created') return <MeetingRow entry={entry} />
+
+  const Icon = actionIcon[entry.action] ?? History
+  return (
+    <RowShell Icon={Icon}>
+      <p className="text-sm text-[#1A1A1A]">
+        <NonNoteText entry={entry} />
+      </p>
+      <div className="flex items-center gap-2 text-xs text-[#6B6B6B]">
+        <span>{entry.user_name ?? 'System'}</span>
+        <span>&middot;</span>
+        <span>{formatTime(entry.created_at)}</span>
+      </div>
+    </RowShell>
   )
 }
 
@@ -165,6 +187,13 @@ export default async function LoggPage() {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
+      <Link
+        href="/installningar"
+        className="inline-flex items-center gap-1.5 text-xs text-[#6B6B6B] hover:text-[#1A1A1A]"
+      >
+        <ArrowLeft className="size-3.5" />
+        Inställningar
+      </Link>
       <div>
         <h2 className="font-display text-3xl text-[#1A1A1A]">Logg</h2>
         <p className="text-sm text-[#6B6B6B] mt-1">Försäljningsaktivitet per dag</p>

@@ -10,13 +10,12 @@ import {
   Kanban,
   FolderKanban,
   CalendarDays,
+  ListChecks,
   Building2,
   Handshake,
   Cog,
   ChevronLeft,
   ChevronRight,
-  Wrench,
-  History,
   LogOut,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth-actions";
@@ -29,14 +28,13 @@ const navItems: {
   alsoActiveOn?: string[]
 }[] = [
   { href: "/dashboard", label: "DASHBOARD", icon: LayoutDashboard },
+  { href: "/todo", label: "TO-DO", icon: ListChecks },
   { href: "/pipeline", label: "PIPELINE", icon: Kanban },
   { href: "/projekt", label: "PROJEKT", icon: FolderKanban },
   { href: "/moten", label: "MÖTEN", icon: CalendarDays },
   { href: "/foretag", label: "KUNDER", icon: Building2, alsoActiveOn: ["/prospekt"] },
   { href: "/aterforsaljare", label: "AGENTER", icon: Handshake, alsoActiveOn: ["/aterforsaljar-prospekt"] },
-  { href: "/maskiner", label: "MASKINER", icon: Wrench },
-  { href: "/logg", label: "LOGG", icon: History },
-  { href: "/installningar", label: "INSTÄLLNINGAR", icon: Cog },
+  { href: "/installningar", label: "INSTÄLLNINGAR", icon: Cog, alsoActiveOn: ["/maskiner", "/logg"] },
 ];
 
 export function Sidebar() {

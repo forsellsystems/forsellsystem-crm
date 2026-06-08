@@ -1,6 +1,7 @@
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Wrench } from 'lucide-react'
+import { Wrench, ArrowLeft } from 'lucide-react'
 import { getMachines } from '@/lib/queries/machines'
 import { MachineDialog, EditMachineButton } from '@/components/machines/machine-dialog'
 import { DeleteMachineButton } from '@/components/machines/delete-machine-button'
@@ -10,6 +11,13 @@ export default async function MaskinerPage() {
 
   return (
     <div className="space-y-6 animate-fade-in-up">
+      <Link
+        href="/installningar"
+        className="inline-flex items-center gap-1.5 text-xs text-[#6B6B6B] hover:text-[#1A1A1A]"
+      >
+        <ArrowLeft className="size-3.5" />
+        Inställningar
+      </Link>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display text-3xl text-[#1A1A1A]">Maskiner</h2>

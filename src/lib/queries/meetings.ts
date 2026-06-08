@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Meeting, MeetingActionPoint } from '@/lib/types/database'
+import type { Meeting, Todo } from '@/lib/types/database'
 
 export type MeetingWithEntity = Meeting & {
   entity_name: string
@@ -7,7 +7,7 @@ export type MeetingWithEntity = Meeting & {
 }
 
 export type MeetingWithDetails = MeetingWithEntity & {
-  action_points: MeetingActionPoint[]
+  action_points: Todo[]
 }
 
 // Resolve the correct detail-page href for a meeting's parent entity. Unlike
@@ -68,7 +68,7 @@ export async function getMeeting(id: string): Promise<MeetingWithDetails | null>
   }
 
   const { data: actionPoints } = await supabase
-    .from('meeting_action_points')
+    .from('todos')
     .select('*')
     .eq('meeting_id', id)
     .order('sort_order', { ascending: true })

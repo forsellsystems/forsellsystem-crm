@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { noteSchema, type NoteFormData } from '@/lib/validations'
 import { getCurrentUserId, logActivity } from '@/lib/actions/activity-actions'
-import { analyzeComment } from '@/lib/ai/analyze-comment'
+import { createTodo } from '@/lib/actions/todo-actions'
 
 type DbClient = Awaited<ReturnType<typeof createClient>>
 
@@ -65,23 +65,43 @@ const entityPathMap: Record<string, string> = {
   project: '/projekt',
 }
 
-export async function createNote(data: NoteFormData) {
+export async function createNote(
+  data: NoteFormData,
+  todo?: { content: string; due_date?: string }
+) {
   const validated = noteSchema.parse(data)
   const supabase = await createClient()
 
   const authorId = await getCurrentUserId(supabase)
 
-  const { error } = await supabase.from('notes').insert({
-    entity_type: validated.entity_type,
-    entity_id: validated.entity_id,
-    content: validated.content,
-    author_user_id: authorId,
-  })
+  const { data: note, error } = await supabase
+    .from('notes')
+    .insert({
+      entity_type: validated.entity_type,
+      entity_id: validated.entity_id,
+      content: validated.content,
+      author_user_id: authorId,
+    })
+    .select('id')
+    .single()
 
   if (error) throw new Error(`Kunde inte spara anteckning: ${error.message}`)
 
+  // Optional: turn this comment into a to-do (separate "next step" text + due date).
+  if (todo?.content?.trim()) {
+    const entityType =
+      validated.entity_type === 'contact' ? undefined : validated.entity_type
+    await createTodo({
+      content: todo.content.trim(),
+      entity_type: entityType,
+      entity_id: entityType ? validated.entity_id : undefined,
+      source: 'comment',
+      note_id: note.id,
+      due_date: todo.due_date,
+    })
+  }
+
   const parent = await resolveNoteParent(supabase, validated.entity_type, validated.entity_id)
-  const ai = await analyzeComment(validated.content)
   await logActivity(supabase, {
     action: 'note_added',
     entity_type: validated.entity_type,
@@ -90,7 +110,6 @@ export async function createNote(data: NoteFormData) {
       label: parent.label,
       href: parent.href,
       snippet: validated.content.slice(0, 80),
-      ai: ai ?? undefined,
     },
   })
 

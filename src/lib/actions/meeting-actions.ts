@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { meetingSchema, actionPointSchema, type MeetingFormData } from '@/lib/validations'
-import { logActivity, deleteActivityForEntity } from '@/lib/actions/activity-actions'
+import { meetingSchema, type MeetingFormData } from '@/lib/validations'
+import { getCurrentUserId, deleteActivityForEntity } from '@/lib/actions/activity-actions'
 
 // Meetings live on all four entity surfaces, so we revalidate both candidate
 // detail-page paths for the entity (revalidating a non-matching path is a no-op).
@@ -16,6 +16,103 @@ function revalidateEntity(entityType: string, entityId: string) {
     revalidatePath(`/aterforsaljar-prospekt/${entityId}`)
   }
   revalidatePath('/moten')
+}
+
+type DbClient = Awaited<ReturnType<typeof createClient>>
+
+// Resolve the parent bolag's display name + the correct detail-page href (which
+// differs for kund/agent and kund-/agent-prospekt — same logic as queries/meetings.ts).
+async function resolveParent(
+  supabase: DbClient,
+  entityType: string,
+  entityId: string
+): Promise<{ name: string; href: string }> {
+  if (entityType === 'company') {
+    const { data } = await supabase
+      .from('companies')
+      .select('name, is_reseller')
+      .eq('id', entityId)
+      .single()
+    const href = data?.is_reseller ? `/aterforsaljare/${entityId}` : `/foretag/${entityId}`
+    return { name: data?.name ?? '', href }
+  }
+  const { data } = await supabase
+    .from('prospects')
+    .select('company_name, prospect_type')
+    .eq('id', entityId)
+    .single()
+  const href =
+    data?.prospect_type === 'reseller'
+      ? `/aterforsaljar-prospekt/${entityId}`
+      : `/prospekt/${entityId}`
+  return { name: data?.company_name ?? '', href }
+}
+
+/**
+ * Keep a single activity_log row in sync with a meeting. A meeting only belongs
+ * in the log once it has a DATE — and the log row is dated AT the meeting's date
+ * (not when it was entered), so it groups under the day the meeting happens.
+ * Updated on later edits, removed if the date is cleared. Best-effort: never throws.
+ */
+async function syncMeetingActivity(
+  supabase: DbClient,
+  meetingId: string,
+  entityType: string,
+  entityId: string
+) {
+  try {
+    const { data: m } = await supabase
+      .from('meetings')
+      .select('title, meeting_date, notes, agenda')
+      .eq('id', meetingId)
+      .single()
+    if (!m) return
+
+    const { data: existing } = await supabase
+      .from('activity_log')
+      .select('id')
+      .eq('entity_type', 'meeting')
+      .eq('entity_id', meetingId)
+      .limit(1)
+      .maybeSingle()
+
+    // No date → not a dated event yet; keep it out of the log.
+    if (!m.meeting_date) {
+      if (existing) await supabase.from('activity_log').delete().eq('id', existing.id)
+      return
+    }
+
+    const parent = await resolveParent(supabase, entityType, entityId)
+    const metadata = {
+      label: parent.name,
+      href: `/moten/${meetingId}`,
+      parent_href: parent.href,
+      title: m.title?.trim() || undefined,
+      meeting_date: m.meeting_date,
+      snippet: (m.notes?.trim() || m.agenda?.trim() || '').slice(0, 80) || undefined,
+    }
+    // Date the log row at the meeting's date (noon UTC avoids day-boundary drift).
+    const loggedAt = `${m.meeting_date}T12:00:00Z`
+
+    if (existing) {
+      await supabase
+        .from('activity_log')
+        .update({ metadata, created_at: loggedAt })
+        .eq('id', existing.id)
+    } else {
+      const userId = await getCurrentUserId(supabase)
+      await supabase.from('activity_log').insert({
+        action: 'meeting_created',
+        entity_type: 'meeting',
+        entity_id: meetingId,
+        metadata,
+        user_id: userId,
+        created_at: loggedAt,
+      })
+    }
+  } catch (err) {
+    console.error('syncMeetingActivity failed:', err)
+  }
 }
 
 export async function createMeeting(data: MeetingFormData): Promise<string> {
@@ -38,22 +135,8 @@ export async function createMeeting(data: MeetingFormData): Promise<string> {
 
   if (error) throw new Error(`Kunde inte skapa möte: ${error.message}`)
 
-  // Resolve the parent bolag's name for a readable log label (meetings start blank)
-  let parentName = ''
-  if (validated.entity_type === 'company') {
-    const { data } = await supabase.from('companies').select('name').eq('id', validated.entity_id).single()
-    parentName = data?.name ?? ''
-  } else {
-    const { data } = await supabase.from('prospects').select('company_name').eq('id', validated.entity_id).single()
-    parentName = data?.company_name ?? ''
-  }
-  await logActivity(supabase, {
-    action: 'meeting_created',
-    entity_type: 'meeting',
-    entity_id: meeting.id,
-    metadata: { label: parentName, href: `/moten/${meeting.id}` },
-  })
-
+  // A blank meeting isn't a loggable event yet — it's logged on save
+  // (updateMeeting → syncMeetingActivity) once it has a date.
   revalidateEntity(validated.entity_type, validated.entity_id)
   return meeting.id
 }
@@ -74,8 +157,11 @@ export async function updateMeeting(
   const { error } = await supabase.from('meetings').update(update).eq('id', id)
 
   if (error) throw new Error(`Kunde inte uppdatera möte: ${error.message}`)
+
+  await syncMeetingActivity(supabase, id, entityType, entityId)
   revalidateEntity(entityType, entityId)
   revalidatePath(`/moten/${id}`)
+  revalidatePath('/logg')
 }
 
 export async function deleteMeeting(id: string, entityType: string, entityId: string) {
@@ -91,59 +177,5 @@ export async function deleteMeeting(id: string, entityType: string, entityId: st
   revalidatePath(`/moten/${id}`)
 }
 
-// ── Action points ──────────────────────────────────────────────
-
-export async function addActionPoint(meetingId: string, content: string) {
-  const validated = actionPointSchema.parse({ meeting_id: meetingId, content })
-  const supabase = await createClient()
-
-  // Append to the end of the list.
-  const { data: last } = await supabase
-    .from('meeting_action_points')
-    .select('sort_order')
-    .eq('meeting_id', validated.meeting_id)
-    .order('sort_order', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-  const nextOrder = (last?.sort_order ?? -1) + 1
-
-  const { error } = await supabase.from('meeting_action_points').insert({
-    meeting_id: validated.meeting_id,
-    content: validated.content,
-    sort_order: nextOrder,
-  })
-
-  if (error) throw new Error(`Kunde inte lägga till action point: ${error.message}`)
-  revalidatePath(`/moten/${validated.meeting_id}`)
-}
-
-export async function toggleActionPoint(id: string, meetingId: string, done: boolean) {
-  const supabase = await createClient()
-  const { error } = await supabase
-    .from('meeting_action_points')
-    .update({ done })
-    .eq('id', id)
-
-  if (error) throw new Error(`Kunde inte uppdatera action point: ${error.message}`)
-  revalidatePath(`/moten/${meetingId}`)
-}
-
-export async function updateActionPoint(id: string, meetingId: string, content: string) {
-  const validated = actionPointSchema.parse({ meeting_id: meetingId, content })
-  const supabase = await createClient()
-  const { error } = await supabase
-    .from('meeting_action_points')
-    .update({ content: validated.content })
-    .eq('id', id)
-
-  if (error) throw new Error(`Kunde inte uppdatera action point: ${error.message}`)
-  revalidatePath(`/moten/${meetingId}`)
-}
-
-export async function deleteActionPoint(id: string, meetingId: string) {
-  const supabase = await createClient()
-  const { error } = await supabase.from('meeting_action_points').delete().eq('id', id)
-
-  if (error) throw new Error(`Kunde inte ta bort action point: ${error.message}`)
-  revalidatePath(`/moten/${meetingId}`)
-}
+// Meeting "action points" are now unified to-dos — see src/lib/actions/todo-actions.ts
+// (createTodo with source='meeting' + meeting_id, toggleTodo, deleteTodo).
