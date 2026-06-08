@@ -8,10 +8,12 @@ import { DeleteCompanyButton } from '@/components/companies/delete-company-butto
 import { MoveToProspectButton } from '@/components/companies/move-to-prospect-button'
 import { createClient } from '@/lib/supabase/server'
 import { getNotes } from '@/lib/queries/notes'
+import { getMeetings } from '@/lib/queries/meetings'
 import { PIPELINE_STAGES } from '@/lib/constants'
 import { formatDate, formatCurrency } from '@/lib/utils'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
+import { MeetingsCard } from '@/components/meetings/meetings-card'
 
 async function getReseller(id: string) {
   const supabase = await createClient()
@@ -40,9 +42,10 @@ export default async function ResellerDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [reseller, notes] = await Promise.all([
+  const [reseller, notes, meetings] = await Promise.all([
     getReseller(id),
     getNotes('company', id),
+    getMeetings('company', id),
   ])
 
   if (!reseller) notFound()
@@ -194,6 +197,12 @@ export default async function ResellerDetailPage({
               </CardContent>
             </Card>
           )}
+
+          <MeetingsCard
+            entityType="company"
+            entityId={reseller.id}
+            meetings={meetings}
+          />
 
           {/* Notes */}
           <Card>

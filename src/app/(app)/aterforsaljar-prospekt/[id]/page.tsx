@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Handshake } from 'lucide-react'
 import { getProspect } from '@/lib/queries/prospects'
 import { getNotes } from '@/lib/queries/notes'
+import { getMeetings } from '@/lib/queries/meetings'
 import { formatDate } from '@/lib/utils'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
@@ -14,6 +15,7 @@ import { MoveToCompanyButton } from '@/components/prospects/move-to-company-butt
 import { ProspectDescription } from '@/components/prospects/prospect-description'
 import { ProspectContactCard } from '@/components/prospects/prospect-contact-card'
 import { ProspectDetailsCard } from '@/components/prospects/prospect-details-card'
+import { MeetingsCard } from '@/components/meetings/meetings-card'
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   active: { label: 'Aktiv', variant: 'default' },
@@ -27,9 +29,10 @@ export default async function AterforsaljarProspektDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [prospect, notes] = await Promise.all([
+  const [prospect, notes, meetings] = await Promise.all([
     getProspect(id),
     getNotes('prospect', id),
+    getMeetings('prospect', id),
   ])
 
   if (!prospect || prospect.prospect_type !== 'reseller') notFound()
@@ -97,7 +100,14 @@ export default async function AterforsaljarProspektDetailPage({
           />
         </div>
 
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
+          <MeetingsCard
+            entityType="prospect"
+            entityId={prospect.id}
+            meetings={meetings}
+            editable={prospect.status === 'active'}
+          />
+
           <Card>
             <CardHeader>
               <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Anteckningar</CardTitle>

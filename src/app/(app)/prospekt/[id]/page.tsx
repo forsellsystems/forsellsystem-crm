@@ -8,6 +8,7 @@ import { getProspect } from '@/lib/queries/prospects'
 import { getResellers } from '@/lib/queries/companies'
 import { getNotes } from '@/lib/queries/notes'
 import { getProjects } from '@/lib/queries/projects'
+import { getMeetings } from '@/lib/queries/meetings'
 import { formatDate } from '@/lib/utils'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
@@ -17,6 +18,7 @@ import { ProspectDescription } from '@/components/prospects/prospect-description
 import { ProspectContactCard } from '@/components/prospects/prospect-contact-card'
 import { ProspectDetailsCard } from '@/components/prospects/prospect-details-card'
 import { ProjectsCard } from '@/components/projects/projects-card'
+import { MeetingsCard } from '@/components/meetings/meetings-card'
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   active: { label: 'Aktiv', variant: 'default' },
@@ -30,10 +32,11 @@ export default async function ProspektDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [prospect, notes, projects, resellers] = await Promise.all([
+  const [prospect, notes, projects, meetings, resellers] = await Promise.all([
     getProspect(id),
     getNotes('prospect', id),
     getProjects('prospect', id),
+    getMeetings('prospect', id),
     getResellers(),
   ])
 
@@ -111,6 +114,13 @@ export default async function ProspektDetailPage({
             entityType="prospect"
             entityId={prospect.id}
             projects={projects}
+            editable={prospect.status === 'active'}
+          />
+
+          <MeetingsCard
+            entityType="prospect"
+            entityId={prospect.id}
+            meetings={meetings}
             editable={prospect.status === 'active'}
           />
 

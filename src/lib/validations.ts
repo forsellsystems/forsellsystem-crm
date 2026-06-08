@@ -116,6 +116,28 @@ export const projectSchema = z.object({
 export type ProjectFormData = z.infer<typeof projectSchema>
 
 // ============================================
+// MEETINGS
+// ============================================
+export const meetingSchema = z.object({
+  entity_type: z.enum(['prospect', 'company']),
+  entity_id: z.string().uuid(),
+  title: z.string().optional(),
+  meeting_date: z.string().optional().or(z.literal('')),
+  status: z.string().optional().or(z.literal('')),
+  agenda: z.string().optional(),
+  notes: z.string().optional(),
+})
+
+export type MeetingFormData = z.infer<typeof meetingSchema>
+
+export const actionPointSchema = z.object({
+  meeting_id: z.string().uuid(),
+  content: z.string().min(1, 'Text krävs'),
+})
+
+export type ActionPointFormData = z.infer<typeof actionPointSchema>
+
+// ============================================
 // NOTES
 // ============================================
 export const noteSchema = z.object({

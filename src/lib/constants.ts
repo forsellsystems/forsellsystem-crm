@@ -29,6 +29,14 @@ export const BUILDING_TYPES = [
 
 export type BuildingType = (typeof BUILDING_TYPES)[number]["key"];
 
+export const MEETING_STATUSES = [
+  { key: "planerat", label: "Planerat", color: "#808080" },
+  { key: "genomfort", label: "Genomfört", color: "#333333" },
+  { key: "installt", label: "Inställt", color: "#8B3D3D" },
+] as const;
+
+export type MeetingStatus = (typeof MEETING_STATUSES)[number]["key"];
+
 export const PROJECT_TYPES = [
   { key: "ny_husfabrik", label: "Ny husfabrik" },
   { key: "ombyggnad", label: "Ombyggnad" },

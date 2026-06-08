@@ -13,6 +13,7 @@ import {
 import { getCompany, getResellers } from '@/lib/queries/companies'
 import { getNotes } from '@/lib/queries/notes'
 import { getProjects } from '@/lib/queries/projects'
+import { getMeetings } from '@/lib/queries/meetings'
 import { getActiveUsers } from '@/lib/queries/users'
 import { getMachines } from '@/lib/queries/machines'
 import { PIPELINE_STAGES } from '@/lib/constants'
@@ -27,6 +28,7 @@ import { CompanyDetailsCard } from '@/components/companies/company-details-card'
 import { MoveToProspectButton } from '@/components/companies/move-to-prospect-button'
 import { NewDealDialog } from '@/components/pipeline/new-deal-dialog'
 import { ProjectsCard } from '@/components/projects/projects-card'
+import { MeetingsCard } from '@/components/meetings/meetings-card'
 
 export default async function ForetagDetailPage({
   params,
@@ -34,10 +36,11 @@ export default async function ForetagDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [company, notes, projects, resellers, users, machines] = await Promise.all([
+  const [company, notes, projects, meetings, resellers, users, machines] = await Promise.all([
     getCompany(id),
     getNotes('company', id),
     getProjects('company', id),
+    getMeetings('company', id),
     getResellers(),
     getActiveUsers(),
     getMachines(),
@@ -143,6 +146,12 @@ export default async function ForetagDetailPage({
             entityType="company"
             entityId={company.id}
             projects={projects}
+          />
+
+          <MeetingsCard
+            entityType="company"
+            entityId={company.id}
+            meetings={meetings}
           />
 
           {/* Deals */}

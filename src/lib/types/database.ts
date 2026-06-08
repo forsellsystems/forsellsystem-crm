@@ -133,6 +133,28 @@ export type Project = {
   updated_at: string;
 };
 
+export type Meeting = {
+  id: string;
+  entity_type: "prospect" | "company";
+  entity_id: string;
+  title: string | null;
+  meeting_date: string | null;
+  status: string | null;
+  agenda: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MeetingActionPoint = {
+  id: string;
+  meeting_id: string;
+  content: string;
+  done: boolean;
+  sort_order: number;
+  created_at: string;
+};
+
 export type ActivityLog = {
   id: string;
   entity_type: string;
