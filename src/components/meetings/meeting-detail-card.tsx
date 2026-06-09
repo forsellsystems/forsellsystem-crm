@@ -23,6 +23,7 @@ export function MeetingDetailCard({
     !meeting.title?.trim() &&
     !meeting.meeting_date &&
     !meeting.meeting_time &&
+    !meeting.participants?.trim() &&
     !meeting.status &&
     !meeting.agenda?.trim() &&
     !meeting.notes?.trim()
@@ -47,6 +48,7 @@ export function MeetingDetailCard({
         title: values.title || null,
         meeting_date: values.meeting_date || null,
         meeting_time: values.meeting_time || null,
+        participants: values.participants || null,
         status: values.status || null,
         agenda: values.agenda || null,
         notes: values.notes || null,
@@ -100,6 +102,7 @@ export function MeetingDetailCard({
               title: meeting.title ?? '',
               meeting_date: meeting.meeting_date ?? '',
               meeting_time: meeting.meeting_time ? meeting.meeting_time.slice(0, 5) : '',
+              participants: meeting.participants ?? '',
               status: meeting.status ?? '',
               agenda: meeting.agenda ?? '',
               notes: meeting.notes ?? '',
@@ -128,6 +131,12 @@ export function MeetingDetailCard({
                 <span>—</span>
               )}
             </div>
+            {meeting.participants?.trim() && (
+              <div className="flex justify-between gap-4">
+                <span className="text-[#6B6B6B] shrink-0">Deltagare</span>
+                <span className="text-right">{meeting.participants}</span>
+              </div>
+            )}
             {meeting.agenda && (
               <div className="pt-1">
                 <p className="text-[#6B6B6B] mb-1">Agenda</p>

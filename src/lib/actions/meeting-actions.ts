@@ -134,15 +134,24 @@ export async function createMeeting(data: MeetingFormData): Promise<string> {
       status: validated.status || null,
       agenda: validated.agenda || null,
       notes: validated.notes || null,
+      participants: validated.participants || null,
     })
     .select('id')
     .single()
 
   if (error) throw new Error(`Kunde inte skapa möte: ${error.message}`)
 
-  // A blank meeting isn't a loggable event yet — it's logged on save
-  // (updateMeeting → syncMeetingActivity) once it has a date.
+  // The popup can set a date at creation time, so log it right away — but only
+  // if a date is present (syncMeetingActivity is a no-op for blank meetings,
+  // which get logged later via updateMeeting once they get a date).
+  await syncMeetingActivity(
+    supabase,
+    meeting.id,
+    validated.entity_type ?? null,
+    validated.entity_id ?? null
+  )
   revalidateEntity(validated.entity_type ?? null, validated.entity_id ?? null)
+  revalidatePath('/logg')
   return meeting.id
 }
 
@@ -150,7 +159,7 @@ export async function updateMeeting(
   id: string,
   entityType: string | null,
   entityId: string | null,
-  fields: Partial<Record<'title' | 'meeting_date' | 'meeting_time' | 'status' | 'agenda' | 'notes', string | null>>
+  fields: Partial<Record<'title' | 'meeting_date' | 'meeting_time' | 'status' | 'agenda' | 'notes' | 'participants', string | null>>
 ) {
   const supabase = await createClient()
 

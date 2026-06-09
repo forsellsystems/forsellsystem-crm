@@ -143,6 +143,7 @@ export type Meeting = {
   status: string | null;
   agenda: string | null;
   notes: string | null;
+  participants: string | null;
   created_at: string;
   updated_at: string;
 };

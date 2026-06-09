@@ -12,6 +12,7 @@ export type MeetingFormValues = {
   title: string
   meeting_date: string
   meeting_time: string
+  participants: string
   status: string
   agenda: string
   notes: string
@@ -35,6 +36,7 @@ export function MeetingForm({
     title: initial?.title ?? '',
     meeting_date: initial?.meeting_date ?? '',
     meeting_time: initial?.meeting_time ?? '',
+    participants: initial?.participants ?? '',
     status: initial?.status ?? '',
     agenda: initial?.agenda ?? '',
     notes: initial?.notes ?? '',
@@ -68,6 +70,15 @@ export function MeetingForm({
             onChange={(e) => setValues((v) => ({ ...v, meeting_time: e.target.value }))}
           />
         </div>
+      </div>
+
+      <div className="grid gap-1.5">
+        <Label className="text-xs text-[#6B6B6B]">Deltagare</Label>
+        <Input
+          value={values.participants}
+          onChange={(e) => setValues((v) => ({ ...v, participants: e.target.value }))}
+          placeholder="T.ex. Anna, Erik, kundens VD"
+        />
       </div>
 
       <div className="grid gap-1.5">

@@ -127,6 +127,7 @@ export const meetingSchema = z.object({
   status: z.string().optional().or(z.literal('')),
   agenda: z.string().optional(),
   notes: z.string().optional(),
+  participants: z.string().optional(),
 })
 
 export type MeetingFormData = z.infer<typeof meetingSchema>
