@@ -182,12 +182,16 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
       projects.map((project) => ({
         entity_type: 'company' as const,
         entity_id: company.id,
+        name: project.name,
         project_type: project.project_type,
         status: project.status,
         description: project.description,
         value: project.value,
         value_unknown: project.value_unknown,
         currency: project.currency,
+        contact_name: project.contact_name,
+        contact_email: project.contact_email,
+        contact_phone: project.contact_phone,
       }))
     )
   }

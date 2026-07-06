@@ -1,11 +1,13 @@
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import type { FortnoxConnection } from './types'
 
 // The Fortnox connection is a singleton row (one Fortnox account per CRM).
-// All access goes through the authenticated server client (RLS authenticated-only).
+// It holds OAuth bearer secrets, so access goes through the service-role client
+// only — fortnox_connection has NO authenticated RLS policy, so the tokens are
+// never readable from the browser (all consumers here are server-side).
 
 export async function getConnection(): Promise<FortnoxConnection | null> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { data } = await supabase
     .from('fortnox_connection')
     .select('*')
@@ -27,7 +29,7 @@ export async function saveConnection(fields: {
   company_name?: string | null
   connected_by?: string | null
 }): Promise<void> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const existing = await getConnection()
 
   if (existing) {
@@ -63,7 +65,7 @@ export async function updateTokens(
   id: string,
   fields: { access_token: string; refresh_token: string; expires_at: string; scope?: string | null }
 ): Promise<void> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const update: Record<string, unknown> = {
     access_token: fields.access_token,
     refresh_token: fields.refresh_token,
@@ -76,7 +78,7 @@ export async function updateTokens(
 }
 
 export async function deleteConnection(): Promise<void> {
-  const supabase = await createClient()
+  const supabase = createAdminClient()
   const { error } = await supabase
     .from('fortnox_connection')
     .delete()

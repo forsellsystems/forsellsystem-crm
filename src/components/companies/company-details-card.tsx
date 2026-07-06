@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { updateCompanyFields } from '@/lib/actions/company-actions'
 import { COUNTRIES, FACTORY_TYPES, BUILDING_TYPES } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
-import type { Company, CompanyWithRelations } from '@/lib/types/database'
+import type { CompanyWithRelations } from '@/lib/types/database'
 
 export function CompanyDetailsCard({
   company,

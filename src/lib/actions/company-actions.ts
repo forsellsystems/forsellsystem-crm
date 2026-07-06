@@ -102,7 +102,7 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
     .insert({
       company_name: company.name,
       prospect_type: isReseller ? 'reseller' : 'customer',
-      factory_type: company.factory_type || 'modulfabrik',
+      factory_type: company.factory_type || null,
       building_types: company.building_types ?? [],
       country: company.country,
       contact_person: primaryContact?.name || null,
@@ -160,12 +160,16 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
       projects.map((project) => ({
         entity_type: 'prospect' as const,
         entity_id: prospect.id,
+        name: project.name,
         project_type: project.project_type,
         status: project.status,
         description: project.description,
         value: project.value,
         value_unknown: project.value_unknown,
         currency: project.currency,
+        contact_name: project.contact_name,
+        contact_email: project.contact_email,
+        contact_phone: project.contact_phone,
       }))
     )
   }

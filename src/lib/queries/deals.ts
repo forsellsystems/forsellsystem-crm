@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Deal, DealWithRelations } from '@/lib/types/database'
+import type { DealWithRelations } from '@/lib/types/database'
 import { PROJECT_TYPES } from '@/lib/constants'
 
 export type DealCard = {

@@ -7,12 +7,6 @@ export interface DashboardStats {
   wonDealsCount: number
 }
 
-export interface PipelineStageSummary {
-  stage: string
-  deal_count: number
-  total_value: number
-}
-
 export interface RecentDeal {
   id: string
   quote_number: string | null
@@ -56,14 +50,6 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     avgDealValue,
     wonDealsCount: wonDeals.length,
   }
-}
-
-export async function getPipelineSummary(): Promise<PipelineStageSummary[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase.from('pipeline_summary').select('*')
-
-  if (error) throw error
-  return (data ?? []) as PipelineStageSummary[]
 }
 
 export async function getRecentDeals(): Promise<RecentDeal[]> {

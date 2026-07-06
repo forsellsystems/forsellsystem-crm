@@ -83,13 +83,21 @@ export const dealSchema = z.object({
   company_id: z.string().uuid('Företag krävs'),
   contact_id: z.string().uuid().optional().or(z.literal('')),
   stage: z.enum(['offert', 'avslutad_affar', 'avslutad_ingen_affar']),
-  value: z.coerce.number().min(0, 'Värde måste vara positivt').optional(),
+  // A cleared <input type=number>/<select> emits '' — treat it as "no value"
+  // (undefined/null) instead of letting z.coerce turn it into 0 / a min() error.
+  value: z.preprocess(
+    (v) => (v === '' || v == null ? undefined : v),
+    z.coerce.number().min(0, 'Värde måste vara positivt').optional()
+  ),
   currency: z.enum(['SEK', 'EUR', 'USD', 'NOK', 'DKK']),
   responsible_user_id: z.string().uuid().optional().or(z.literal('')),
   reseller_id: z.string().uuid().optional().or(z.literal('')),
   project_id: z.string().uuid().optional().or(z.literal('')),
   quote_date: z.string().optional().or(z.literal('')),
-  heat: z.coerce.number().int().min(1).max(3).nullable().optional(),
+  heat: z.preprocess(
+    (v) => (v === '' || v == null ? null : v),
+    z.coerce.number().int().min(1).max(3).nullable()
+  ),
   fortnox_offer_documentnumber: z.string().optional().or(z.literal('')),
   machine_ids: z.array(z.string().uuid()).optional(),
 })

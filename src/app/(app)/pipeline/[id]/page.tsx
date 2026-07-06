@@ -148,7 +148,7 @@ export default async function DealDetailPage({
                 <div className="flex justify-between">
                   <span className="text-[#6B6B6B]">Värde</span>
                   <span className="font-semibold">
-                    {formatCurrency(deal.value)} {deal.currency}
+                    {formatCurrency(deal.value, deal.currency)}
                   </span>
                 </div>
               )}
