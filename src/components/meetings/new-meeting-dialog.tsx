@@ -41,6 +41,7 @@ export function NewMeetingDialog({
 }: NewMeetingDialogProps) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState('')
+  const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [participants, setParticipants] = useState('')
@@ -66,6 +67,7 @@ export function NewMeetingDialog({
       const id = await createMeeting({
         entity_type,
         entity_id,
+        title,
         meeting_date: date,
         meeting_time: time,
         participants,
@@ -97,6 +99,16 @@ export function NewMeetingDialog({
         </DialogHeader>
 
         <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label htmlFor="meeting-title">Titel</Label>
+            <Input
+              id="meeting-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="T.ex. Uppstartsmöte"
+            />
+          </div>
+
           {!fixedEntity && (
             <div className="grid gap-2">
               <Label htmlFor="meeting-entity">Bolag (valfritt)</Label>
