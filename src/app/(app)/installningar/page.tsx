@@ -6,9 +6,19 @@ import { getUsers } from '@/lib/queries/users'
 import { USER_ROLES } from '@/lib/constants'
 import { UserDialog, EditUserButton } from '@/components/settings/user-dialog'
 import { DeleteUserButton } from '@/components/settings/delete-user-button'
+import { FortnoxConnectionCard } from '@/components/settings/fortnox-connection-card'
+import { getConnection } from '@/lib/fortnox/store'
 
-export default async function InstallningarPage() {
-  const users = await getUsers()
+export default async function InstallningarPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ fortnox?: string }>
+}) {
+  const [users, fortnox, { fortnox: fortnoxStatus }] = await Promise.all([
+    getUsers(),
+    getConnection(),
+    searchParams,
+  ])
 
   const getRoleLabel = (role: string) =>
     USER_ROLES.find((r) => r.key === role)?.label ?? role
@@ -53,6 +63,12 @@ export default async function InstallningarPage() {
           </Link>
         ))}
       </div>
+
+      <FortnoxConnectionCard
+        connected={fortnox !== null}
+        companyName={fortnox?.company_name ?? null}
+        statusParam={fortnoxStatus}
+      />
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

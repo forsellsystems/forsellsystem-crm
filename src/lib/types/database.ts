@@ -91,6 +91,7 @@ export type Deal = {
   closed_at: string | null;
   expected_close_date: string | null;
   heat: 1 | 2 | 3 | null;
+  fortnox_offer_documentnumber: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;

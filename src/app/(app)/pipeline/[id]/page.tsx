@@ -21,6 +21,10 @@ import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
 import { EditDealDialog } from '@/components/pipeline/edit-deal-dialog'
 import { DeleteDealButton } from '@/components/pipeline/delete-deal-button'
+import { DealOfferCard } from '@/components/fortnox/deal-offer-card'
+import { isConnected } from '@/lib/fortnox/store'
+import { getOfferSummary } from '@/lib/fortnox/offers'
+import type { FortnoxOfferSummary } from '@/lib/fortnox/types'
 
 export default async function DealDetailPage({
   params,
@@ -38,6 +42,18 @@ export default async function DealDetailPage({
   ])
 
   if (!deal) notFound()
+
+  // Fortnox: connection status + (if linked) the live offer summary.
+  const fortnoxConnected = await isConnected()
+  let offerSummary: FortnoxOfferSummary | null = null
+  let offerError: string | null = null
+  if (fortnoxConnected && deal.fortnox_offer_documentnumber) {
+    try {
+      offerSummary = await getOfferSummary(deal.fortnox_offer_documentnumber)
+    } catch (err) {
+      offerError = err instanceof Error ? err.message : 'Kunde inte hämta offert.'
+    }
+  }
 
   const currentStageIndex = PIPELINE_STAGES.findIndex(
     (s) => s.key === deal.stage
@@ -203,6 +219,15 @@ export default async function DealDetailPage({
               )}
             </CardContent>
           </Card>
+
+          {/* Fortnox offer */}
+          <DealOfferCard
+            dealId={deal.id}
+            connected={fortnoxConnected}
+            linkedNumber={deal.fortnox_offer_documentnumber}
+            summary={offerSummary}
+            summaryError={offerError}
+          />
 
           {/* Machines */}
           {deal.machines && deal.machines.length > 0 && (

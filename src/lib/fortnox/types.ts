@@ -1,32 +1,51 @@
-// Fortnox API types — placeholder for future integration
+// Fortnox API types.
 
-export interface FortnoxCustomer {
-  CustomerNumber: string
-  Name: string
-  OrganisationNumber?: string
-  Address1?: string
-  ZipCode?: string
-  City?: string
-  Country?: string
-  Email?: string
-  Phone1?: string
-  WWW?: string
+// Token response from the OAuth token endpoint (both authorization_code + refresh_token grants).
+export interface FortnoxTokenResponse {
+  access_token: string
+  refresh_token: string
+  token_type: string
+  scope: string
+  expires_in: number // seconds (3600)
 }
 
+// Our stored connection row (public.fortnox_connection).
+export interface FortnoxConnection {
+  id: string
+  access_token: string
+  refresh_token: string
+  expires_at: string
+  scope: string | null
+  company_name: string | null
+  connected_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+// A Fortnox Offer (offert). Fortnox returns far more fields; we type the ones we use.
 export interface FortnoxOffer {
-  OfferNumber: string
-  CustomerNumber: string
-  OfferDate: string
-  Total: number
-  Currency: string
+  '@url'?: string
+  DocumentNumber: string
+  CustomerNumber?: string
+  CustomerName?: string
+  OfferDate?: string
+  Total?: number
+  Currency?: string
+  Sent?: boolean
+  Cancelled?: boolean
+  OrderReference?: string
   YourReference?: string
   OurReference?: string
 }
 
-export interface FortnoxConfig {
-  clientId: string
-  clientSecret: string
-  accessToken?: string
-  refreshToken?: string
-  baseUrl: string
+// Compact shape used by the offer picker in the deal UI.
+export interface FortnoxOfferSummary {
+  documentNumber: string
+  customerName: string | null
+  offerDate: string | null
+  total: number | null
+  currency: string | null
+  status: FortnoxOfferStatus
 }
+
+export type FortnoxOfferStatus = 'draft' | 'sent' | 'ordercreated' | 'cancelled'
