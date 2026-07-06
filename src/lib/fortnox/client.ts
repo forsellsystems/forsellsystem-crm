@@ -23,6 +23,11 @@ function expiresAtFrom(expiresInSeconds: number): string {
  * Return a valid access token, transparently refreshing (and persisting the
  * rotated refresh token) when the current one is expired or about to expire.
  */
+// Dedupe concurrent refreshes within this server instance so two renders in the
+// same request/instance don't both POST the rotating refresh token (the second
+// would get invalid_grant). Cross-instance races are handled by the re-read below.
+let refreshInFlight: Promise<string> | null = null
+
 async function getValidAccessToken(): Promise<string> {
   if (!fortnoxConfigured()) {
     throw new FortnoxNotConnectedError('Fortnox-credentials saknas i miljön')
@@ -34,26 +39,48 @@ async function getValidAccessToken(): Promise<string> {
   if (Date.now() < expiresMs - EXPIRY_MARGIN_MS) {
     return conn.access_token
   }
-  return refreshConnection(conn)
+  if (!refreshInFlight) {
+    refreshInFlight = refreshConnection(conn).finally(() => {
+      refreshInFlight = null
+    })
+  }
+  return refreshInFlight
 }
 
 async function refreshConnection(conn: FortnoxConnection): Promise<string> {
+  let tokens
   try {
-    const tokens = await refreshAccessToken(conn.refresh_token)
-    await updateTokens(conn.id, {
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expires_at: expiresAtFrom(tokens.expires_in),
-      scope: tokens.scope,
-    })
-    return tokens.access_token
+    tokens = await refreshAccessToken(conn.refresh_token)
   } catch (err) {
-    // A failed refresh almost always means the refresh token expired (45 days)
-    // or was revoked — the connection is dead and the user must reconnect.
+    const msg = err instanceof Error ? err.message : String(err)
+    // Another request may have already rotated the token — re-read and reuse it
+    // instead of falsely declaring the connection dead.
+    const fresh = await getConnection()
+    if (
+      fresh &&
+      fresh.refresh_token !== conn.refresh_token &&
+      new Date(fresh.expires_at).getTime() > Date.now() + EXPIRY_MARGIN_MS
+    ) {
+      return fresh.access_token
+    }
+    // Misconfigured client credentials is a config problem, NOT an expired
+    // connection — surface it distinctly so it isn't mistaken for "reconnect".
+    if (msg.includes('invalid_client')) {
+      throw new FortnoxNotConnectedError(
+        'Fortnox client-credentials (FORTNOX_CLIENT_ID/SECRET) är felaktiga i denna miljö.'
+      )
+    }
     throw new FortnoxNotConnectedError(
-      `Fortnox-anslutningen har gått ut, anslut igen. (${err instanceof Error ? err.message : 'okänt fel'})`
+      `Fortnox-anslutningen har gått ut, anslut igen. (${msg})`
     )
   }
+  await updateTokens(conn.id, {
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+    expires_at: expiresAtFrom(tokens.expires_in),
+    scope: tokens.scope,
+  })
+  return tokens.access_token
 }
 
 /**

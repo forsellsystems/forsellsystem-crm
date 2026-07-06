@@ -6,6 +6,19 @@ import { createClient } from '@/lib/supabase/server'
 import { companySchema, type CompanyFormData } from '@/lib/validations'
 import { logActivity, deleteActivityForEntity } from '@/lib/actions/activity-actions'
 
+type DbClient = Awaited<ReturnType<typeof createClient>>
+
+// Deals FK-cascade with the company, but their activity_log rows + notes do not —
+// clean those so LOGG doesn't keep dead /pipeline/<id> links after the company goes.
+async function cleanupCompanyDealArtifacts(supabase: DbClient, companyId: string) {
+  const { data: deals } = await supabase.from('deals').select('id').eq('company_id', companyId)
+  const dealIds = (deals ?? []).map((d) => d.id)
+  if (dealIds.length > 0) {
+    await supabase.from('notes').delete().eq('entity_type', 'deal').in('entity_id', dealIds)
+    await deleteActivityForEntity(supabase, 'deal', dealIds)
+  }
+}
+
 export async function createCompany(data: CompanyFormData) {
   const validated = companySchema.parse(data)
   const supabase = await createClient()
@@ -62,6 +75,20 @@ export async function deleteCompany(id: string) {
     .delete()
     .eq('entity_type', 'company')
     .eq('entity_id', id)
+
+  // Deals cascade with the company; their notes/activity + the company's own
+  // meetings/todos/notes are polymorphic (no FK) → clean them up explicitly.
+  await cleanupCompanyDealArtifacts(supabase, id)
+  const { data: meetings } = await supabase
+    .from('meetings')
+    .select('id')
+    .eq('entity_type', 'company')
+    .eq('entity_id', id)
+  const meetingIds = (meetings ?? []).map((m) => m.id)
+  if (meetingIds.length > 0) await deleteActivityForEntity(supabase, 'meeting', meetingIds)
+  await supabase.from('meetings').delete().eq('entity_type', 'company').eq('entity_id', id)
+  await supabase.from('todos').delete().eq('entity_type', 'company').eq('entity_id', id)
+  await supabase.from('notes').delete().eq('entity_type', 'company').eq('entity_id', id)
 
   await deleteActivityForEntity(supabase, 'company', id)
 
@@ -173,6 +200,22 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
       }))
     )
   }
+
+  // 5b. Re-anchor meetings + todos to the new prospect so their history follows
+  // the move, clean the doomed deals' artifacts, and drop the original company
+  // notes (they were copied to the prospect in step 4).
+  await cleanupCompanyDealArtifacts(supabase, companyId)
+  await supabase
+    .from('meetings')
+    .update({ entity_type: 'prospect', entity_id: prospect.id })
+    .eq('entity_type', 'company')
+    .eq('entity_id', companyId)
+  await supabase
+    .from('todos')
+    .update({ entity_type: 'prospect', entity_id: prospect.id })
+    .eq('entity_type', 'company')
+    .eq('entity_id', companyId)
+  await supabase.from('notes').delete().eq('entity_type', 'company').eq('entity_id', companyId)
 
   // 6. Delete company (and its projects)
   await supabase
