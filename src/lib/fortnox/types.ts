@@ -45,7 +45,4 @@ export interface FortnoxOfferSummary {
   offerDate: string | null
   total: number | null
   currency: string | null
-  status: FortnoxOfferStatus
 }
-
-export type FortnoxOfferStatus = 'draft' | 'sent' | 'ordercreated' | 'cancelled'

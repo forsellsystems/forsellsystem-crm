@@ -27,14 +27,7 @@ import { UnlinkOfferButton } from '@/components/fortnox/unlink-offer-button'
 import { isConnected } from '@/lib/fortnox/store'
 import { getOfferSummary } from '@/lib/fortnox/offers'
 import { syncDealFieldsFromOffer } from '@/lib/fortnox/sync'
-import type { FortnoxOfferSummary, FortnoxOfferStatus } from '@/lib/fortnox/types'
-
-const OFFER_STATUS: Record<FortnoxOfferStatus, { label: string; color: string }> = {
-  draft: { label: 'Utkast', color: '#9A9A9A' },
-  sent: { label: 'Skickad', color: '#D4A301' },
-  ordercreated: { label: 'Order skapad', color: '#4C9A5A' },
-  cancelled: { label: 'Annullerad', color: '#8B3D3D' },
-}
+import type { FortnoxOfferSummary } from '@/lib/fortnox/types'
 
 export default async function DealDetailPage({
   params,
@@ -205,18 +198,6 @@ export default async function DealDetailPage({
 
               {deal.fortnox_offer_documentnumber && (
                 <div className="border-t border-[#B8B8B8]/40 pt-3 space-y-2">
-                  {offerSummary && (
-                    <div className="flex justify-between items-center">
-                      <span className="text-[#6B6B6B]">Offertstatus</span>
-                      <span className="flex items-center gap-1.5">
-                        <span
-                          className="inline-block size-2 rounded-full"
-                          style={{ backgroundColor: OFFER_STATUS[offerSummary.status].color }}
-                        />
-                        {OFFER_STATUS[offerSummary.status].label}
-                      </span>
-                    </div>
-                  )}
                   <a
                     href={`/api/fortnox/offers/${encodeURIComponent(deal.fortnox_offer_documentnumber)}/pdf`}
                     target="_blank"

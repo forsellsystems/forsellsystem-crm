@@ -1,16 +1,5 @@
 import { fortnoxFetch, fortnoxJson } from './client'
-import type {
-  FortnoxOffer,
-  FortnoxOfferStatus,
-  FortnoxOfferSummary,
-} from './types'
-
-export function offerStatus(offer: FortnoxOffer): FortnoxOfferStatus {
-  if (offer.Cancelled) return 'cancelled'
-  if (offer.OrderReference && offer.OrderReference !== '0') return 'ordercreated'
-  if (offer.Sent) return 'sent'
-  return 'draft'
-}
+import type { FortnoxOffer, FortnoxOfferSummary } from './types'
 
 function toSummary(offer: FortnoxOffer): FortnoxOfferSummary {
   return {
@@ -19,7 +8,6 @@ function toSummary(offer: FortnoxOffer): FortnoxOfferSummary {
     offerDate: offer.OfferDate ?? null,
     total: typeof offer.Total === 'number' ? offer.Total : null,
     currency: offer.Currency ?? null,
-    status: offerStatus(offer),
   }
 }
 
