@@ -119,15 +119,52 @@ async function syncMeetingActivity(
   }
 }
 
+// A meeting linked to a deal/project MUST still anchor to a company/prospect so it
+// shows on the kund/agent/prospekt card. The anchor is derived from the link:
+// deal → its company; project → its parent. Otherwise the picked entity is used.
+async function resolveMeetingAnchor(
+  supabase: DbClient,
+  fields: {
+    entity_type?: string | null
+    entity_id?: string | null
+    deal_id?: string | null
+    project_id?: string | null
+  }
+): Promise<{ entity_type: string | null; entity_id: string | null }> {
+  if (fields.deal_id) {
+    const { data } = await supabase
+      .from('deals')
+      .select('company_id')
+      .eq('id', fields.deal_id)
+      .single()
+    if (data?.company_id) return { entity_type: 'company', entity_id: data.company_id }
+  }
+  if (fields.project_id) {
+    const { data } = await supabase
+      .from('projects')
+      .select('entity_type, entity_id')
+      .eq('id', fields.project_id)
+      .single()
+    if (data?.entity_type && data?.entity_id) {
+      return { entity_type: data.entity_type, entity_id: data.entity_id }
+    }
+  }
+  return { entity_type: fields.entity_type ?? null, entity_id: fields.entity_id ?? null }
+}
+
 export async function createMeeting(data: MeetingFormData): Promise<string> {
   const validated = meetingSchema.parse(data)
   const supabase = await createClient()
 
+  const anchor = await resolveMeetingAnchor(supabase, validated)
+
   const { data: meeting, error } = await supabase
     .from('meetings')
     .insert({
-      entity_type: validated.entity_type ?? null,
-      entity_id: validated.entity_id ?? null,
+      entity_type: anchor.entity_type,
+      entity_id: anchor.entity_id,
+      deal_id: validated.deal_id || null,
+      project_id: validated.project_id || null,
       title: validated.title || null,
       meeting_date: validated.meeting_date || null,
       meeting_time: validated.meeting_time || null,
@@ -144,13 +181,10 @@ export async function createMeeting(data: MeetingFormData): Promise<string> {
   // The popup can set a date at creation time, so log it right away — but only
   // if a date is present (syncMeetingActivity is a no-op for blank meetings,
   // which get logged later via updateMeeting once they get a date).
-  await syncMeetingActivity(
-    supabase,
-    meeting.id,
-    validated.entity_type ?? null,
-    validated.entity_id ?? null
-  )
-  revalidateEntity(validated.entity_type ?? null, validated.entity_id ?? null)
+  await syncMeetingActivity(supabase, meeting.id, anchor.entity_type, anchor.entity_id)
+  revalidateEntity(anchor.entity_type, anchor.entity_id)
+  if (validated.deal_id) revalidatePath(`/pipeline/${validated.deal_id}`)
+  if (validated.project_id) revalidatePath(`/projekt/${validated.project_id}`)
   revalidatePath('/logg')
   return meeting.id
 }
@@ -174,6 +208,14 @@ export async function updateMeeting(
 
   await syncMeetingActivity(supabase, id, entityType, entityId)
   revalidateEntity(entityType, entityId)
+  // Also refresh the linked deal/project pages, where this meeting is shown.
+  const { data: links } = await supabase
+    .from('meetings')
+    .select('deal_id, project_id')
+    .eq('id', id)
+    .single()
+  if (links?.deal_id) revalidatePath(`/pipeline/${links.deal_id}`)
+  if (links?.project_id) revalidatePath(`/projekt/${links.project_id}`)
   revalidatePath(`/moten/${id}`)
   revalidatePath('/logg')
 }

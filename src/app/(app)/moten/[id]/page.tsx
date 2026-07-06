@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Building2 } from 'lucide-react'
+import { ArrowLeft, Building2, Briefcase, FolderKanban } from 'lucide-react'
 import { getMeeting } from '@/lib/queries/meetings'
 import { formatDate } from '@/lib/utils'
 import { MeetingDetailCard } from '@/components/meetings/meeting-detail-card'
@@ -31,20 +31,40 @@ export default async function MoteDetailPage({
         </Link>
         <div>
           <h2 className="font-display text-3xl text-[#1A1A1A]">{title}</h2>
-          {meeting.entity_href ? (
-            <Link
-              href={meeting.entity_href}
-              className="flex items-center gap-1.5 text-sm text-[#656565] hover:underline mt-1"
-            >
-              <Building2 className="size-3.5" />
-              {meeting.entity_name}
-            </Link>
-          ) : (
-            <p className="flex items-center gap-1.5 text-sm text-[#6B6B6B] mt-1">
-              <Building2 className="size-3.5" />
-              {meeting.entity_name}
-            </p>
-          )}
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+            {meeting.entity_href ? (
+              <Link
+                href={meeting.entity_href}
+                className="flex items-center gap-1.5 text-[#656565] hover:underline"
+              >
+                <Building2 className="size-3.5" />
+                {meeting.entity_name}
+              </Link>
+            ) : (
+              <span className="flex items-center gap-1.5 text-[#6B6B6B]">
+                <Building2 className="size-3.5" />
+                {meeting.entity_name}
+              </span>
+            )}
+            {meeting.deal_href && meeting.deal_label && (
+              <Link
+                href={meeting.deal_href}
+                className="flex items-center gap-1.5 text-[#656565] hover:underline"
+              >
+                <Briefcase className="size-3.5" />
+                {meeting.deal_label}
+              </Link>
+            )}
+            {meeting.project_href && meeting.project_label && (
+              <Link
+                href={meeting.project_href}
+                className="flex items-center gap-1.5 text-[#656565] hover:underline"
+              >
+                <FolderKanban className="size-3.5" />
+                {meeting.project_label}
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 

@@ -5,8 +5,12 @@ import { PROJECT_TYPES } from '@/lib/constants'
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const companyId = searchParams.get('company_id')
+  const prospectId = searchParams.get('prospect_id')
 
-  if (!companyId) {
+  // Projects are polymorphic (company or prospect) — accept either.
+  const entityType = companyId ? 'company' : prospectId ? 'prospect' : null
+  const entityId = companyId ?? prospectId
+  if (!entityType || !entityId) {
     return NextResponse.json([])
   }
 
@@ -14,8 +18,8 @@ export async function GET(request: Request) {
   const { data, error } = await supabase
     .from('projects')
     .select('id, name, project_type')
-    .eq('entity_type', 'company')
-    .eq('entity_id', companyId)
+    .eq('entity_type', entityType)
+    .eq('entity_id', entityId)
     .order('created_at', { ascending: false })
 
   if (error) {

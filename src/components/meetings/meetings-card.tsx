@@ -14,7 +14,7 @@ export function MeetingsCard({
   meetings,
   editable = true,
 }: {
-  entityType: 'prospect' | 'company'
+  entityType: 'prospect' | 'company' | 'deal' | 'project'
   entityId: string
   meetings: Meeting[]
   editable?: boolean

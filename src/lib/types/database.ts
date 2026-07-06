@@ -138,6 +138,8 @@ export type Meeting = {
   id: string;
   entity_type: "prospect" | "company" | null;
   entity_id: string | null;
+  deal_id: string | null;
+  project_id: string | null;
   title: string | null;
   meeting_date: string | null;
   meeting_time: string | null;

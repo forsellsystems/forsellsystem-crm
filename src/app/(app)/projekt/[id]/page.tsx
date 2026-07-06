@@ -6,9 +6,11 @@ import { ArrowLeft, Building2 } from 'lucide-react'
 import { getProject } from '@/lib/queries/projects'
 import { getNotes } from '@/lib/queries/notes'
 import { getProjectDeals, getCompanyDeals } from '@/lib/queries/deals'
+import { getMeetingsForProject } from '@/lib/queries/meetings'
 import { PROJECT_TYPES } from '@/lib/constants'
 import { ProjectDetailCard } from '@/components/projects/project-detail-card'
 import { ProjectDealsCard } from '@/components/projects/project-deals-card'
+import { MeetingsCard } from '@/components/meetings/meetings-card'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
 
@@ -18,9 +20,10 @@ export default async function ProjektDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [project, notes] = await Promise.all([
+  const [project, notes, meetings] = await Promise.all([
     getProject(id),
     getNotes('project', id),
+    getMeetingsForProject(id),
   ])
 
   if (!project) notFound()
@@ -70,6 +73,8 @@ export default async function ProjektDetailPage({
               candidateDeals={candidateDeals}
             />
           )}
+
+          <MeetingsCard entityType="project" entityId={project.id} meetings={meetings} />
 
           <Card>
             <CardHeader>

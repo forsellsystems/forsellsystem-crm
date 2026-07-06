@@ -1,9 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
+import { PROJECT_TYPES } from '@/lib/constants'
 import type { Meeting, Todo } from '@/lib/types/database'
 
 export type MeetingWithEntity = Meeting & {
   entity_name: string
   entity_href: string | null
+  deal_label?: string | null
+  deal_href?: string | null
+  project_label?: string | null
+  project_href?: string | null
 }
 
 export type MeetingWithDetails = MeetingWithEntity & {
@@ -67,6 +72,33 @@ export async function getMeeting(id: string): Promise<MeetingWithDetails | null>
     entity_href = prospectHref(meeting.entity_id, data?.prospect_type ?? 'customer')
   }
 
+  // Optional deal/project links (for display on the meeting detail).
+  let deal_label: string | null = null
+  let deal_href: string | null = null
+  if (meeting.deal_id) {
+    const { data } = await supabase
+      .from('deals')
+      .select('quote_number')
+      .eq('id', meeting.deal_id)
+      .single()
+    deal_label = data?.quote_number ? `Affär #${data.quote_number}` : 'Affär'
+    deal_href = `/pipeline/${meeting.deal_id}`
+  }
+  let project_label: string | null = null
+  let project_href: string | null = null
+  if (meeting.project_id) {
+    const { data } = await supabase
+      .from('projects')
+      .select('name, project_type')
+      .eq('id', meeting.project_id)
+      .single()
+    project_label =
+      data?.name?.trim() ||
+      PROJECT_TYPES.find((t) => t.key === data?.project_type)?.label ||
+      'Projekt'
+    project_href = `/projekt/${meeting.project_id}`
+  }
+
   const { data: actionPoints } = await supabase
     .from('todos')
     .select('*')
@@ -78,8 +110,38 @@ export async function getMeeting(id: string): Promise<MeetingWithDetails | null>
     ...meeting,
     entity_name,
     entity_href,
+    deal_label,
+    deal_href,
+    project_label,
+    project_href,
     action_points: actionPoints ?? [],
   }
+}
+
+/** Meetings linked to a specific deal (shown on the deal detail page). */
+export async function getMeetingsForDeal(dealId: string): Promise<Meeting[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('meetings')
+    .select('*')
+    .eq('deal_id', dealId)
+    .order('meeting_date', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
+}
+
+/** Meetings linked to a specific project (shown on the project detail page). */
+export async function getMeetingsForProject(projectId: string): Promise<Meeting[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('meetings')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('meeting_date', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data ?? []
 }
 
 export async function getAllMeetings(): Promise<MeetingWithEntity[]> {
