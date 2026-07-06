@@ -23,6 +23,7 @@ export async function createDeal(data: DealFormData) {
       project_id: validated.project_id || null,
       quote_date: validated.quote_date || null,
       heat: validated.heat ?? null,
+      fortnox_offer_documentnumber: validated.fortnox_offer_documentnumber || null,
     })
     .select('id')
     .single()
@@ -69,6 +70,7 @@ export async function updateDeal(id: string, data: DealFormData) {
       project_id: validated.project_id || null,
       quote_date: validated.quote_date || null,
       heat: validated.heat ?? null,
+      fortnox_offer_documentnumber: validated.fortnox_offer_documentnumber || null,
     })
     .eq('id', id)
 

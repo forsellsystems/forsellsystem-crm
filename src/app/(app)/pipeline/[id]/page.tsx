@@ -9,6 +9,8 @@ import {
   User,
   Wrench,
   FolderKanban,
+  FileText,
+  ExternalLink,
 } from 'lucide-react'
 import { getDeal } from '@/lib/queries/deals'
 import { getNotes } from '@/lib/queries/notes'
@@ -21,10 +23,18 @@ import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
 import { EditDealDialog } from '@/components/pipeline/edit-deal-dialog'
 import { DeleteDealButton } from '@/components/pipeline/delete-deal-button'
-import { DealOfferCard } from '@/components/fortnox/deal-offer-card'
+import { UnlinkOfferButton } from '@/components/fortnox/unlink-offer-button'
 import { isConnected } from '@/lib/fortnox/store'
 import { getOfferSummary } from '@/lib/fortnox/offers'
-import type { FortnoxOfferSummary } from '@/lib/fortnox/types'
+import { syncDealFieldsFromOffer } from '@/lib/fortnox/sync'
+import type { FortnoxOfferSummary, FortnoxOfferStatus } from '@/lib/fortnox/types'
+
+const OFFER_STATUS: Record<FortnoxOfferStatus, { label: string; color: string }> = {
+  draft: { label: 'Utkast', color: '#9A9A9A' },
+  sent: { label: 'Skickad', color: '#D4A301' },
+  ordercreated: { label: 'Order skapad', color: '#4C9A5A' },
+  cancelled: { label: 'Annullerad', color: '#8B3D3D' },
+}
 
 export default async function DealDetailPage({
   params,
@@ -50,6 +60,20 @@ export default async function DealDetailPage({
   if (fortnoxConnected && deal.fortnox_offer_documentnumber) {
     try {
       offerSummary = await getOfferSummary(deal.fortnox_offer_documentnumber)
+      if (offerSummary) {
+        // Fortnox styr alltid: mirror the offer's figures onto the deal and
+        // render the fresh values immediately.
+        const synced = await syncDealFieldsFromOffer(deal.id, offerSummary, {
+          value: deal.value,
+          quote_number: deal.quote_number,
+          quote_date: deal.quote_date,
+          currency: deal.currency,
+        })
+        deal.value = synced.value
+        deal.quote_number = synced.quote_number
+        deal.quote_date = synced.quote_date
+        deal.currency = synced.currency
+      }
     } catch (err) {
       offerError = err instanceof Error ? err.message : 'Kunde inte hämta offert.'
     }
@@ -178,6 +202,35 @@ export default async function DealDetailPage({
                   </div>
                 )
               })()}
+
+              {deal.fortnox_offer_documentnumber && (
+                <div className="border-t border-[#B8B8B8]/40 pt-3 space-y-2">
+                  {offerSummary && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-[#6B6B6B]">Offertstatus</span>
+                      <span className="flex items-center gap-1.5">
+                        <span
+                          className="inline-block size-2 rounded-full"
+                          style={{ backgroundColor: OFFER_STATUS[offerSummary.status].color }}
+                        />
+                        {OFFER_STATUS[offerSummary.status].label}
+                      </span>
+                    </div>
+                  )}
+                  <a
+                    href={`/api/fortnox/offers/${encodeURIComponent(deal.fortnox_offer_documentnumber)}/pdf`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[#656565] hover:underline"
+                  >
+                    <FileText className="size-4" />
+                    Öppna offert-PDF
+                    <ExternalLink className="size-3" />
+                  </a>
+                  {offerError && <p className="text-xs text-[#8B3D3D]">{offerError}</p>}
+                  <UnlinkOfferButton dealId={deal.id} />
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -219,15 +272,6 @@ export default async function DealDetailPage({
               )}
             </CardContent>
           </Card>
-
-          {/* Fortnox offer */}
-          <DealOfferCard
-            dealId={deal.id}
-            connected={fortnoxConnected}
-            linkedNumber={deal.fortnox_offer_documentnumber}
-            summary={offerSummary}
-            summaryError={offerError}
-          />
 
           {/* Machines */}
           {deal.machines && deal.machines.length > 0 && (

@@ -47,13 +47,18 @@ export async function listOffers(limit = 50): Promise<FortnoxOfferSummary[]> {
   return (data.Offers ?? []).map(toSummary)
 }
 
-/** The offer rendered as a PDF (preview = no side effects, does not mark as sent). */
+/**
+ * The offer rendered as a PDF. `/preview` returns the PDF without side effects
+ * (unlike `/print`, which also flips the offer's Sent flag to true).
+ *
+ * Counterintuitive but required: the REQUEST's Accept header must stay
+ * application/json — Fortnox negotiates only json/xml, so Accept: application/pdf
+ * is rejected with error 1000030 "Invalid response type". The PDF still comes
+ * back as the raw (binary) response body. Confirmed by Fortnox's own C# SDK and
+ * the rantalainen JS client, both of which send Accept: application/json here.
+ */
 export async function getOfferPdf(documentNumber: string): Promise<ArrayBuffer> {
-  const res = await fortnoxFetch(
-    `/offers/${encodeURIComponent(documentNumber)}/preview`,
-    {},
-    { accept: 'application/pdf' }
-  )
+  const res = await fortnoxFetch(`/offers/${encodeURIComponent(documentNumber)}/preview`)
   if (!res.ok) {
     const text = await res.text().catch(() => '')
     throw new Error(`Fortnox hämta PDF misslyckades (${res.status}): ${text.slice(0, 200)}`)

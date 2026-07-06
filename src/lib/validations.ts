@@ -90,6 +90,7 @@ export const dealSchema = z.object({
   project_id: z.string().uuid().optional().or(z.literal('')),
   quote_date: z.string().optional().or(z.literal('')),
   heat: z.coerce.number().int().min(1).max(3).nullable().optional(),
+  fortnox_offer_documentnumber: z.string().optional().or(z.literal('')),
   machine_ids: z.array(z.string().uuid()).optional(),
 })
 

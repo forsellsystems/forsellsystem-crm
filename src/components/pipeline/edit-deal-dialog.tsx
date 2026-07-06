@@ -19,6 +19,9 @@ import { Label } from '@/components/ui/label'
 import { PIPELINE_STAGES, CURRENCIES, DEAL_HEAT_LEVELS } from '@/lib/constants'
 import { dealSchema, type DealFormData } from '@/lib/validations'
 import { updateDeal } from '@/lib/actions/deal-actions'
+import { fortnoxConnected as getFortnoxConnected } from '@/lib/actions/fortnox-actions'
+import { FortnoxOfferField } from '@/components/pipeline/fortnox-offer-field'
+import type { FortnoxOfferSummary } from '@/lib/fortnox/types'
 import type { DealWithRelations, User, Machine } from '@/lib/types/database'
 
 interface EditDealDialogProps {
@@ -37,6 +40,7 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
   const [selectedMachines, setSelectedMachines] = useState<string[]>(
     deal.machines.map((m) => m.id)
   )
+  const [fortnoxOk, setFortnoxOk] = useState(false)
   const router = useRouter()
 
   const {
@@ -59,11 +63,29 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
       project_id: deal.project_id ?? '',
       quote_date: deal.quote_date ?? '',
       heat: deal.heat ?? null,
+      fortnox_offer_documentnumber: deal.fortnox_offer_documentnumber ?? '',
       machine_ids: deal.machines.map((m) => m.id),
     },
   })
 
   const selectedCompanyId = watch('company_id')
+  const linkedOffer = watch('fortnox_offer_documentnumber') || ''
+
+  // Fortnox drives value/quote_number/quote_date while an offer is linked.
+  function linkOffer(summary: FortnoxOfferSummary) {
+    setValue('fortnox_offer_documentnumber', summary.documentNumber)
+    setValue('quote_number', summary.documentNumber)
+    if (summary.total != null) setValue('value', summary.total)
+    if (summary.offerDate) setValue('quote_date', summary.offerDate)
+    if (summary.currency) setValue('currency', summary.currency as DealFormData['currency'])
+  }
+  function unlinkOffer() {
+    setValue('fortnox_offer_documentnumber', '')
+  }
+
+  useEffect(() => {
+    if (open) getFortnoxConnected().then(setFortnoxOk).catch(() => setFortnoxOk(false))
+  }, [open])
 
   useEffect(() => {
     if (!selectedCompanyId) { setContacts([]); setProjects([]); return }
@@ -111,15 +133,24 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
           <DialogTitle>Redigera affär</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 max-h-[70vh] overflow-y-auto pr-1">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+          <div className="grid gap-4 max-h-[65vh] overflow-y-auto px-1">
+          <input type="hidden" {...register('fortnox_offer_documentnumber')} />
+          <FortnoxOfferField
+            connected={fortnoxOk}
+            linkedNumber={linkedOffer}
+            onLink={linkOffer}
+            onUnlink={unlinkOffer}
+          />
+
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="edit-deal-quote">Offertnummer</Label>
-              <Input id="edit-deal-quote" {...register('quote_number')} />
+              <Input id="edit-deal-quote" readOnly={!!linkedOffer} className="read-only:bg-[#F2F2F0] read-only:text-[#6B6B6B]" {...register('quote_number')} />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="edit-deal-quote-date">Offertdatum</Label>
-              <Input id="edit-deal-quote-date" type="date" {...register('quote_date')} />
+              <Input id="edit-deal-quote-date" type="date" readOnly={!!linkedOffer} className="read-only:bg-[#F2F2F0] read-only:text-[#6B6B6B]" {...register('quote_date')} />
             </div>
           </div>
 
@@ -127,8 +158,8 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
             <div className="grid gap-2">
               <Label htmlFor="edit-deal-value">Värde</Label>
               <div className="flex gap-2">
-                <Input id="edit-deal-value" type="number" className="flex-1" {...register('value')} />
-                <select className="flex h-8 w-20 rounded-lg border border-border bg-background px-2 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50" {...register('currency')}>
+                <Input id="edit-deal-value" type="number" readOnly={!!linkedOffer} className="flex-1 read-only:bg-[#F2F2F0] read-only:text-[#6B6B6B]" {...register('value')} />
+                <select disabled={!!linkedOffer} className="flex h-8 w-20 rounded-lg border border-border bg-background px-2 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50 disabled:opacity-60" {...register('currency')}>
                   {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
@@ -208,6 +239,7 @@ export function EditDealDialog({ deal, companies, resellers, users, machines }: 
           </div>
 
           {error && <p className="text-sm text-[#8B3D3D]">{error}</p>}
+          </div>
 
           <DialogFooter>
             <Button type="submit" disabled={isSubmitting}>

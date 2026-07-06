@@ -2,8 +2,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { deleteConnection } from '@/lib/fortnox/store'
-import { getOffer, getOfferSummary, listOffers } from '@/lib/fortnox/offers'
+import { deleteConnection, isConnected } from '@/lib/fortnox/store'
+import { getOfferSummary, listOffers } from '@/lib/fortnox/offers'
 import { FortnoxNotConnectedError } from '@/lib/fortnox/client'
 import type { FortnoxOfferSummary } from '@/lib/fortnox/types'
 
@@ -18,6 +18,11 @@ function fail(err: unknown): { ok: false; error: string } {
   return { ok: false, error: err instanceof Error ? err.message : 'Något gick fel' }
 }
 
+/** Whether the CRM has a live Fortnox connection (for showing the offer field). */
+export async function fortnoxConnected(): Promise<boolean> {
+  return isConnected()
+}
+
 /** Disconnect the Fortnox account (deletes stored tokens). */
 export async function disconnectFortnox(): Promise<Result> {
   try {
@@ -29,41 +34,23 @@ export async function disconnectFortnox(): Promise<Result> {
   }
 }
 
-/** Link a deal to an existing Fortnox offer, verifying the offer exists first. */
-export async function linkDealToOffer(
-  dealId: string,
+/** Look up a single offer by number (for previewing when linking in a dialog). */
+export async function fetchOfferSummary(
   documentNumber: string
 ): Promise<Result<FortnoxOfferSummary>> {
   const trimmed = documentNumber.trim()
   if (!trimmed) return { ok: false, error: 'Ange ett offertnummer.' }
-
   try {
-    const offer = await getOffer(trimmed)
-    if (!offer) {
-      return { ok: false, error: `Ingen offert med nummer ${trimmed} hittades i Fortnox.` }
-    }
-
-    const supabase = await createClient()
-    const { error } = await supabase
-      .from('deals')
-      .update({
-        fortnox_offer_documentnumber: String(offer.DocumentNumber),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', dealId)
-    if (error) throw new Error(error.message)
-
-    revalidatePath(`/pipeline/${dealId}`)
-    const summary = await getOfferSummary(String(offer.DocumentNumber))
+    const summary = await getOfferSummary(trimmed)
     return summary
       ? { ok: true, data: summary }
-      : { ok: false, error: 'Offerten kopplades men kunde inte läsas.' }
+      : { ok: false, error: `Ingen offert med nummer ${trimmed} hittades i Fortnox.` }
   } catch (err) {
     return fail(err)
   }
 }
 
-/** Remove the offer link from a deal. */
+/** Remove the offer link from a deal (inline, directly on the deal card). */
 export async function unlinkDealOffer(dealId: string): Promise<Result> {
   try {
     const supabase = await createClient()
@@ -73,13 +60,14 @@ export async function unlinkDealOffer(dealId: string): Promise<Result> {
       .eq('id', dealId)
     if (error) throw new Error(error.message)
     revalidatePath(`/pipeline/${dealId}`)
+    revalidatePath('/pipeline')
     return { ok: true }
   } catch (err) {
     return fail(err)
   }
 }
 
-/** Recent offers from Fortnox, for the picker in the deal UI. */
+/** Recent offers from Fortnox, for the picker in the deal dialogs. */
 export async function fetchRecentOffers(): Promise<Result<FortnoxOfferSummary[]>> {
   try {
     const offers = await listOffers(50)
