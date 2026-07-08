@@ -43,14 +43,12 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
           name: machine.name,
           category: machine.category,
           description: machine.description ?? '',
-          price: machine.price ?? undefined,
           currency: (machine.currency as MachineFormData['currency']) ?? 'SEK',
         }
       : {
           name: '',
           category: 'Element Handling',
           description: '',
-          price: undefined,
           currency: 'SEK',
         },
   })
@@ -123,27 +121,17 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="price">Pris (valfritt)</Label>
-            <div className="flex gap-2">
-              <Input
-                id="price"
-                type="number"
-                placeholder="0"
-                className="flex-1"
-                {...register('price')}
-              />
-              <select
-                className="flex h-8 w-20 rounded-lg border border-border bg-background px-2 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
-                {...register('currency')}
-              >
-                {CURRENCIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            {errors.price && (
-              <p className="text-xs text-[#8B3D3D]">{errors.price.message}</p>
-            )}
+            <Label htmlFor="currency">Valuta</Label>
+            <select
+              id="currency"
+              className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+              {...register('currency')}
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <p className="text-xs text-[#6B6B6B]">Priset räknas ihop från maskinens komponenter.</p>
           </div>
 
           <div className="grid gap-2">

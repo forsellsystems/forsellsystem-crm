@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,10 +19,13 @@ import { deleteMachine } from '@/lib/actions/machine-actions'
 export function DeleteMachineButton({
   machineId,
   machineName,
+  redirectTo,
 }: {
   machineId: string
   machineName: string
+  redirectTo?: string
 }) {
+  const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -30,6 +34,7 @@ export function DeleteMachineButton({
       setError(null)
       setIsDeleting(true)
       await deleteMachine(machineId)
+      if (redirectTo) router.push(redirectTo)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Kunde inte ta bort maskin')
       setIsDeleting(false)

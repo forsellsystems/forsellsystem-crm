@@ -67,9 +67,12 @@ export default async function MaskinerPage() {
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-[#1A1A1A]">
+                          <Link
+                            href={`/maskiner/${machine.id}`}
+                            className="font-medium text-[#1A1A1A] hover:underline"
+                          >
                             {machine.name}
-                          </span>
+                          </Link>
                           {!machine.is_active && (
                             <Badge variant="secondary">Inaktiv</Badge>
                           )}

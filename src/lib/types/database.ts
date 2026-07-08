@@ -70,9 +70,19 @@ export type Machine = {
   name: string;
   category: string;
   description: string | null;
-  price: number | null;
+  price: number | null; // cached sum of the machine's components
   currency: string;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MachineComponent = {
+  id: string;
+  machine_id: string;
+  name: string;
+  price: number;
+  sort_order: number;
   created_at: string;
   updated_at: string;
 };
