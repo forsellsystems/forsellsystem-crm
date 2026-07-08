@@ -67,6 +67,18 @@ export const MACHINE_CATEGORIES = [
 
 export type MachineCategory = (typeof MACHINE_CATEGORIES)[number]["key"];
 
+// Teman för maskinernas kunskapsbank (frågor att ställa kunden). Frågor utan
+// tema visas under "Övrigt".
+export const QUESTION_CATEGORIES = [
+  { key: "produktion", label: "Produktion & kapacitet" },
+  { key: "byggnad", label: "Byggnad & moduler" },
+  { key: "teknik", label: "Teknik & installation" },
+  { key: "logistik", label: "Logistik & montage" },
+  { key: "ekonomi", label: "Budget & beslut" },
+] as const;
+
+export type QuestionCategory = (typeof QUESTION_CATEGORIES)[number]["key"];
+
 export const USER_ROLES = [
   { key: "admin", label: "Administratör" },
   { key: "salesperson", label: "Säljare" },

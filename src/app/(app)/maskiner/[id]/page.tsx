@@ -3,10 +3,11 @@ import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft } from 'lucide-react'
-import { getMachine, getMachineComponents } from '@/lib/queries/machines'
+import { getMachine, getMachineComponents, getMachineQuestions } from '@/lib/queries/machines'
 import { DeleteMachineButton } from '@/components/machines/delete-machine-button'
 import { MachineDetailCard } from '@/components/machines/machine-detail-card'
 import { MachineComponentsCard } from '@/components/machines/machine-components-card'
+import { MachineKnowledgeCard } from '@/components/machines/machine-knowledge-card'
 
 export default async function MachineDetailPage({
   params,
@@ -14,9 +15,10 @@ export default async function MachineDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [machine, components] = await Promise.all([
+  const [machine, components, questions] = await Promise.all([
     getMachine(id),
     getMachineComponents(id),
+    getMachineQuestions(id),
   ])
 
   if (!machine) notFound()
@@ -56,6 +58,8 @@ export default async function MachineDetailPage({
           )}
         </div>
       </div>
+
+      <MachineKnowledgeCard machineId={machine.id} questions={questions} />
     </div>
   )
 }

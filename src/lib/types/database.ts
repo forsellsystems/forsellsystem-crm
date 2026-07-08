@@ -93,6 +93,17 @@ export type MachineComponent = {
   updated_at: string;
 };
 
+export type MachineQuestion = {
+  id: string;
+  machine_id: string;
+  category: string | null; // NULL = inget tema (visas under "Övrigt")
+  question: string;
+  note: string | null; // valfri "varför / vad svaret påverkar"
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Deal = {
   id: string;
   quote_number: string | null;

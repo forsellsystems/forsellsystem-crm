@@ -43,6 +43,15 @@ export const machineComponentSchema = z.object({
 
 export type MachineComponentFormData = z.infer<typeof machineComponentSchema>
 
+// Kunskapsbank: en fråga att ställa kunden, valfritt tema + valfri notering.
+export const machineQuestionSchema = z.object({
+  question: z.string().min(1, 'Fråga krävs'),
+  category: z.string().optional().or(z.literal('')),
+  note: z.string().optional(),
+})
+
+export type MachineQuestionFormData = z.infer<typeof machineQuestionSchema>
+
 // ============================================
 // USERS
 // ============================================

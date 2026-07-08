@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Machine, MachineComponent } from '@/lib/types/database'
+import type { Machine, MachineComponent, MachineQuestion } from '@/lib/types/database'
 
 export async function getMachines(): Promise<Machine[]> {
   const supabase = await createClient()
@@ -29,6 +29,19 @@ export async function getMachineComponents(machineId: string): Promise<MachineCo
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('machine_components')
+    .select('*')
+    .eq('machine_id', machineId)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getMachineQuestions(machineId: string): Promise<MachineQuestion[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('machine_questions')
     .select('*')
     .eq('machine_id', machineId)
     .order('sort_order', { ascending: true })
