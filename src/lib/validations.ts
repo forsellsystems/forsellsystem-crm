@@ -7,6 +7,12 @@ export const machineSchema = z.object({
   name: z.string().min(1, 'Namn krävs'),
   category: z.string().min(1, 'Kategori krävs'),
   description: z.string().optional(),
+  // A cleared price input emits '' — treat it as "no price" (undefined).
+  price: z.preprocess(
+    (v) => (v === '' || v == null ? undefined : v),
+    z.coerce.number().min(0, 'Pris måste vara positivt').optional()
+  ),
+  currency: z.enum(['SEK', 'EUR', 'USD', 'NOK', 'DKK']),
 })
 
 export type MachineFormData = z.infer<typeof machineSchema>

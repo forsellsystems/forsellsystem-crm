@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Wrench, ArrowLeft } from 'lucide-react'
 import { getMachines } from '@/lib/queries/machines'
+import { formatCurrency } from '@/lib/utils'
 import { MachineDialog, EditMachineButton } from '@/components/machines/machine-dialog'
 import { DeleteMachineButton } from '@/components/machines/delete-machine-button'
 
@@ -73,6 +74,11 @@ export default async function MaskinerPage() {
                             <Badge variant="secondary">Inaktiv</Badge>
                           )}
                         </div>
+                        {machine.price != null && (
+                          <p className="text-sm font-semibold text-[#1A1A1A]">
+                            {formatCurrency(machine.price, machine.currency)}
+                          </p>
+                        )}
                         {machine.description && (
                           <p className="text-sm text-[#6B6B6B]">
                             {machine.description}

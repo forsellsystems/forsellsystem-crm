@@ -70,6 +70,8 @@ export type Machine = {
   name: string;
   category: string;
   description: string | null;
+  price: number | null;
+  currency: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;

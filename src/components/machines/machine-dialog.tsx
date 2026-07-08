@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { MACHINE_CATEGORIES } from '@/lib/constants'
+import { MACHINE_CATEGORIES, CURRENCIES } from '@/lib/constants'
 import { machineSchema, type MachineFormData } from '@/lib/validations'
 import { createMachine, updateMachine } from '@/lib/actions/machine-actions'
 import type { Machine } from '@/lib/types/database'
@@ -43,11 +43,15 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
           name: machine.name,
           category: machine.category,
           description: machine.description ?? '',
+          price: machine.price ?? undefined,
+          currency: (machine.currency as MachineFormData['currency']) ?? 'SEK',
         }
       : {
           name: '',
           category: 'Element Handling',
           description: '',
+          price: undefined,
+          currency: 'SEK',
         },
   })
 
@@ -115,6 +119,30 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
               <p className="text-xs text-[#8B3D3D]">
                 {errors.category.message}
               </p>
+            )}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="price">Pris (valfritt)</Label>
+            <div className="flex gap-2">
+              <Input
+                id="price"
+                type="number"
+                placeholder="0"
+                className="flex-1"
+                {...register('price')}
+              />
+              <select
+                className="flex h-8 w-20 rounded-lg border border-border bg-background px-2 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                {...register('currency')}
+              >
+                {CURRENCIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            {errors.price && (
+              <p className="text-xs text-[#8B3D3D]">{errors.price.message}</p>
             )}
           </div>
 

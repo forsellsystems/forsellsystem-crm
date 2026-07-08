@@ -12,6 +12,8 @@ export async function createMachine(data: MachineFormData) {
     name: validated.name,
     category: validated.category,
     description: validated.description || null,
+    price: validated.price ?? null,
+    currency: validated.currency,
   })
 
   if (error) throw new Error(`Kunde inte skapa maskin: ${error.message}`)
@@ -28,6 +30,9 @@ export async function updateMachine(id: string, data: MachineFormData) {
       name: validated.name,
       category: validated.category,
       description: validated.description || null,
+      price: validated.price ?? null,
+      currency: validated.currency,
+      updated_at: new Date().toISOString(),
     })
     .eq('id', id)
 
