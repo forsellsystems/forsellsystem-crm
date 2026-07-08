@@ -78,9 +78,11 @@ export default async function MaskinerPage() {
                             <Badge variant="secondary">Inaktiv</Badge>
                           )}
                         </div>
-                        {machine.price != null && (
+                        {machine.price_min != null && (
                           <p className="text-sm font-semibold text-[#1A1A1A]">
-                            {formatCurrency(machine.price, machine.currency)}
+                            {machine.price_max != null && machine.price_max > machine.price_min
+                              ? `${formatCurrency(machine.price_min, machine.currency)} – ${formatCurrency(machine.price_max, machine.currency)}`
+                              : formatCurrency(machine.price_min, machine.currency)}
                           </p>
                         )}
                         {machine.description && (

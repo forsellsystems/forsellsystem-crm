@@ -6,17 +6,22 @@ import { machineComponentSchema, type MachineComponentFormData } from '@/lib/val
 
 type DbClient = Awaited<ReturnType<typeof createClient>>
 
-// The machine's price is the sum of its components — cache it back onto the
-// machine row whenever the component list changes.
+// The machine's price is the range summed from its components (price × quantity).
+// Cache both bounds back onto the machine whenever the component list changes.
 async function recomputeMachinePrice(supabase: DbClient, machineId: string) {
   const { data } = await supabase
     .from('machine_components')
-    .select('price')
+    .select('price_min, price_max, quantity')
     .eq('machine_id', machineId)
-  const sum = (data ?? []).reduce((s, c) => s + (Number(c.price) || 0), 0)
+  const rows = data ?? []
+  const priceMin = rows.reduce((s, c) => s + (Number(c.price_min) || 0) * (Number(c.quantity) || 1), 0)
+  const priceMax = rows.reduce(
+    (s, c) => s + (Number(c.price_max ?? c.price_min) || 0) * (Number(c.quantity) || 1),
+    0
+  )
   await supabase
     .from('machines')
-    .update({ price: sum, updated_at: new Date().toISOString() })
+    .update({ price_min: priceMin, price_max: priceMax, updated_at: new Date().toISOString() })
     .eq('id', machineId)
 }
 
@@ -25,15 +30,23 @@ function revalidate(machineId: string) {
   revalidatePath('/maskiner')
 }
 
+// price_max is only stored when it differs from price_min (a real range).
+function rowFrom(v: MachineComponentFormData) {
+  return {
+    name: v.name,
+    price_min: v.price_min,
+    price_max: v.price_max != null && v.price_max !== v.price_min ? v.price_max : null,
+    quantity: v.quantity,
+  }
+}
+
 export async function createComponent(machineId: string, data: MachineComponentFormData) {
   const validated = machineComponentSchema.parse(data)
   const supabase = await createClient()
 
-  const { error } = await supabase.from('machine_components').insert({
-    machine_id: machineId,
-    name: validated.name,
-    price: validated.price,
-  })
+  const { error } = await supabase
+    .from('machine_components')
+    .insert({ machine_id: machineId, ...rowFrom(validated) })
   if (error) throw new Error(`Kunde inte lägga till komponent: ${error.message}`)
 
   await recomputeMachinePrice(supabase, machineId)
@@ -50,7 +63,7 @@ export async function updateComponent(
 
   const { error } = await supabase
     .from('machine_components')
-    .update({ name: validated.name, price: validated.price, updated_at: new Date().toISOString() })
+    .update({ ...rowFrom(validated), updated_at: new Date().toISOString() })
     .eq('id', id)
   if (error) throw new Error(`Kunde inte uppdatera komponent: ${error.message}`)
 

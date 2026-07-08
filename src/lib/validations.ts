@@ -7,17 +7,37 @@ export const machineSchema = z.object({
   name: z.string().min(1, 'Namn krävs'),
   category: z.string().min(1, 'Kategori krävs'),
   description: z.string().optional(),
-  // Price is derived from the machine's components; only the currency is set here.
   currency: z.enum(['SEK', 'EUR', 'USD', 'NOK', 'DKK']),
+  // Component-based pricing vs a direct price range on the machine. The price
+  // fields are only used (and only sent) when has_components is false.
+  has_components: z.boolean().optional(),
+  price_min: z.preprocess(
+    (v) => (v === '' || v == null ? 0 : v),
+    z.coerce.number().min(0, 'Pris måste vara positivt')
+  ).optional(),
+  price_max: z.preprocess(
+    (v) => (v === '' || v == null ? undefined : v),
+    z.coerce.number().min(0, 'Pris måste vara positivt').optional()
+  ),
 })
 
 export type MachineFormData = z.infer<typeof machineSchema>
 
 export const machineComponentSchema = z.object({
   name: z.string().min(1, 'Namn krävs'),
-  price: z.preprocess(
+  // Price range: price_min is the "from" bound; price_max ('' → undefined) is an
+  // optional "to" bound (omitted = single price).
+  price_min: z.preprocess(
     (v) => (v === '' || v == null ? 0 : v),
     z.coerce.number().min(0, 'Pris måste vara positivt')
+  ),
+  price_max: z.preprocess(
+    (v) => (v === '' || v == null ? undefined : v),
+    z.coerce.number().min(0, 'Pris måste vara positivt').optional()
+  ),
+  quantity: z.preprocess(
+    (v) => (v === '' || v == null ? 1 : v),
+    z.coerce.number().int().min(1, 'Antal måste vara minst 1')
   ),
 })
 

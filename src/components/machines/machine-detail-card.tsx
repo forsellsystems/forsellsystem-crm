@@ -9,12 +9,15 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { MACHINE_CATEGORIES, CURRENCIES } from '@/lib/constants'
+import { formatCurrency } from '@/lib/utils'
 import { updateMachine } from '@/lib/actions/machine-actions'
 import type { MachineFormData } from '@/lib/validations'
 import type { Machine } from '@/lib/types/database'
 
 const selectClass =
   'flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50'
+const priceInput =
+  'flex-1 min-w-0 rounded-lg border border-border bg-background px-2.5 h-8 text-sm text-right outline-none focus:border-ring focus:ring-3 focus:ring-ring/50'
 
 export function MachineDetailCard({ machine }: { machine: Machine }) {
   const router = useRouter()
@@ -26,12 +29,30 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
   const [category, setCategory] = useState(machine.category)
   const [currency, setCurrency] = useState(machine.currency)
   const [description, setDescription] = useState(machine.description ?? '')
+  const [hasComponents, setHasComponents] = useState(machine.has_components)
+  const [priceMin, setPriceMin] = useState(machine.price_min != null ? String(machine.price_min) : '')
+  const [priceMax, setPriceMax] = useState(machine.price_max != null ? String(machine.price_max) : '')
+
+  const num = (s: string) => {
+    const n = Number(s)
+    return Number.isFinite(n) ? n : 0
+  }
+  const fmt = (v: number) => formatCurrency(v, machine.currency)
+  const priceLabel = (() => {
+    if (machine.price_min == null) return '—'
+    const min = machine.price_min
+    const max = machine.price_max ?? min
+    return max > min ? `${fmt(min)} – ${fmt(max)}` : fmt(min)
+  })()
 
   function cancel() {
     setName(machine.name)
     setCategory(machine.category)
     setCurrency(machine.currency)
     setDescription(machine.description ?? '')
+    setHasComponents(machine.has_components)
+    setPriceMin(machine.price_min != null ? String(machine.price_min) : '')
+    setPriceMax(machine.price_max != null ? String(machine.price_max) : '')
     setError(null)
     setEditing(false)
   }
@@ -46,6 +67,9 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
           category,
           description,
           currency: currency as MachineFormData['currency'],
+          has_components: hasComponents,
+          price_min: num(priceMin),
+          price_max: priceMax.trim() === '' ? undefined : num(priceMax),
         })
         setEditing(false)
         router.refresh()
@@ -90,6 +114,28 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
                 ))}
               </select>
             </div>
+
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hasComponents}
+                onChange={(e) => setHasComponents(e.target.checked)}
+                className="rounded border-border"
+              />
+              Prissätt via komponenter
+            </label>
+
+            {!hasComponents && (
+              <div className="grid gap-1.5">
+                <Label className="text-xs text-[#6B6B6B]">Pris (från – till)</Label>
+                <div className="flex items-center gap-2">
+                  <input type="number" value={priceMin} onChange={(e) => setPriceMin(e.target.value)} placeholder="Pris från" className={priceInput} aria-label="Pris från" />
+                  <span className="text-xs text-[#6B6B6B]">–</span>
+                  <input type="number" value={priceMax} onChange={(e) => setPriceMax(e.target.value)} placeholder="Till (valfritt)" className={priceInput} aria-label="Pris till (valfritt)" />
+                </div>
+              </div>
+            )}
+
             <div className="grid gap-1.5">
               <Label className="text-xs text-[#6B6B6B]">Beskrivning</Label>
               <Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
@@ -109,6 +155,14 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Kategori</span>
               <span>{machine.category}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B6B6B]">Pris</span>
+              <span className="font-semibold">{priceLabel}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-[#6B6B6B]">Prissättning</span>
+              <span>{machine.has_components ? 'Via komponenter' : 'Direkt pris'}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Valuta</span>

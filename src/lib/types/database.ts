@@ -70,7 +70,11 @@ export type Machine = {
   name: string;
   category: string;
   description: string | null;
-  price: number | null; // cached sum of the machine's components
+  // Price range. When has_components: cached sum of the component ranges.
+  // Otherwise: a direct price range set on the machine. price_max NULL = single price.
+  has_components: boolean;
+  price_min: number | null;
+  price_max: number | null;
   currency: string;
   is_active: boolean;
   created_at: string;
@@ -81,7 +85,9 @@ export type MachineComponent = {
   id: string;
   machine_id: string;
   name: string;
-  price: number;
+  price_min: number;
+  price_max: number | null; // NULL = single price (= price_min)
+  quantity: number;
   sort_order: number;
   created_at: string;
   updated_at: string;
