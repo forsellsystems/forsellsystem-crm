@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Wrench, ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Wrench, ArrowLeft, Pencil } from 'lucide-react'
 import { getMachines } from '@/lib/queries/machines'
 import { formatCurrency } from '@/lib/utils'
-import { MachineDialog, EditMachineButton } from '@/components/machines/machine-dialog'
+import { MachineDialog } from '@/components/machines/machine-dialog'
 import { DeleteMachineButton } from '@/components/machines/delete-machine-button'
 
 export default async function MaskinerPage() {
@@ -89,7 +90,11 @@ export default async function MaskinerPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1">
-                        <EditMachineButton machine={machine} />
+                        <Link href={`/maskiner/${machine.id}`}>
+                          <Button variant="ghost" size="icon-sm">
+                            <Pencil className="size-3.5" />
+                          </Button>
+                        </Link>
                         <DeleteMachineButton
                           machineId={machine.id}
                           machineName={machine.name}

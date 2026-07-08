@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { formResolver } from '@/lib/form-resolver'
-import { Plus, Pencil } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -163,11 +163,3 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
   )
 }
 
-export function EditMachineButton({ machine }: { machine: Machine }) {
-  return (
-    <MachineDialog
-      machine={machine}
-      trigger={<Button variant="ghost" size="icon-sm"><Pencil className="size-3.5" /></Button>}
-    />
-  )
-}
