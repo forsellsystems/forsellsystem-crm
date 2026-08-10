@@ -187,3 +187,51 @@ export async function getAllMeetings(): Promise<MeetingWithEntity[]> {
     return { ...m, entity_name: 'Internt', entity_href: null }
   })
 }
+
+// Upcoming (today and forward) meetings for the dashboard agenda, soonest first.
+// Cancelled meetings are dropped in JS since .neq would also filter NULL status.
+export async function getUpcomingMeetings(limit = 5): Promise<MeetingWithEntity[]> {
+  const supabase = await createClient()
+  const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+
+  const { data: meetings, error } = await supabase
+    .from('meetings')
+    .select('*')
+    .gte('meeting_date', today)
+    .order('meeting_date', { ascending: true, nullsFirst: false })
+    .order('meeting_time', { ascending: true, nullsFirst: false })
+
+  if (error) throw error
+
+  const upcoming = (meetings ?? [])
+    .filter((m) => m.status !== 'installt')
+    .slice(0, limit)
+  if (!upcoming.length) return []
+
+  const [companiesRes, prospectsRes] = await Promise.all([
+    supabase.from('companies').select('id, name, is_reseller'),
+    supabase.from('prospects').select('id, company_name, prospect_type'),
+  ])
+  const companyMap = new Map((companiesRes.data ?? []).map((c) => [c.id, c]))
+  const prospectMap = new Map((prospectsRes.data ?? []).map((p) => [p.id, p]))
+
+  return upcoming.map((m) => {
+    if (m.entity_type === 'company' && m.entity_id) {
+      const c = companyMap.get(m.entity_id)
+      return {
+        ...m,
+        entity_name: c?.name ?? 'Okänt',
+        entity_href: companyHref(m.entity_id, c?.is_reseller ?? false),
+      }
+    }
+    if (m.entity_type === 'prospect' && m.entity_id) {
+      const p = prospectMap.get(m.entity_id)
+      return {
+        ...m,
+        entity_name: p?.company_name ?? 'Okänt',
+        entity_href: prospectHref(m.entity_id, p?.prospect_type ?? 'customer'),
+      }
+    }
+    return { ...m, entity_name: 'Internt', entity_href: null }
+  })
+}

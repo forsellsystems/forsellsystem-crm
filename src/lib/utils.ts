@@ -31,6 +31,21 @@ export function formatDayLabel(date: string | Date): string {
   return format(d, "d MMMM yyyy", { locale: sv });
 }
 
+/** Compact weekday + date, e.g. "ons 12 aug" — for grouped agenda rows. */
+export function formatWeekdayDate(date: string | Date): string {
+  return format(new Date(date), "EEE d MMM", { locale: sv });
+}
+
+/** Short weekday, e.g. "ons" — for date badges. */
+export function formatWeekdayAbbrev(date: string | Date): string {
+  return format(new Date(date), "EEE", { locale: sv });
+}
+
+/** Short month, e.g. "aug" — for date badges. */
+export function formatMonthAbbrev(date: string | Date): string {
+  return format(new Date(date), "MMM", { locale: sv });
+}
+
 export function formatCurrency(value: number, currency: string = "SEK"): string {
   return new Intl.NumberFormat("sv-SE", {
     style: "currency",
