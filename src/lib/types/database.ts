@@ -18,6 +18,7 @@ export type Company = {
   org_number: string | null;
   factory_type: "modulfabrik" | "vagg_tak_fabrik" | "badrum" | null;
   building_types: string[];
+  material: string | null;
   country: string;
   phone: string | null;
   email: string | null;
@@ -50,6 +51,7 @@ export type Prospect = {
   prospect_type: "customer" | "reseller";
   factory_type: "modulfabrik" | "vagg_tak_fabrik" | "badrum" | null;
   building_types: string[];
+  material: string | null;
   country: string;
   contact_person: string | null;
   email: string | null;
@@ -176,6 +178,8 @@ export type Meeting = {
   agenda: string | null;
   notes: string | null;
   participants: string | null;
+  outlook_event_id: string | null;
+  outlook_web_link: string | null;
   created_at: string;
   updated_at: string;
 };

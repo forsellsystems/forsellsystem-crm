@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { updateProspectFields } from '@/lib/actions/prospect-actions'
-import { FACTORY_TYPES, BUILDING_TYPES, COUNTRIES } from '@/lib/constants'
+import { FACTORY_TYPES, BUILDING_TYPES, COUNTRIES, MATERIALS } from '@/lib/constants'
+import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown'
 import { formatDate } from '@/lib/utils'
 import type { Prospect } from '@/lib/types/database'
 
@@ -24,6 +25,7 @@ export function ProspectDetailsCard({
   const [values, setValues] = useState({
     factory_type: prospect.factory_type ?? '',
     building_types: prospect.building_types ?? [] as string[],
+    material: prospect.material ?? '',
     country: prospect.country,
     reseller_id: prospect.reseller_id ?? '',
   })
@@ -42,10 +44,14 @@ export function ProspectDetailsCard({
     .filter(Boolean)
     .join(', ')
 
+  const materialLabel =
+    MATERIALS.find((m) => m.key === prospect.material)?.label ?? null
+
   function handleEdit() {
     setValues({
       factory_type: prospect.factory_type ?? '',
       building_types: prospect.building_types ?? [],
+      material: prospect.material ?? '',
       country: prospect.country,
       reseller_id: prospect.reseller_id ?? '',
     })
@@ -95,25 +101,27 @@ export function ProspectDetailsCard({
               </div>
             )}
             {!isReseller && (
-              <div className="grid gap-1.5">
-                <Label className="text-xs text-[#6B6B6B]">Byggnadstyp</Label>
-                <div className="flex gap-3">
-                  {BUILDING_TYPES.map((bt) => (
-                    <label key={bt.key} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={values.building_types.includes(bt.key)}
-                        onChange={() => {
-                          const next = values.building_types.includes(bt.key)
-                            ? values.building_types.filter((k) => k !== bt.key)
-                            : [...values.building_types, bt.key]
-                          setValues((v) => ({ ...v, building_types: next }))
-                        }}
-                        className="accent-[#656565]"
-                      />
-                      {bt.label}
-                    </label>
-                  ))}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-1.5">
+                  <Label className="text-xs text-[#6B6B6B]">Byggnadstyp</Label>
+                  <MultiSelectDropdown
+                    options={BUILDING_TYPES}
+                    value={values.building_types}
+                    onChange={(next) => setValues((v) => ({ ...v, building_types: next }))}
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <Label className="text-xs text-[#6B6B6B]">Material</Label>
+                  <select
+                    className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                    value={values.material}
+                    onChange={(e) => setValues((v) => ({ ...v, material: e.target.value }))}
+                  >
+                    <option value="">—</option>
+                    {MATERIALS.map((m) => (
+                      <option key={m.key} value={m.key}>{m.label}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             )}
@@ -167,6 +175,12 @@ export function ProspectDetailsCard({
               <div className="flex justify-between">
                 <span className="text-[#6B6B6B]">Byggnadstyp</span>
                 <span>{buildingLabels}</span>
+              </div>
+            )}
+            {!isReseller && materialLabel && (
+              <div className="flex justify-between">
+                <span className="text-[#6B6B6B]">Material</span>
+                <span>{materialLabel}</span>
               </div>
             )}
             <div className="flex justify-between">

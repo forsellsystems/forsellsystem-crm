@@ -18,6 +18,7 @@ export async function createProspect(data: ProspectFormData) {
       prospect_type: prospectType,
       factory_type: validated.factory_type || null,
       building_types: validated.building_types ?? [],
+      material: validated.material || null,
       country: validated.country,
       contact_person: validated.contact_person || null,
       email: validated.email || null,
@@ -51,6 +52,7 @@ export async function updateProspect(id: string, data: ProspectFormData) {
       company_name: validated.company_name,
       factory_type: validated.factory_type || null,
       building_types: validated.building_types ?? [],
+      material: validated.material || null,
       country: validated.country,
       contact_person: validated.contact_person || null,
       email: validated.email || null,
@@ -69,7 +71,7 @@ export async function updateProspect(id: string, data: ProspectFormData) {
 
 export async function updateProspectFields(
   id: string,
-  fields: Partial<Record<'contact_person' | 'email' | 'phone' | 'website' | 'description' | 'factory_type' | 'country' | 'reseller_id', string | null> & { building_types: string[] }>
+  fields: Partial<Record<'contact_person' | 'email' | 'phone' | 'website' | 'description' | 'factory_type' | 'material' | 'country' | 'reseller_id', string | null> & { building_types: string[] }>
 ) {
   const supabase = await createClient()
 
@@ -115,6 +117,7 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
       name: prospect.company_name,
       factory_type: prospect.factory_type,
       building_types: prospect.building_types ?? [],
+      material: prospect.material ?? null,
       country: prospect.country,
       email: prospect.email || null,
       phone: prospect.phone || null,

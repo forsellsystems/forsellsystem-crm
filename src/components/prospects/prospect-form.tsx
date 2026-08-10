@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { FACTORY_TYPES, BUILDING_TYPES, COUNTRIES } from '@/lib/constants'
+import { FACTORY_TYPES, BUILDING_TYPES, COUNTRIES, MATERIALS } from '@/lib/constants'
+import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown'
 import { prospectSchema, type ProspectFormData } from '@/lib/validations'
 import { createProspect, updateProspect } from '@/lib/actions/prospect-actions'
 import type { Prospect } from '@/lib/types/database'
@@ -37,6 +38,7 @@ export function ProspectForm({ prospect, prospectType = 'customer', resellers = 
           prospect_type: prospect.prospect_type,
           factory_type: prospect.factory_type ?? '',
           building_types: prospect.building_types ?? [],
+          material: prospect.material ?? '',
           country: prospect.country,
           contact_person: prospect.contact_person ?? '',
           email: prospect.email ?? '',
@@ -48,6 +50,7 @@ export function ProspectForm({ prospect, prospectType = 'customer', resellers = 
           prospect_type: prospectType,
           factory_type: '',
           building_types: [],
+          material: '',
           country: 'Sverige',
           contact_person: '',
           email: '',
@@ -142,28 +145,27 @@ export function ProspectForm({ prospect, prospectType = 'customer', resellers = 
           </div>
 
           {!isReseller && (
-            <div className="grid gap-2">
-              <Label>Byggnadstyp</Label>
-              <div className="flex gap-4">
-                {BUILDING_TYPES.map((bt) => {
-                  const selected = watch('building_types') ?? []
-                  return (
-                    <label key={bt.key} className="flex items-center gap-1.5 text-sm cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selected.includes(bt.key)}
-                        onChange={() => {
-                          const next = selected.includes(bt.key)
-                            ? selected.filter((k: string) => k !== bt.key)
-                            : [...selected, bt.key]
-                          setValue('building_types', next)
-                        }}
-                        className="accent-[#656565]"
-                      />
-                      {bt.label}
-                    </label>
-                  )
-                })}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Byggnadstyp</Label>
+                <MultiSelectDropdown
+                  options={BUILDING_TYPES}
+                  value={watch('building_types') ?? []}
+                  onChange={(next) => setValue('building_types', next)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="material">Material</Label>
+                <select
+                  id="material"
+                  className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                  {...register('material')}
+                >
+                  <option value="">—</option>
+                  {MATERIALS.map((m) => (
+                    <option key={m.key} value={m.key}>{m.label}</option>
+                  ))}
+                </select>
               </div>
             </div>
           )}

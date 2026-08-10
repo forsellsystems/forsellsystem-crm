@@ -29,6 +29,13 @@ export const BUILDING_TYPES = [
 
 export type BuildingType = (typeof BUILDING_TYPES)[number]["key"];
 
+export const MATERIALS = [
+  { key: "tra", label: "Trä" },
+  { key: "stal", label: "Stål" },
+] as const;
+
+export type Material = (typeof MATERIALS)[number]["key"];
+
 export const MEETING_STATUSES = [
   { key: "planerat", label: "Planerat", color: "#808080" },
   { key: "genomfort", label: "Genomfört", color: "#333333" },
