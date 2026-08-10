@@ -57,9 +57,9 @@ export function Sidebar() {
             <Image
               src="/forsellsystems.png"
               alt="Forsell Systems"
-              width={130}
-              height={38}
-              className="h-auto w-[130px] opacity-90 hover:opacity-100 transition-opacity"
+              width={88}
+              height={26}
+              className="h-auto w-[88px] opacity-90 hover:opacity-100 transition-opacity"
               priority
             />
           </Link>
