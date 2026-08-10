@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -29,6 +30,8 @@ import { MoveToProspectButton } from '@/components/companies/move-to-prospect-bu
 import { NewDealDialog } from '@/components/pipeline/new-deal-dialog'
 import { ProjectsCard } from '@/components/projects/projects-card'
 import { MeetingsCard } from '@/components/meetings/meetings-card'
+import { CustomerCommunication } from '@/components/microsoft/customer-communication'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function ForetagDetailPage({
   params,
@@ -36,6 +39,7 @@ export default async function ForetagDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
+  const supabase = await createClient()
   const [company, notes, projects, meetings, resellers, users, machines] = await Promise.all([
     getCompany(id),
     getNotes('company', id),
@@ -47,6 +51,31 @@ export default async function ForetagDetailPage({
   ])
 
   if (!company) notFound()
+
+  // Signed-in CRM user (for their own Outlook mailbox/calendar), and the customer's
+  // contact addresses to match mail/meetings against.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  let currentUserId: string | null = null
+  if (user) {
+    const { data: urow } = await supabase
+      .from('users')
+      .select('id')
+      .eq('auth_id', user.id)
+      .maybeSingle()
+    currentUserId = urow?.id ?? null
+  }
+  const communicationEmails = Array.from(
+    new Set(
+      [
+        ...(company.email ? [company.email] : []),
+        ...(company.contacts ?? [])
+          .map((c) => c.email)
+          .filter((e): e is string => Boolean(e)),
+      ].map((e) => e.toLowerCase())
+    )
+  )
 
   const getStageLabel = (key: string) =>
     PIPELINE_STAGES.find((s) => s.key === key)?.label ?? key
@@ -153,6 +182,26 @@ export default async function ForetagDetailPage({
             entityId={company.id}
             meetings={meetings}
           />
+
+          {/* Outlook mail for the signed-in user, matched to this customer */}
+          {currentUserId && (
+            <Suspense
+              fallback={
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">
+                      Mejl (Outlook)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-[#6B6B6B]">Laddar…</p>
+                  </CardContent>
+                </Card>
+              }
+            >
+              <CustomerCommunication userId={currentUserId} emails={communicationEmails} />
+            </Suspense>
+          )}
 
           {/* Deals */}
           <Card>

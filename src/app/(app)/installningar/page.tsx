@@ -7,18 +7,28 @@ import { USER_ROLES } from '@/lib/constants'
 import { UserDialog, EditUserButton } from '@/components/settings/user-dialog'
 import { DeleteUserButton } from '@/components/settings/delete-user-button'
 import { FortnoxConnectionCard } from '@/components/settings/fortnox-connection-card'
+import { MicrosoftConnectionCard } from '@/components/settings/microsoft-connection-card'
 import { getConnection } from '@/lib/fortnox/store'
+import { getConnectionStatus as getMicrosoftStatus } from '@/lib/microsoft/store'
+import { getCurrentUserId } from '@/lib/actions/activity-actions'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function InstallningarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ fortnox?: string }>
+  searchParams: Promise<{ fortnox?: string; microsoft?: string }>
 }) {
-  const [users, fortnox, { fortnox: fortnoxStatus }] = await Promise.all([
-    getUsers(),
-    getConnection(),
-    searchParams,
-  ])
+  const supabase = await createClient()
+  const [users, fortnox, userId, { fortnox: fortnoxStatus, microsoft: microsoftStatus }] =
+    await Promise.all([
+      getUsers(),
+      getConnection(),
+      getCurrentUserId(supabase),
+      searchParams,
+    ])
+  const microsoft = userId
+    ? await getMicrosoftStatus(userId)
+    : { connected: false, accountEmail: null, accountName: null }
 
   const getRoleLabel = (role: string) =>
     USER_ROLES.find((r) => r.key === role)?.label ?? role
@@ -68,6 +78,12 @@ export default async function InstallningarPage({
         connected={fortnox !== null}
         companyName={fortnox?.company_name ?? null}
         statusParam={fortnoxStatus}
+      />
+
+      <MicrosoftConnectionCard
+        connected={microsoft.connected}
+        accountEmail={microsoft.accountEmail}
+        statusParam={microsoftStatus}
       />
 
       <Card>
