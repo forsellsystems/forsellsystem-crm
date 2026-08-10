@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { BulletListInput, parseBullets, joinBullets } from '@/components/ui/bullet-list-input'
 import { createMeeting } from '@/lib/actions/meeting-actions'
 
 interface NewMeetingDialogProps {
@@ -274,13 +274,10 @@ export function NewMeetingDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="meeting-agenda">Agenda (valfritt)</Label>
-            <Textarea
-              id="meeting-agenda"
-              rows={4}
-              value={agenda}
-              onChange={(e) => setAgenda(e.target.value)}
-              placeholder="Punkter att gå igenom (inför mötet)..."
+            <Label>Agenda (valfritt)</Label>
+            <BulletListInput
+              value={parseBullets(agenda)}
+              onChange={(next) => setAgenda(joinBullets(next))}
             />
           </div>
 

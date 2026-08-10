@@ -5,7 +5,7 @@ import { Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { BulletListInput, parseBullets, joinBullets } from '@/components/ui/bullet-list-input'
 import { MEETING_STATUSES } from '@/lib/constants'
 
 export type MeetingFormValues = {
@@ -15,7 +15,6 @@ export type MeetingFormValues = {
   participants: string
   status: string
   agenda: string
-  notes: string
 }
 
 const selectClass =
@@ -26,11 +25,14 @@ export function MeetingForm({
   onSave,
   onCancel,
   disabled,
+  lockDateTitle,
 }: {
   initial?: Partial<MeetingFormValues>
   onSave: (values: MeetingFormValues) => void
   onCancel: () => void
   disabled?: boolean
+  // When linked to Outlook, title/date/time are driven by Outlook — lock them here.
+  lockDateTitle?: boolean
 }) {
   const [values, setValues] = useState<MeetingFormValues>({
     title: initial?.title ?? '',
@@ -39,7 +41,6 @@ export function MeetingForm({
     participants: initial?.participants ?? '',
     status: initial?.status ?? '',
     agenda: initial?.agenda ?? '',
-    notes: initial?.notes ?? '',
   })
 
   return (
@@ -50,6 +51,7 @@ export function MeetingForm({
           value={values.title}
           onChange={(e) => setValues((v) => ({ ...v, title: e.target.value }))}
           placeholder="T.ex. Uppstartsmöte"
+          disabled={lockDateTitle}
         />
       </div>
 
@@ -60,6 +62,7 @@ export function MeetingForm({
             type="date"
             value={values.meeting_date}
             onChange={(e) => setValues((v) => ({ ...v, meeting_date: e.target.value }))}
+            disabled={lockDateTitle}
           />
         </div>
         <div className="grid gap-1.5">
@@ -68,9 +71,16 @@ export function MeetingForm({
             type="time"
             value={values.meeting_time}
             onChange={(e) => setValues((v) => ({ ...v, meeting_time: e.target.value }))}
+            disabled={lockDateTitle}
           />
         </div>
       </div>
+
+      {lockDateTitle && (
+        <p className="text-[11px] text-[#9A9A9A]">
+          Titel, datum, tid och status styrs av det kopplade Outlook-mötet.
+        </p>
+      )}
 
       <div className="grid gap-1.5">
         <Label className="text-xs text-[#6B6B6B]">Deltagare</Label>
@@ -87,6 +97,7 @@ export function MeetingForm({
           className={selectClass}
           value={values.status}
           onChange={(e) => setValues((v) => ({ ...v, status: e.target.value }))}
+          disabled={lockDateTitle}
         >
           <option value="">Välj status</option>
           {MEETING_STATUSES.map((s) => (
@@ -97,21 +108,9 @@ export function MeetingForm({
 
       <div className="grid gap-1.5">
         <Label className="text-xs text-[#6B6B6B]">Agenda</Label>
-        <Textarea
-          rows={4}
-          value={values.agenda}
-          onChange={(e) => setValues((v) => ({ ...v, agenda: e.target.value }))}
-          placeholder="Punkter att gå igenom (inför mötet)..."
-        />
-      </div>
-
-      <div className="grid gap-1.5">
-        <Label className="text-xs text-[#6B6B6B]">Mötesanteckningar</Label>
-        <Textarea
-          rows={5}
-          value={values.notes}
-          onChange={(e) => setValues((v) => ({ ...v, notes: e.target.value }))}
-          placeholder="Vad sades på mötet..."
+        <BulletListInput
+          value={parseBullets(values.agenda)}
+          onChange={(next) => setValues((v) => ({ ...v, agenda: joinBullets(next) }))}
         />
       </div>
 
