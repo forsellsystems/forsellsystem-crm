@@ -2,6 +2,12 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Public server-to-server webhooks (no user session) — skip the auth gate.
+  // They authenticate themselves (e.g. Fireflies HMAC signature).
+  if (request.nextUrl.pathname.startsWith('/api/webhooks/')) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
