@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Handshake } from 'lucide-react'
-import { getProspect } from '@/lib/queries/prospects'
+import { getProspect, getProspectFortnoxOffers } from '@/lib/queries/prospects'
 import { getNotes } from '@/lib/queries/notes'
 import { getMeetings } from '@/lib/queries/meetings'
 import { formatDate } from '@/lib/utils'
@@ -29,10 +29,11 @@ export default async function AterforsaljarProspektDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [prospect, notes, meetings] = await Promise.all([
+  const [prospect, notes, meetings, fortnoxOffers] = await Promise.all([
     getProspect(id),
     getNotes('prospect', id),
     getMeetings('prospect', id),
+    getProspectFortnoxOffers(id),
   ])
 
   if (!prospect || prospect.prospect_type !== 'reseller') notFound()
@@ -97,6 +98,7 @@ export default async function AterforsaljarProspektDetailPage({
           <ProspectDetailsCard
             prospect={prospect}
             editable={prospect.status === 'active'}
+            fortnoxOfferNumbers={fortnoxOffers}
           />
         </div>
 

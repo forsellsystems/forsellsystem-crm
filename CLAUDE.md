@@ -90,7 +90,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - is_reseller boolean + reseller_id FK on companies
 - reseller_id FK on deals
 - quote_date on deals (DATE, nullable)
-- fortnox_customer_id on companies (future integration)
+- fortnox_customer_id på companies OCH prospects: Fortnox-kundnummer, sätts manuellt i detaljkortets edit-läge (FortnoxCustomerInput med förslag ur senaste offerterna) och följer med vid flytt kund ↔ prospekt. Detaljkorten visar "Fortnox: Kopplad · kundnr/offert" via FortnoxStatusRow — en koppling räknas också när en affär har fortnox_offer_documentnumber.
 - website + description on prospects (TEXT, nullable)
 - description on companies (TEXT, nullable)
 - updateProspectFields / updateCompanyFields for inline partial updates

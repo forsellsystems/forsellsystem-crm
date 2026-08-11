@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Building2 } from 'lucide-react'
-import { getProspect } from '@/lib/queries/prospects'
+import { getProspect, getProspectFortnoxOffers } from '@/lib/queries/prospects'
 import { getResellers } from '@/lib/queries/companies'
 import { getNotes } from '@/lib/queries/notes'
 import { getProjects } from '@/lib/queries/projects'
@@ -32,12 +32,13 @@ export default async function ProspektDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [prospect, notes, projects, meetings, resellers] = await Promise.all([
+  const [prospect, notes, projects, meetings, resellers, fortnoxOffers] = await Promise.all([
     getProspect(id),
     getNotes('prospect', id),
     getProjects('prospect', id),
     getMeetings('prospect', id),
     getResellers(),
+    getProspectFortnoxOffers(id),
   ])
 
   if (!prospect) notFound()
@@ -105,6 +106,7 @@ export default async function ProspektDetailPage({
             prospect={prospect}
             editable={prospect.status === 'active'}
             resellers={resellers}
+            fortnoxOfferNumbers={fortnoxOffers}
           />
         </div>
 

@@ -63,6 +63,7 @@ export type Prospect = {
   converted_deal_id: string | null;
   website: string | null;
   description: string | null;
+  fortnox_customer_id: string | null;
   created_at: string;
   updated_at: string;
 };

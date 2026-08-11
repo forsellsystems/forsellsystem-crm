@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { updateProspectFields } from '@/lib/actions/prospect-actions'
 import { FACTORY_TYPES, BUILDING_TYPES, COUNTRIES, MATERIALS } from '@/lib/constants'
 import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown'
+import { FortnoxStatusRow, FortnoxCustomerInput } from '@/components/fortnox/fortnox-customer-field'
 import { formatDate } from '@/lib/utils'
 import type { Prospect } from '@/lib/types/database'
 
@@ -15,10 +16,13 @@ export function ProspectDetailsCard({
   prospect,
   editable = true,
   resellers = [],
+  fortnoxOfferNumbers = [],
 }: {
   prospect: Prospect
   editable?: boolean
   resellers?: { id: string; name: string }[]
+  // Offertnummer från prospektets affärer — räknas som en Fortnox-koppling.
+  fortnoxOfferNumbers?: string[]
 }) {
   const [editing, setEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -27,6 +31,7 @@ export function ProspectDetailsCard({
     building_types: prospect.building_types ?? [] as string[],
     material: prospect.material ?? '',
     country: prospect.country,
+    fortnox_customer_id: prospect.fortnox_customer_id ?? '',
     reseller_id: prospect.reseller_id ?? '',
   })
 
@@ -53,6 +58,7 @@ export function ProspectDetailsCard({
       building_types: prospect.building_types ?? [],
       material: prospect.material ?? '',
       country: prospect.country,
+      fortnox_customer_id: prospect.fortnox_customer_id ?? '',
       reseller_id: prospect.reseller_id ?? '',
     })
     setEditing(true)
@@ -138,6 +144,10 @@ export function ProspectDetailsCard({
                 ))}
               </select>
             </div>
+            <FortnoxCustomerInput
+              value={values.fortnox_customer_id}
+              onChange={(next) => setValues((v) => ({ ...v, fortnox_customer_id: next }))}
+            />
             {!isReseller && resellers.length > 0 && (
               <div className="grid gap-1.5">
                 <Label htmlFor="inline-reseller" className="text-xs text-[#6B6B6B]">Agent</Label>
@@ -193,6 +203,10 @@ export function ProspectDetailsCard({
                 <span className="text-[#D4A301] font-medium">{resellerName}</span>
               </div>
             )}
+            <FortnoxStatusRow
+              customerNumber={prospect.fortnox_customer_id}
+              offerNumbers={fortnoxOfferNumbers}
+            />
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Skapad</span>
               <span>{formatDate(prospect.created_at)}</span>

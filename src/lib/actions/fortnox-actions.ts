@@ -78,6 +78,31 @@ export async function fetchRecentOffers(): Promise<Result<FortnoxOfferSummary[]>
   }
 }
 
+/**
+ * Kunder att välja bland när man kopplar en kund/prospekt mot Fortnox. Appen har
+ * inte `customer`-scope, så kundregistret kan inte listas — vi härleder i stället
+ * unika kunder ur de senaste offerterna. Fältet tar fritext, så listan är en hjälp
+ * och inte en begränsning.
+ */
+export async function fetchFortnoxCustomers(): Promise<
+  Result<{ number: string; name: string }[]>
+> {
+  try {
+    const offers = await listOffers(50)
+    const byNumber = new Map<string, string>()
+    for (const offer of offers) {
+      const number = offer.customerNumber ? String(offer.customerNumber) : ''
+      if (!number || byNumber.has(number)) continue
+      byNumber.set(number, offer.customerName || `Kund ${number}`)
+    }
+    const customers = [...byNumber].map(([number, name]) => ({ number, name }))
+    customers.sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+    return { ok: true, data: customers }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
 const COUNTRY_BY_CODE: Record<string, string> = {
   SE: 'Sverige',
   NO: 'Norge',

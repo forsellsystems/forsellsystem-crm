@@ -140,6 +140,7 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
       website: company.website || null,
       description: company.description || null,
       reseller_id: company.reseller_id || null,
+      fortnox_customer_id: company.fortnox_customer_id || null,
       status: 'active',
     })
     .select('id')
@@ -240,7 +241,7 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
 
 export async function updateCompanyFields(
   id: string,
-  fields: Partial<Record<'name' | 'customer_number' | 'org_number' | 'factory_type' | 'material' | 'country' | 'phone' | 'email' | 'website' | 'description' | 'reseller_id', string | null> & { building_types: string[] }>
+  fields: Partial<Record<'name' | 'customer_number' | 'org_number' | 'factory_type' | 'material' | 'country' | 'phone' | 'email' | 'website' | 'description' | 'reseller_id' | 'fortnox_customer_id', string | null> & { building_types: string[] }>
 ) {
   const supabase = await createClient()
 
