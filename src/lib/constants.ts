@@ -69,6 +69,9 @@ export type Currency = (typeof CURRENCIES)[number];
 
 export const MACHINE_CATEGORIES = [
   { key: "Element Handling", label: "Element Handling" },
+  { key: "Vertical Access", label: "Vertical Access" },
+  { key: "Tiling", label: "Tiling" },
+  { key: "Storage", label: "Storage" },
   { key: "Module Transport Solutions", label: "Module Transport Solutions" },
 ] as const;
 
