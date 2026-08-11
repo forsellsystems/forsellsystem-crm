@@ -46,10 +46,14 @@ export function MachineComponentsCard({
   machineId,
   currency,
   components,
+  hasComponents,
 }: {
   machineId: string
   currency: string
   components: MachineComponent[]
+  // true = komponenterna sätter maskinens pris. false = komponentlistan är bara
+  // en specifikation; maskinen har ett eget pris. Priser per komponent är valfria.
+  hasComponents: boolean
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -136,6 +140,11 @@ export function MachineComponentsCard({
         <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">
           Komponenter
         </CardTitle>
+        {!hasComponents && (
+          <p className="text-xs text-[#6B6B6B]">
+            Ingår i produkten. Priset sätts direkt på maskinen, så priser här är valfria.
+          </p>
+        )}
       </CardHeader>
       <CardContent className="space-y-3">
         {components.length === 0 ? (
@@ -162,7 +171,9 @@ export function MachineComponentsCard({
                     {c.name}
                     {qty > 1 && <span className="text-[#6B6B6B]"> × {qty}</span>}
                   </span>
-                  <span className="shrink-0 text-sm tabular-nums">{fmtRange(lineMin, lineMax)}</span>
+                  {(hasComponents || lineMax > 0) && (
+                    <span className="shrink-0 text-sm tabular-nums">{fmtRange(lineMin, lineMax)}</span>
+                  )}
                   <Button variant="ghost" size="icon-sm" onClick={() => startEdit(c)} disabled={isPending}>
                     <Pencil className="size-3.5" />
                   </Button>
@@ -183,11 +194,21 @@ export function MachineComponentsCard({
           </Button>
         </div>
 
-        {/* Total */}
-        <div className="flex items-center justify-between border-t border-[#B8B8B8]/40 pt-3">
-          <span className="text-sm font-medium text-[#6B6B6B]">Totalpris</span>
-          <span className="font-semibold tabular-nums">{fmtRange(totalMin, totalMax)}</span>
-        </div>
+        {/* Total. Bara maskinens pris när den prissätts via komponenter — annars en
+            informativ summa som visas först när priser faktiskt är ifyllda. */}
+        {hasComponents ? (
+          <div className="flex items-center justify-between border-t border-[#B8B8B8]/40 pt-3">
+            <span className="text-sm font-medium text-[#6B6B6B]">Totalpris</span>
+            <span className="font-semibold tabular-nums">{fmtRange(totalMin, totalMax)}</span>
+          </div>
+        ) : (
+          totalMax > 0 && (
+            <div className="flex items-center justify-between border-t border-[#B8B8B8]/40 pt-3">
+              <span className="text-sm text-[#6B6B6B]">Summa komponenter</span>
+              <span className="tabular-nums text-[#6B6B6B]">{fmtRange(totalMin, totalMax)}</span>
+            </div>
+          )
+        )}
 
         {error && <p className="text-sm text-[#8B3D3D]">{error}</p>}
       </CardContent>

@@ -49,13 +49,12 @@ export default async function MachineDetailPage({
         </div>
 
         <div className="lg:col-span-2">
-          {machine.has_components && (
-            <MachineComponentsCard
-              machineId={machine.id}
-              currency={machine.currency}
-              components={components}
-            />
-          )}
+          <MachineComponentsCard
+            machineId={machine.id}
+            currency={machine.currency}
+            components={components}
+            hasComponents={machine.has_components}
+          />
         </div>
       </div>
 

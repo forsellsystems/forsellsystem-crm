@@ -8,7 +8,16 @@ type DbClient = Awaited<ReturnType<typeof createClient>>
 
 // The machine's price is the range summed from its components (price × quantity).
 // Cache both bounds back onto the machine whenever the component list changes.
+// Only for component-priced machines: a machine with a direct price can also have
+// a component list (as a spec), and that list must never overwrite its price.
 async function recomputeMachinePrice(supabase: DbClient, machineId: string) {
+  const { data: machine } = await supabase
+    .from('machines')
+    .select('has_components')
+    .eq('id', machineId)
+    .single()
+  if (!machine?.has_components) return
+
   const { data } = await supabase
     .from('machine_components')
     .select('price_min, price_max, quantity')

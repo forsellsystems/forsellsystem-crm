@@ -118,15 +118,21 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
               </select>
             </div>
 
-            <label className="flex items-center gap-2 text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                checked={hasComponents}
-                onChange={(e) => setHasComponents(e.target.checked)}
-                className="rounded border-border"
-              />
-              Prissätt via komponenter
-            </label>
+            <div className="grid gap-1">
+              <label className="flex items-center gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hasComponents}
+                  onChange={(e) => setHasComponents(e.target.checked)}
+                  className="rounded border-border"
+                />
+                Prissätt via komponenter
+              </label>
+              <p className="text-xs text-[#6B6B6B]">
+                Komponentlistan finns alltid. Bocka i för att låta summan av komponenterna
+                sätta maskinens pris.
+              </p>
+            </div>
 
             {!hasComponents && (
               <div className="grid gap-1.5">
