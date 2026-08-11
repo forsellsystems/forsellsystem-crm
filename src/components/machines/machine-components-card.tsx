@@ -16,8 +16,10 @@ import type { MachineComponent } from '@/lib/types/database'
 
 const smallInput =
   'w-16 shrink-0 rounded-lg border border-border bg-background px-2 h-8 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50'
+// min-w gör att pris-paret wrappar till egen rad i den smala vänsterspalten
+// istället för att klämmas ihop till oläsbara fält.
 const priceInput =
-  'flex-1 min-w-0 rounded-lg border border-border bg-background px-2.5 h-8 text-sm text-right outline-none focus:border-ring focus:ring-3 focus:ring-ring/50'
+  'flex-1 min-w-[5.5rem] rounded-lg border border-border bg-background px-2.5 h-8 text-sm text-right outline-none focus:border-ring focus:ring-3 focus:ring-ring/50'
 
 // Name + [qty × from – to] editor, shared by the add row and the per-row edit.
 function EditFields({
@@ -31,7 +33,7 @@ function EditFields({
   return (
     <div className="flex-1 space-y-2">
       <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Komponentnamn" />
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <input type="number" min={1} value={qty} onChange={(e) => setQty(e.target.value)} placeholder="Antal" className={smallInput} aria-label="Antal" />
         <span className="text-xs text-[#6B6B6B]">×</span>
         <input type="number" value={min} onChange={(e) => setMin(e.target.value)} placeholder="Pris från" className={priceInput} aria-label="Pris från" />

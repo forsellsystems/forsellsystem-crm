@@ -50,23 +50,35 @@ export default async function MachineDetailPage({
         <DeleteMachineButton machineId={machine.id} machineName={machine.name} redirectTo="/maskiner" />
       </div>
 
+      {/* Vänsterspalten är produktens egen data: detaljer, features och komponentlista.
+          Komponenterna flyttar till högerspalten när de sätter priset — då är de
+          prisdrivande och behöver bredden. */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
           <MachineDetailCard machine={machine} />
+          <MachineFeaturesCard machineId={machine.id} features={features} />
+          {!machine.has_components && (
+            <MachineComponentsCard
+              machineId={machine.id}
+              currency={machine.currency}
+              components={components}
+              hasComponents={false}
+            />
+          )}
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <MachineFeaturesCard machineId={machine.id} features={features} />
-          <MachineComponentsCard
-            machineId={machine.id}
-            currency={machine.currency}
-            components={components}
-            hasComponents={machine.has_components}
-          />
+          {machine.has_components && (
+            <MachineComponentsCard
+              machineId={machine.id}
+              currency={machine.currency}
+              components={components}
+              hasComponents
+            />
+          )}
+          <MachineKnowledgeCard machineId={machine.id} questions={questions} />
         </div>
       </div>
-
-      <MachineKnowledgeCard machineId={machine.id} questions={questions} />
     </div>
   )
 }
