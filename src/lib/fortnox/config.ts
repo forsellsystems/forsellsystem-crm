@@ -19,7 +19,8 @@ export const FORTNOX_API_BASE = 'https://api.fortnox.se/3'
 // Scopes we request. `offer` = read/write offers (offerter),
 // `companyinformation` = read the connected company's name (connection check),
 // `print` = fetch documents as PDF (offer preview/print — Accept: application/pdf).
-export const FORTNOX_SCOPES = ['companyinformation', 'offer', 'print'] as const
+// `customer` = read customer records (to import a kund from an offer's customer).
+export const FORTNOX_SCOPES = ['companyinformation', 'offer', 'print', 'customer'] as const
 
 export const FORTNOX_CLIENT_ID = process.env.FORTNOX_CLIENT_ID ?? ''
 export const FORTNOX_CLIENT_SECRET = process.env.FORTNOX_CLIENT_SECRET ?? ''

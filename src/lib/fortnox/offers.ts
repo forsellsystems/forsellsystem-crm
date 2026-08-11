@@ -1,14 +1,24 @@
 import { fortnoxFetch, fortnoxJson } from './client'
-import type { FortnoxOffer, FortnoxOfferSummary } from './types'
+import type { FortnoxOffer, FortnoxOfferSummary, FortnoxCustomer } from './types'
 
 function toSummary(offer: FortnoxOffer): FortnoxOfferSummary {
   return {
     documentNumber: String(offer.DocumentNumber),
+    customerNumber: offer.CustomerNumber != null ? String(offer.CustomerNumber) : null,
     customerName: offer.CustomerName ?? null,
     offerDate: offer.OfferDate ?? null,
     total: typeof offer.Total === 'number' ? offer.Total : null,
     currency: offer.Currency ?? null,
   }
+}
+
+/** Fetch a single customer by CustomerNumber. Requires the `customer` scope
+ * (throws on 403 if not granted); returns null on 404. */
+export async function getCustomer(customerNumber: string): Promise<FortnoxCustomer | null> {
+  const res = await fortnoxFetch(`/customers/${encodeURIComponent(customerNumber)}`)
+  if (res.status === 404) return null
+  const data = await fortnoxJson<{ Customer: FortnoxCustomer }>(res, 'hämta kund')
+  return data.Customer ?? null
 }
 
 /** Fetch a single offer by its DocumentNumber. Returns null on 404. */

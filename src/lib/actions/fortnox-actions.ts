@@ -3,9 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { deleteConnection, isConnected } from '@/lib/fortnox/store'
-import { getOfferSummary, listOffers } from '@/lib/fortnox/offers'
+import { getOffer, getOfferSummary, getCustomer, listOffers } from '@/lib/fortnox/offers'
 import { FortnoxNotConnectedError } from '@/lib/fortnox/client'
-import type { FortnoxOfferSummary } from '@/lib/fortnox/types'
+import { logActivity } from '@/lib/actions/activity-actions'
+import type { FortnoxOfferSummary, FortnoxCustomer } from '@/lib/fortnox/types'
 
 type Result<T = undefined> =
   | ({ ok: true } & (T extends undefined ? object : { data: T }))
@@ -72,6 +73,93 @@ export async function fetchRecentOffers(): Promise<Result<FortnoxOfferSummary[]>
   try {
     const offers = await listOffers(50)
     return { ok: true, data: offers }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+const COUNTRY_BY_CODE: Record<string, string> = {
+  SE: 'Sverige',
+  NO: 'Norge',
+  DK: 'Danmark',
+  FI: 'Finland',
+  IS: 'Island',
+}
+function countryFromCode(code?: string | null): string {
+  return (code && COUNTRY_BY_CODE[code.toUpperCase()]) || 'Sverige'
+}
+
+/** Does a CRM kund already exist for this Fortnox customer number? */
+export async function matchFortnoxCustomer(
+  customerNumber: string
+): Promise<Result<{ id: string; name: string } | null>> {
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('companies')
+      .select('id, name')
+      .eq('fortnox_customer_id', String(customerNumber))
+      .maybeSingle()
+    return { ok: true, data: data ?? null }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/**
+ * Create a CRM kund from a Fortnox offer's customer — full data if the `customer`
+ * scope is granted, otherwise name + number from the offer. Idempotent on the
+ * Fortnox customer number (returns the existing kund if already imported).
+ */
+export async function createCompanyFromFortnox(
+  documentNumber: string
+): Promise<Result<{ id: string; name: string }>> {
+  try {
+    const offer = await getOffer(documentNumber)
+    const custNo = offer?.CustomerNumber != null ? String(offer.CustomerNumber) : null
+    if (!custNo) return { ok: false, error: 'Offerten saknar kundnummer i Fortnox.' }
+
+    const supabase = await createClient()
+    const { data: existing } = await supabase
+      .from('companies')
+      .select('id, name')
+      .eq('fortnox_customer_id', custNo)
+      .maybeSingle()
+    if (existing) return { ok: true, data: existing }
+
+    // Full customer record needs the `customer` scope — fall back to the offer.
+    let full: FortnoxCustomer | null = null
+    try {
+      full = await getCustomer(custNo)
+    } catch {
+      full = null
+    }
+
+    const name = full?.Name || offer?.CustomerName || `Kund ${custNo}`
+    const { data: company, error } = await supabase
+      .from('companies')
+      .insert({
+        name,
+        customer_number: custNo,
+        org_number: full?.OrganisationNumber || null,
+        email: full?.Email || null,
+        phone: full?.Phone1 || null,
+        country: countryFromCode(full?.CountryCode),
+        fortnox_customer_id: custNo,
+        is_reseller: false,
+      })
+      .select('id, name')
+      .single()
+    if (error) throw new Error(error.message)
+
+    await logActivity(supabase, {
+      action: 'company_created',
+      entity_type: 'company',
+      entity_id: company.id,
+      metadata: { label: company.name, href: `/foretag/${company.id}` },
+    })
+    revalidatePath('/foretag')
+    return { ok: true, data: company }
   } catch (err) {
     return fail(err)
   }

@@ -41,8 +41,23 @@ export interface FortnoxOffer {
 // Compact shape used by the offer picker in the deal UI.
 export interface FortnoxOfferSummary {
   documentNumber: string
+  customerNumber: string | null
   customerName: string | null
   offerDate: string | null
   total: number | null
   currency: string | null
+}
+
+// A Fortnox customer (kund). Requires the `customer` scope to read.
+export interface FortnoxCustomer {
+  CustomerNumber: string
+  Name?: string
+  OrganisationNumber?: string
+  Email?: string
+  Phone1?: string
+  Address1?: string
+  ZipCode?: string
+  City?: string
+  CountryCode?: string
+  Country?: string
 }

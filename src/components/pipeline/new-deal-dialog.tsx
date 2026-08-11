@@ -19,7 +19,11 @@ import { Label } from '@/components/ui/label'
 import { CURRENCIES, DEAL_HEAT_LEVELS } from '@/lib/constants'
 import { dealSchema, type DealFormData } from '@/lib/validations'
 import { createDeal } from '@/lib/actions/deal-actions'
-import { fortnoxConnected as getFortnoxConnected } from '@/lib/actions/fortnox-actions'
+import {
+  fortnoxConnected as getFortnoxConnected,
+  matchFortnoxCustomer,
+  createCompanyFromFortnox,
+} from '@/lib/actions/fortnox-actions'
 import { FortnoxOfferField } from '@/components/pipeline/fortnox-offer-field'
 import type { FortnoxOfferSummary } from '@/lib/fortnox/types'
 import type { User, Machine } from '@/lib/types/database'
@@ -39,6 +43,9 @@ export function NewDealDialog({ companies, resellers, users, machines, triggerSt
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
   const [selectedMachines, setSelectedMachines] = useState<string[]>([])
   const [fortnoxOk, setFortnoxOk] = useState(false)
+  const [companyOptions, setCompanyOptions] = useState(companies)
+  const [missingCustomer, setMissingCustomer] = useState<{ name: string; documentNumber: string } | null>(null)
+  const [customerBusy, setCustomerBusy] = useState(false)
   const router = useRouter()
 
   const {
@@ -70,6 +77,42 @@ export function NewDealDialog({ companies, resellers, users, machines, triggerSt
   const selectedCompanyId = watch('company_id')
   const linkedOffer = watch('fortnox_offer_documentnumber') || ''
 
+  function ensureCompanyOption(id: string, name: string) {
+    setCompanyOptions((prev) => (prev.some((c) => c.id === id) ? prev : [...prev, { id, name }]))
+  }
+
+  // When an offer is linked, resolve its customer: select the matching CRM kund,
+  // or prompt to create one from Fortnox if it doesn't exist.
+  async function resolveCustomer(summary: FortnoxOfferSummary) {
+    if (!summary.customerNumber) return
+    const res = await matchFortnoxCustomer(summary.customerNumber)
+    if (!res.ok) return
+    if (res.data) {
+      ensureCompanyOption(res.data.id, res.data.name)
+      setValue('company_id', res.data.id)
+    } else {
+      setMissingCustomer({
+        name: summary.customerName || `Kund ${summary.customerNumber}`,
+        documentNumber: summary.documentNumber,
+      })
+    }
+  }
+
+  async function handleCreateCustomer() {
+    if (!missingCustomer) return
+    setCustomerBusy(true)
+    setError(null)
+    const res = await createCompanyFromFortnox(missingCustomer.documentNumber)
+    setCustomerBusy(false)
+    if (!res.ok) {
+      setError(res.error)
+      return
+    }
+    ensureCompanyOption(res.data.id, res.data.name)
+    setValue('company_id', res.data.id)
+    setMissingCustomer(null)
+  }
+
   // Fortnox drives value/quote_number/quote_date while an offer is linked.
   function linkOffer(summary: FortnoxOfferSummary) {
     setValue('fortnox_offer_documentnumber', summary.documentNumber)
@@ -77,9 +120,12 @@ export function NewDealDialog({ companies, resellers, users, machines, triggerSt
     if (summary.total != null) setValue('value', summary.total)
     if (summary.offerDate) setValue('quote_date', summary.offerDate)
     if (summary.currency) setValue('currency', summary.currency as DealFormData['currency'])
+    setMissingCustomer(null)
+    resolveCustomer(summary)
   }
   function unlinkOffer() {
     setValue('fortnox_offer_documentnumber', '')
+    setMissingCustomer(null)
   }
 
   useEffect(() => {
@@ -160,6 +206,17 @@ export function NewDealDialog({ companies, resellers, users, machines, triggerSt
             onUnlink={unlinkOffer}
           />
 
+          {missingCustomer && (
+            <div className="space-y-2 rounded-lg border border-[#D4A301]/40 bg-[#F2BB01]/10 px-3 py-2 text-sm">
+              <p className="text-[#1A1A1A]">
+                Kunden <strong>{missingCustomer.name}</strong> finns inte i CRM.
+              </p>
+              <Button type="button" size="sm" onClick={handleCreateCustomer} disabled={customerBusy}>
+                {customerBusy ? 'Skapar...' : 'Skapa kund från Fortnox'}
+              </Button>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label htmlFor="deal-quote">Offertnummer</Label>
@@ -204,7 +261,7 @@ export function NewDealDialog({ companies, resellers, users, machines, triggerSt
               {...register('company_id')}
             >
               <option value="">Välj företag...</option>
-              {companies.map((c) => (
+              {companyOptions.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
