@@ -96,6 +96,17 @@ export type MachineComponent = {
   updated_at: string;
 };
 
+// En feature/säljpunkt på en maskin. name = svenska, name_en = engelska (valfri).
+export type MachineFeature = {
+  id: string;
+  machine_id: string;
+  name: string;
+  name_en: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type MachineQuestion = {
   id: string;
   machine_id: string;

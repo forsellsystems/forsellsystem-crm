@@ -82,6 +82,8 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - Supabase Postgres with RLS enabled (authenticated-only policies)
 - Polymorphic notes: entity_type + entity_id (entity_type IN prospect/company/deal/contact/project). Anteckningar-kort finns på affär (/pipeline/[id]), kund (/foretag/[id]) och projekt (/projekt/[id]).
 - deal_machines junction table for multi-select products
+- machine_features: features/säljpunkter per maskin (name = svenska, name_en = engelska nullable, sort_order). Redigeras på /maskiner/[id] via MachineFeaturesCard, ordnas med chevrons. RLS authenticated-only.
+- machine_components: komponentlista per maskin. Finns på alla maskiner; machines.has_components styr bara om komponentsumman sätter maskinens pris (recompute hoppar över maskiner med direktpris).
 - activity_log for audit trail: skrivs via logActivity() i lib/actions/activity-actions.ts (best-effort, kopplar inloggad user via auth_id). Loggar note_added, deal_stage_changed (ej omsortering), company_created, prospect_created, deal_created, project_created. metadata snapshottar { label, href, snippet?, from?, to? }. Visas på /logg (LOGG-fliken, getActivityLog).
 - convert_prospect RPC for atomic prospect→company+contact+deal conversion (legacy)
 - create_user_with_password RPC for admin user creation

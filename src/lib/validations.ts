@@ -44,6 +44,14 @@ export const machineComponentSchema = z.object({
 
 export type MachineComponentFormData = z.infer<typeof machineComponentSchema>
 
+// Feature på en maskin: en punkt på svenska + valfri engelsk motsvarighet.
+export const machineFeatureSchema = z.object({
+  name: z.string().min(1, 'Feature krävs'),
+  name_en: z.string().optional(),
+})
+
+export type MachineFeatureFormData = z.infer<typeof machineFeatureSchema>
+
 // Kunskapsbank: en fråga att ställa kunden, valfritt tema + valfri notering.
 export const machineQuestionSchema = z.object({
   question: z.string().min(1, 'Fråga krävs'),
