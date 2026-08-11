@@ -7,6 +7,7 @@ export const machineSchema = z.object({
   name: z.string().min(1, 'Namn krävs'),
   category: z.string().min(1, 'Kategori krävs'),
   description: z.string().optional(),
+  description_en: z.string().optional(),
   currency: z.enum(['SEK', 'EUR', 'USD', 'NOK', 'DKK']),
   // Component-based pricing vs a direct price range on the machine. The price
   // fields are only used (and only sent) when has_components is false.

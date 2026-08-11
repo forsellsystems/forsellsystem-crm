@@ -72,6 +72,7 @@ export type Machine = {
   name: string;
   category: string;
   description: string | null;
+  description_en: string | null;
   // Price range. When has_components: cached sum of the component ranges.
   // Otherwise: a direct price range set on the machine. price_max NULL = single price.
   has_components: boolean;

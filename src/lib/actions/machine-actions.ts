@@ -12,6 +12,7 @@ export async function createMachine(data: MachineFormData) {
     name: validated.name,
     category: validated.category,
     description: validated.description || null,
+    description_en: validated.description_en || null,
     currency: validated.currency,
   })
 
@@ -29,6 +30,7 @@ export async function updateMachine(id: string, data: MachineFormData) {
     name: validated.name,
     category: validated.category,
     description: validated.description || null,
+    description_en: validated.description_en || null,
     currency: validated.currency,
     has_components: hasComponents,
     updated_at: new Date().toISOString(),

@@ -43,12 +43,14 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
           name: machine.name,
           category: machine.category,
           description: machine.description ?? '',
+          description_en: machine.description_en ?? '',
           currency: (machine.currency as MachineFormData['currency']) ?? 'SEK',
         }
       : {
           name: '',
           category: 'Element Handling',
           description: '',
+          description_en: '',
           currency: 'SEK',
         },
   })
@@ -135,12 +137,22 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="description">Beskrivning</Label>
+            <Label htmlFor="description">Produktinformation (svenska)</Label>
             <Textarea
               id="description"
-              placeholder="Beskriv maskinen..."
+              placeholder="Produktinformation på svenska..."
               rows={3}
               {...register('description')}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="description_en">Produktinformation (engelska)</Label>
+            <Textarea
+              id="description_en"
+              placeholder="Product information in English..."
+              rows={3}
+              {...register('description_en')}
             />
           </div>
 

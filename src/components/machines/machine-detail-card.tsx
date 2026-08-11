@@ -29,6 +29,7 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
   const [category, setCategory] = useState(machine.category)
   const [currency, setCurrency] = useState(machine.currency)
   const [description, setDescription] = useState(machine.description ?? '')
+  const [descriptionEn, setDescriptionEn] = useState(machine.description_en ?? '')
   const [hasComponents, setHasComponents] = useState(machine.has_components)
   const [priceMin, setPriceMin] = useState(machine.price_min != null ? String(machine.price_min) : '')
   const [priceMax, setPriceMax] = useState(machine.price_max != null ? String(machine.price_max) : '')
@@ -50,6 +51,7 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
     setCategory(machine.category)
     setCurrency(machine.currency)
     setDescription(machine.description ?? '')
+    setDescriptionEn(machine.description_en ?? '')
     setHasComponents(machine.has_components)
     setPriceMin(machine.price_min != null ? String(machine.price_min) : '')
     setPriceMax(machine.price_max != null ? String(machine.price_max) : '')
@@ -66,6 +68,7 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
           name: name.trim(),
           category,
           description,
+          description_en: descriptionEn,
           currency: currency as MachineFormData['currency'],
           has_components: hasComponents,
           price_min: num(priceMin),
@@ -137,8 +140,12 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
             )}
 
             <div className="grid gap-1.5">
-              <Label className="text-xs text-[#6B6B6B]">Beskrivning</Label>
-              <Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} />
+              <Label className="text-xs text-[#6B6B6B]">Produktinformation (svenska)</Label>
+              <Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Produktinformation på svenska..." />
+            </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs text-[#6B6B6B]">Produktinformation (engelska)</Label>
+              <Textarea rows={3} value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} placeholder="Product information in English..." />
             </div>
             {error && <p className="text-sm text-[#8B3D3D]">{error}</p>}
             <div className="flex justify-end gap-1">
@@ -170,8 +177,14 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
             </div>
             {machine.description && (
               <div className="pt-1">
-                <p className="text-[#6B6B6B] mb-1">Beskrivning</p>
+                <p className="text-[#6B6B6B] mb-1">Produktinformation (svenska)</p>
                 <p className="text-[#1A1A1A] whitespace-pre-wrap">{machine.description}</p>
+              </div>
+            )}
+            {machine.description_en && (
+              <div className="pt-1">
+                <p className="text-[#6B6B6B] mb-1">Produktinformation (engelska)</p>
+                <p className="text-[#1A1A1A] whitespace-pre-wrap">{machine.description_en}</p>
               </div>
             )}
           </>
