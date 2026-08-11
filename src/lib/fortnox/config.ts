@@ -19,8 +19,10 @@ export const FORTNOX_API_BASE = 'https://api.fortnox.se/3'
 // Scopes we request. `offer` = read/write offers (offerter),
 // `companyinformation` = read the connected company's name (connection check),
 // `print` = fetch documents as PDF (offer preview/print — Accept: application/pdf).
-// `customer` = read customer records (to import a kund from an offer's customer).
-export const FORTNOX_SCOPES = ['companyinformation', 'offer', 'print', 'customer'] as const
+// OBS: `customer`-scopet stöds INTE av Fortnox-appen (invalid_scope vid auth), så
+// kundimporten (`createCompanyFromFortnox`) faller tillbaka på namn + kundnummer
+// från offerten. `getCustomer` (/customers) ger 403 och fångas av try/catch.
+export const FORTNOX_SCOPES = ['companyinformation', 'offer', 'print'] as const
 
 export const FORTNOX_CLIENT_ID = process.env.FORTNOX_CLIENT_ID ?? ''
 export const FORTNOX_CLIENT_SECRET = process.env.FORTNOX_CLIENT_SECRET ?? ''
