@@ -126,6 +126,12 @@ export default async function ResellerDetailPage({
                 <p className="text-[#6B6B6B]">Inga kontaktuppgifter registrerade.</p>
               )}
               {/* Agenter kan vara kunder i Fortnox, t.ex. när de fakturerar slutkund. */}
+              <div className="flex justify-between">
+                <span className="text-[#6B6B6B]">Kundnummer</span>
+                <span className={reseller.fortnox_customer_id ? '' : 'text-[#B8B8B8]'}>
+                  {reseller.fortnox_customer_id ?? '—'}
+                </span>
+              </div>
               <FortnoxCompanyLink
                 companyId={reseller.id}
                 customerNumber={reseller.fortnox_customer_id}

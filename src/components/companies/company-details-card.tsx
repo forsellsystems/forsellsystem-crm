@@ -170,6 +170,14 @@ export function CompanyDetailsCard({
                 <span>{materialLabel}</span>
               </div>
             )}
+            {/* Kundnumret kommer alltid från Fortnox-kopplingen. Raden finns
+                även utan koppling, då tom, så det syns att uppgiften saknas. */}
+            <div className="flex justify-between">
+              <span className="text-[#6B6B6B]">Kundnummer</span>
+              <span className={company.fortnox_customer_id ? '' : 'text-[#B8B8B8]'}>
+                {company.fortnox_customer_id ?? '—'}
+              </span>
+            </div>
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Land</span>
               <span>{company.country}</span>

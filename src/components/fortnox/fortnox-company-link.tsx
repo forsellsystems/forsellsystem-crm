@@ -128,11 +128,9 @@ export function FortnoxCompanyLink({
     <div className="space-y-2 border-t border-[#B8B8B8]/40 pt-3">
       <div className="flex items-start justify-between gap-3 text-sm">
         <span className="text-[#6B6B6B]">Fortnox</span>
+        {/* Numret självt står på kortets Kundnummer-rad, inte här. */}
         {customerNumber ? (
-          <span className="text-right">
-            <span className="font-medium text-[#D4A301]">Kopplad</span>
-            <span className="text-[#6B6B6B]"> · Kundnr {customerNumber}</span>
-          </span>
+          <span className="font-medium text-[#D4A301]">Kopplad</span>
         ) : (
           <span className="text-[#B8B8B8]">Ingen koppling</span>
         )}
