@@ -83,6 +83,7 @@ export type MachineCategory = (typeof MACHINE_CATEGORIES)[number]["key"];
 // Kontext om Forsell självt, det enda som inte går att fråga databasen om.
 // Regeln för vad som hör hemma här: kan en query producera det, skriv inte in det.
 export const COMPANY_INFO_SECTIONS = [
+  { key: "om_oss", label: "Om oss", label_en: "About us" },
   { key: "positionering", label: "Positionering", label_en: "Positioning" },
   { key: "malgrupp", label: "Målgrupp", label_en: "Target customers" },
   { key: "diskvalificerare", label: "Diskvalificerare", label_en: "Disqualifiers" },
