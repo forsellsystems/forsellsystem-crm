@@ -359,7 +359,6 @@ export type NewBolagInput = {
   email?: string | null
   phone?: string | null
   // company-only
-  customer_number?: string | null
   org_number?: string | null
   website?: string | null
   responsible_user_id?: string | null
@@ -387,7 +386,6 @@ async function createBolag(
         name,
         country,
         is_reseller: isReseller,
-        customer_number: clean(nb.customer_number),
         org_number: clean(nb.org_number),
         factory_type: clean(nb.factory_type),
         building_types: nb.building_types ?? [],

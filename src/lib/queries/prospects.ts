@@ -56,21 +56,6 @@ export async function getResellerProspectsForSelect(): Promise<{ id: string; nam
   return (data ?? []).map((p) => ({ id: p.id, name: p.company_name }))
 }
 
-/** Offertnummer på prospektets affärer — visar Fortnox-koppling på prospektkortet. */
-export async function getProspectFortnoxOffers(prospectId: string): Promise<string[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('deals')
-    .select('fortnox_offer_documentnumber')
-    .eq('prospect_id', prospectId)
-    .not('fortnox_offer_documentnumber', 'is', null)
-
-  if (error) return []
-  return (data ?? [])
-    .map((d) => d.fortnox_offer_documentnumber as string | null)
-    .filter((n): n is string => Boolean(n))
-}
-
 export async function getProspect(id: string): Promise<Prospect | null> {
   const supabase = await createClient()
   const { data, error } = await supabase

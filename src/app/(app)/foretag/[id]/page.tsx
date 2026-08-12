@@ -94,7 +94,6 @@ export default async function ForetagDetailPage({
               {company.name}
             </h2>
             <p className="text-sm text-[#6B6B6B] mt-1">
-              {company.customer_number && `#${company.customer_number} · `}
               {company.country}
               {company.responsible_name &&
                 ` · Ansvarig: ${company.responsible_name}`}

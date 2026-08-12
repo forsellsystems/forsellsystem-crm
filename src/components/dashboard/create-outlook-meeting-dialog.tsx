@@ -92,7 +92,6 @@ export function CreateOutlookMeetingDialog({
           reseller_id: resellerId || null,
           email: email || null,
           phone: phone || null,
-          customer_number: customerNumber || null,
           org_number: orgNumber || null,
           website: website || null,
           responsible_user_id: responsibleUserId || null,

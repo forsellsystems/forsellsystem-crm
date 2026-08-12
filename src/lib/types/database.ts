@@ -14,7 +14,6 @@ export type User = {
 export type Company = {
   id: string;
   name: string;
-  customer_number: string | null;
   org_number: string | null;
   factory_type: "modulfabrik" | "vagg_tak_fabrik" | "badrum" | null;
   building_types: string[];
@@ -63,7 +62,6 @@ export type Prospect = {
   converted_deal_id: string | null;
   website: string | null;
   description: string | null;
-  fortnox_customer_id: string | null;
   created_at: string;
   updated_at: string;
 };

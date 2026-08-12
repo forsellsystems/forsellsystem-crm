@@ -3,13 +3,12 @@
 import { useState, useTransition } from 'react'
 import { Pencil, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { updateCompanyFields } from '@/lib/actions/company-actions'
 import { COUNTRIES, FACTORY_TYPES, BUILDING_TYPES, MATERIALS } from '@/lib/constants'
 import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown'
-import { FortnoxStatusRow, FortnoxCustomerInput } from '@/components/fortnox/fortnox-customer-field'
+import { FortnoxCompanyLink } from '@/components/fortnox/fortnox-company-link'
 import { formatDate } from '@/lib/utils'
 import type { CompanyWithRelations } from '@/lib/types/database'
 
@@ -27,15 +26,8 @@ export function CompanyDetailsCard({
     building_types: company.building_types ?? [] as string[],
     material: company.material ?? '',
     country: company.country,
-    customer_number: company.customer_number ?? '',
-    fortnox_customer_id: company.fortnox_customer_id ?? '',
     reseller_id: company.reseller_id ?? '',
   })
-
-  // Affärer kopplade till en Fortnox-offert räknas också som en koppling.
-  const offerNumbers = (company.deals ?? [])
-    .map((d) => d.fortnox_offer_documentnumber)
-    .filter((n): n is string => Boolean(n))
 
   const factoryLabel =
     FACTORY_TYPES.find((ft) => ft.key === company.factory_type)?.label ?? null
@@ -54,8 +46,6 @@ export function CompanyDetailsCard({
       building_types: company.building_types ?? [],
       material: company.material ?? '',
       country: company.country,
-      customer_number: company.customer_number ?? '',
-      fortnox_customer_id: company.fortnox_customer_id ?? '',
       reseller_id: company.reseller_id ?? '',
     })
     setEditing(true)
@@ -138,18 +128,6 @@ export function CompanyDetailsCard({
               </select>
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="inline-custnr" className="text-xs text-[#6B6B6B]">Kundnummer</Label>
-              <Input
-                id="inline-custnr"
-                value={values.customer_number}
-                onChange={(e) => setValues((v) => ({ ...v, customer_number: e.target.value }))}
-              />
-            </div>
-            <FortnoxCustomerInput
-              value={values.fortnox_customer_id}
-              onChange={(next) => setValues((v) => ({ ...v, fortnox_customer_id: next }))}
-            />
-            <div className="grid gap-1.5">
               <Label htmlFor="inline-reseller" className="text-xs text-[#6B6B6B]">Agent</Label>
               <select
                 id="inline-reseller"
@@ -192,12 +170,6 @@ export function CompanyDetailsCard({
                 <span>{materialLabel}</span>
               </div>
             )}
-            {company.customer_number && (
-              <div className="flex justify-between">
-                <span className="text-[#6B6B6B]">Kundnummer</span>
-                <span>{company.customer_number}</span>
-              </div>
-            )}
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Land</span>
               <span>{company.country}</span>
@@ -214,14 +186,14 @@ export function CompanyDetailsCard({
                 <span className="text-[#D4A301] font-medium">{company.reseller_name}</span>
               </div>
             )}
-            <FortnoxStatusRow
-              customerNumber={company.fortnox_customer_id}
-              offerNumbers={offerNumbers}
-            />
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Skapad</span>
               <span>{formatDate(company.created_at)}</span>
             </div>
+            <FortnoxCompanyLink
+              companyId={company.id}
+              customerNumber={company.fortnox_customer_id}
+            />
           </div>
         )}
       </CardContent>

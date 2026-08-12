@@ -34,7 +34,6 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
     defaultValues: company
       ? {
           name: company.name,
-          customer_number: company.customer_number ?? '',
           org_number: company.org_number ?? '',
           factory_type: company.factory_type ?? '',
           building_types: company.building_types ?? [],
@@ -49,7 +48,6 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
         }
       : {
           name: '',
-          customer_number: '',
           org_number: '',
           factory_type: '',
           building_types: [],
@@ -97,10 +95,6 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="customer_number">Kundnummer</Label>
-              <Input id="customer_number" {...register('customer_number')} />
-            </div>
             <div className="grid gap-2">
               <Label htmlFor="org_number">Organisationsnummer</Label>
               <Input

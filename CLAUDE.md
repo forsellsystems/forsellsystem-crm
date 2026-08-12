@@ -96,7 +96,12 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - is_reseller boolean + reseller_id FK on companies
 - reseller_id FK on deals
 - quote_date on deals (DATE, nullable)
-- fortnox_customer_id på companies OCH prospects: Fortnox-kundnummer, sätts manuellt i detaljkortets edit-läge (FortnoxCustomerInput med förslag ur senaste offerterna) och följer med vid flytt kund ↔ prospekt. Detaljkorten visar "Fortnox: Kopplad · kundnr/offert" via FortnoxStatusRow — en koppling räknas också när en affär har fortnox_offer_documentnumber.
+- fortnox_customer_id finns BARA på companies (kunder + agenter), aldrig på prospekt. Ett kundnummer som inte kommer från Fortnox betyder ingenting, så det går inte att skriva in: det sätts enbart genom att välja kund ur Fortnox kundregister (FortnoxCompanyLink på kundkortet och på agentsidan) eller genom "Lägg upp i Fortnox", som skapar kunden där och tar emot numret Fortnox delar ut. Unikt index hindrar två bolag från samma kundnummer. Blir det aktuellt med offert eller faktura lägger man upp kunden i Fortnox och kopplar därifrån.
+- Kopplingsväljaren visar ALLTID hela Fortnox-registret och låter användaren välja. Den kopplar aldrig automatiskt, inte ens vid en enda träff — fel kund tyst kopplad är värre än ett extra klick. Kunder som redan hör till ett annat bolag går inte att välja.
+- Bolagets Fortnox-koppling och affärens offertkoppling är två skilda saker. Att en affär pekar på en offert gör INTE bolaget kopplat, och att koppla en offert stämplar aldrig något på kundkortet.
+- Fortnox-API:ets kundformer skiljer sig mellan endpoints: listan (/customers) ger `Phone` och saknar `CountryCode`, enskild kund (/customers/{nr}) ger `Phone1` och `CountryCode`. toSummary i lib/fortnox/customers.ts läser båda.
+- customer-scopet ("Kund" i Fortnox Developer Portal) krävs för allt kundregisterarbete. Scopet begärs i FORTNOX_SCOPES, men måste också vara ikryssat på integrationen (heter "Forsell CRM"). Ändrade behörigheter kräver ALLTID ny anslutning (Koppla från + Anslut); befintliga tokens behåller sina gamla rättigheter.
+- Landsöversättning Fortnox ↔ CRM sker i lib/fortnox/countries.ts. Okänt land översätts inte alls (utelämnas vid skapande, lämnas orört vid hämtning) hellre än att gissa.
 - website + description on prospects (TEXT, nullable)
 - description on companies (TEXT, nullable)
 - updateProspectFields / updateCompanyFields for inline partial updates

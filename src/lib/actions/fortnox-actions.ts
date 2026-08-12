@@ -3,10 +3,12 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { deleteConnection, isConnected } from '@/lib/fortnox/store'
-import { getOffer, getOfferSummary, getCustomer, listOffers } from '@/lib/fortnox/offers'
+import { getOffer, getOfferSummary, listOffers } from '@/lib/fortnox/offers'
+import { listCustomers, getCustomerSummary, createCustomer } from '@/lib/fortnox/customers'
+import { codeFromCountry, countryFromCode } from '@/lib/fortnox/countries'
 import { FortnoxNotConnectedError } from '@/lib/fortnox/client'
 import { logActivity } from '@/lib/actions/activity-actions'
-import type { FortnoxOfferSummary, FortnoxCustomer } from '@/lib/fortnox/types'
+import type { FortnoxOfferSummary, FortnoxCustomerSummary } from '@/lib/fortnox/types'
 
 type Result<T = undefined> =
   | ({ ok: true } & (T extends undefined ? object : { data: T }))
@@ -79,62 +81,242 @@ export async function fetchRecentOffers(): Promise<Result<FortnoxOfferSummary[]>
 }
 
 /**
- * Kunder att välja bland när man kopplar en kund/prospekt mot Fortnox. Appen har
- * inte `customer`-scope, så kundregistret kan inte listas — vi härleder i stället
- * unika kunder ur de senaste offerterna. Fältet tar fritext, så listan är en hjälp
- * och inte en begränsning.
+ * Hela Fortnox kundregister, att välja ur när ett bolag ska kopplas. Kräver
+ * `customer`-scopet. CRM:et väljer aldrig åt användaren, listan är underlaget.
  */
-export async function fetchFortnoxCustomers(): Promise<
-  Result<{ number: string; name: string }[]>
-> {
+export async function fetchFortnoxCustomerList(): Promise<Result<FortnoxCustomerSummary[]>> {
   try {
-    const offers = await listOffers(50)
-    const byNumber = new Map<string, string>()
-    for (const offer of offers) {
-      const number = offer.customerNumber ? String(offer.customerNumber) : ''
-      if (!number || byNumber.has(number)) continue
-      byNumber.set(number, offer.customerName || `Kund ${number}`)
-    }
-    const customers = [...byNumber].map(([number, name]) => ({ number, name }))
-    customers.sort((a, b) => a.name.localeCompare(b.name, 'sv'))
-    return { ok: true, data: customers }
+    return { ok: true, data: await listCustomers() }
   } catch (err) {
     return fail(err)
   }
 }
 
-const COUNTRY_BY_CODE: Record<string, string> = {
-  SE: 'Sverige',
-  NO: 'Norge',
-  DK: 'Danmark',
-  FI: 'Finland',
-  IS: 'Island',
-}
-function countryFromCode(code?: string | null): string {
-  return (code && COUNTRY_BY_CODE[code.toUpperCase()]) || 'Sverige'
+/** Vilka bolag som redan är kopplade, så väljaren kan markera upptagna kunder. */
+export async function fetchLinkedCustomerNumbers(): Promise<
+  Result<{ customerNumber: string; companyId: string; companyName: string }[]>
+> {
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('companies')
+      .select('id, name, fortnox_customer_id')
+      .not('fortnox_customer_id', 'is', null)
+    return {
+      ok: true,
+      data: (data ?? []).map((c) => ({
+        customerNumber: String(c.fortnox_customer_id),
+        companyId: c.id,
+        companyName: c.name,
+      })),
+    }
+  } catch (err) {
+    return fail(err)
+  }
 }
 
-/** Does a CRM kund already exist for this Fortnox customer number? */
+/** Revalidera bolagets sida oavsett om det är en kund eller en agent. */
+function revalidateCompany(companyId: string) {
+  revalidatePath(`/foretag/${companyId}`)
+  revalidatePath(`/aterforsaljare/${companyId}`)
+  revalidatePath('/foretag')
+  revalidatePath('/aterforsaljare')
+}
+
+/** Does a CRM-bolag already exist for this Fortnox customer number? */
 export async function matchFortnoxCustomer(
   customerNumber: string
 ): Promise<Result<{ id: string; name: string } | null>> {
   try {
     const supabase = await createClient()
+    // limit(1) i stället för maybeSingle(): skulle två bolag mot förmodan dela
+    // kundnummer ska det bli en träff, inte tolkas som "ingen kund finns" och
+    // leda till att ännu en dubblett skapas.
     const { data } = await supabase
       .from('companies')
       .select('id, name')
       .eq('fortnox_customer_id', String(customerNumber))
-      .maybeSingle()
-    return { ok: true, data: data ?? null }
+      .limit(1)
+    return { ok: true, data: data?.[0] ?? null }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/** Koppla ett bolag (kund eller agent) till en vald kund i Fortnox. */
+export async function linkCompanyToFortnox(
+  companyId: string,
+  customerNumber: string
+): Promise<Result<FortnoxCustomerSummary>> {
+  try {
+    const number = customerNumber.trim()
+    if (!number) return { ok: false, error: 'Inget kundnummer valt.' }
+
+    // Kunden måste finnas i Fortnox: kopplingen ska aldrig kunna peka i tomma luften.
+    const summary = await getCustomerSummary(number)
+    if (!summary) {
+      return { ok: false, error: `Kund ${number} finns inte i Fortnox.` }
+    }
+
+    const supabase = await createClient()
+    const { data: taken } = await supabase
+      .from('companies')
+      .select('id, name')
+      .eq('fortnox_customer_id', number)
+      .neq('id', companyId)
+      .limit(1)
+    if (taken?.[0]) {
+      return {
+        ok: false,
+        error: `Fortnox-kund ${number} är redan kopplad till ${taken[0].name}.`,
+      }
+    }
+
+    const { error } = await supabase
+      .from('companies')
+      .update({ fortnox_customer_id: number, updated_at: new Date().toISOString() })
+      .eq('id', companyId)
+    if (error) throw new Error(error.message)
+
+    revalidateCompany(companyId)
+    return { ok: true, data: summary }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/** Ta bort bolagets Fortnox-koppling. Rör inget i Fortnox. */
+export async function unlinkCompanyFromFortnox(companyId: string): Promise<Result> {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase
+      .from('companies')
+      .update({ fortnox_customer_id: null, updated_at: new Date().toISOString() })
+      .eq('id', companyId)
+    if (error) throw new Error(error.message)
+    revalidateCompany(companyId)
+    return { ok: true }
   } catch (err) {
     return fail(err)
   }
 }
 
 /**
- * Create a CRM kund from a Fortnox offer's customer — full data if the `customer`
- * scope is granted, otherwise name + number from the offer. Idempotent on the
- * Fortnox customer number (returns the existing kund if already imported).
+ * Hämta kundens uppgifter från Fortnox in på bolaget. Fortnox styr de fält som
+ * har ett värde där; tomma fält i Fortnox lämnar CRM:ets uppgift orörd, så en
+ * hämtning aldrig raderar något du redan skrivit in.
+ */
+export async function importFortnoxCustomerInfo(
+  companyId: string
+): Promise<Result<{ updated: string[] }>> {
+  try {
+    const supabase = await createClient()
+    const { data: company, error: readError } = await supabase
+      .from('companies')
+      .select('id, fortnox_customer_id')
+      .eq('id', companyId)
+      .single()
+    if (readError || !company) throw new Error('Kunde inte läsa bolaget.')
+    if (!company.fortnox_customer_id) {
+      return { ok: false, error: 'Bolaget är inte kopplat till Fortnox.' }
+    }
+
+    const summary = await getCustomerSummary(String(company.fortnox_customer_id))
+    if (!summary) {
+      return {
+        ok: false,
+        error: `Kund ${company.fortnox_customer_id} finns inte längre i Fortnox.`,
+      }
+    }
+
+    const country = countryFromCode(summary.countryCode)
+    const update: Record<string, string> = {}
+    if (summary.name) update.name = summary.name
+    if (summary.orgNumber) update.org_number = summary.orgNumber
+    if (summary.email) update.email = summary.email
+    if (summary.phone) update.phone = summary.phone
+    if (country) update.country = country
+
+    if (Object.keys(update).length === 0) {
+      return { ok: false, error: 'Kunden i Fortnox saknar uppgifter att hämta.' }
+    }
+
+    update.updated_at = new Date().toISOString()
+    const { error } = await supabase.from('companies').update(update).eq('id', companyId)
+    if (error) throw new Error(error.message)
+
+    revalidateCompany(companyId)
+    const labels: Record<string, string> = {
+      name: 'namn',
+      org_number: 'orgnr',
+      email: 'e-post',
+      phone: 'telefon',
+      country: 'land',
+    }
+    return {
+      ok: true,
+      data: {
+        updated: Object.keys(update)
+          .filter((k) => k !== 'updated_at')
+          .map((k) => labels[k] ?? k),
+      },
+    }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/**
+ * Lägg upp bolaget som kund i Fortnox och koppla det. Fortnox delar ut
+ * kundnumret. Avbryts om bolaget redan är kopplat, så ingen dubblett skapas i
+ * deras register av ett dubbelklick.
+ */
+export async function createFortnoxCustomerForCompany(
+  companyId: string
+): Promise<Result<FortnoxCustomerSummary>> {
+  try {
+    const supabase = await createClient()
+    const { data: company, error: readError } = await supabase
+      .from('companies')
+      .select('id, name, org_number, email, phone, country, fortnox_customer_id')
+      .eq('id', companyId)
+      .single()
+    if (readError || !company) throw new Error('Kunde inte läsa bolaget.')
+    if (company.fortnox_customer_id) {
+      return {
+        ok: false,
+        error: `Bolaget är redan kopplat till Fortnox-kund ${company.fortnox_customer_id}.`,
+      }
+    }
+
+    const created = await createCustomer({
+      name: company.name,
+      orgNumber: company.org_number,
+      email: company.email,
+      phone: company.phone,
+      countryCode: codeFromCountry(company.country),
+    })
+
+    const { error } = await supabase
+      .from('companies')
+      .update({
+        fortnox_customer_id: created.customerNumber,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', companyId)
+    if (error) throw new Error(error.message)
+
+    revalidateCompany(companyId)
+    return { ok: true, data: created }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/**
+ * Create a CRM kund from a Fortnox offer's customer. Idempotent on the Fortnox
+ * customer number (returns the existing kund if already imported). Faller
+ * tillbaka på offertens kundnamn om kundposten inte går att läsa.
  */
 export async function createCompanyFromFortnox(
   documentNumber: string
@@ -152,24 +334,23 @@ export async function createCompanyFromFortnox(
       .maybeSingle()
     if (existing) return { ok: true, data: existing }
 
-    // Full customer record needs the `customer` scope — fall back to the offer.
-    let full: FortnoxCustomer | null = null
+    let full: FortnoxCustomerSummary | null = null
     try {
-      full = await getCustomer(custNo)
+      full = await getCustomerSummary(custNo)
     } catch {
       full = null
     }
 
-    const name = full?.Name || offer?.CustomerName || `Kund ${custNo}`
+    const name = full?.name || offer?.CustomerName || `Kund ${custNo}`
     const { data: company, error } = await supabase
       .from('companies')
       .insert({
         name,
-        customer_number: custNo,
-        org_number: full?.OrganisationNumber || null,
-        email: full?.Email || null,
-        phone: full?.Phone1 || null,
-        country: countryFromCode(full?.CountryCode),
+        org_number: full?.orgNumber || null,
+        email: full?.email || null,
+        phone: full?.phone || null,
+        // Okänd landskod faller tillbaka på Sverige: land är obligatoriskt här.
+        country: countryFromCode(full?.countryCode) ?? 'Sverige',
         fortnox_customer_id: custNo,
         is_reseller: false,
       })

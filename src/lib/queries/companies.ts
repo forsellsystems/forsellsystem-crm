@@ -14,7 +14,7 @@ export async function getCompanies(filters?: {
 
   if (filters?.search) {
     query = query.or(
-      `name.ilike.%${filters.search}%,customer_number.ilike.%${filters.search}%`
+      `name.ilike.%${filters.search}%`
     )
   }
   if (filters?.factory_type && filters.factory_type !== 'all') {

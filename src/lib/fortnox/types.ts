@@ -54,10 +54,25 @@ export interface FortnoxCustomer {
   Name?: string
   OrganisationNumber?: string
   Email?: string
+  // Listan (/customers) svarar med `Phone`, enskild kund (/customers/{nr}) med
+  // `Phone1`. Båda måste läsas, annars tappas telefonnumret i väljaren.
   Phone1?: string
+  Phone?: string
   Address1?: string
   ZipCode?: string
   City?: string
+  // Finns bara på enskild kund, inte i listan.
   CountryCode?: string
   Country?: string
+}
+
+// Kompakt kundform som väljaren och kopplingskortet arbetar med.
+export interface FortnoxCustomerSummary {
+  customerNumber: string
+  name: string | null
+  orgNumber: string | null
+  email: string | null
+  phone: string | null
+  city: string | null
+  countryCode: string | null
 }

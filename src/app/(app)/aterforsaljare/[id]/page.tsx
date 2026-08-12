@@ -14,6 +14,7 @@ import { formatDate, formatCurrency } from '@/lib/utils'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
 import { MeetingsCard } from '@/components/meetings/meetings-card'
+import { FortnoxCompanyLink } from '@/components/fortnox/fortnox-company-link'
 
 async function getReseller(id: string) {
   const supabase = await createClient()
@@ -124,6 +125,11 @@ export default async function ResellerDetailPage({
               {!reseller.email && !reseller.phone && !reseller.website && (
                 <p className="text-[#6B6B6B]">Inga kontaktuppgifter registrerade.</p>
               )}
+              {/* Agenter kan vara kunder i Fortnox, t.ex. när de fakturerar slutkund. */}
+              <FortnoxCompanyLink
+                companyId={reseller.id}
+                customerNumber={reseller.fortnox_customer_id}
+              />
             </CardContent>
           </Card>
 
