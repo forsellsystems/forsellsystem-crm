@@ -27,6 +27,7 @@ export async function createCompany(data: CompanyFormData) {
     .from('companies')
     .insert({
       name: validated.name,
+      fortnox_customer_id: validated.fortnox_customer_id || null,
       org_number: validated.org_number || null,
       factory_type: validated.factory_type || null,
       building_types: validated.building_types ?? [],
@@ -42,7 +43,16 @@ export async function createCompany(data: CompanyFormData) {
     .select('id')
     .single()
 
-  if (error) throw new Error(`Kunde inte skapa företag: ${error.message}`)
+  if (error) {
+    // Unikt index på fortnox_customer_id: någon hann koppla samma Fortnox-kund
+    // till ett annat bolag medan formuläret var öppet.
+    if (error.code === '23505' && error.message.includes('fortnox_customer_id')) {
+      throw new Error(
+        `Fortnox-kund ${validated.fortnox_customer_id} är redan kopplad till ett annat bolag.`
+      )
+    }
+    throw new Error(`Kunde inte skapa företag: ${error.message}`)
+  }
 
   await logActivity(supabase, {
     action: 'company_created',
@@ -247,6 +257,7 @@ export async function updateCompany(id: string, data: CompanyFormData) {
     .from('companies')
     .update({
       name: validated.name,
+      fortnox_customer_id: validated.fortnox_customer_id || null,
       org_number: validated.org_number || null,
       factory_type: validated.factory_type || null,
       building_types: validated.building_types ?? [],

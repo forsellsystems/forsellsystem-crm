@@ -139,6 +139,8 @@ export type ProspectFormData = z.infer<typeof prospectSchema>
 // ============================================
 export const companySchema = z.object({
   name: z.string().min(1, 'Företagsnamn krävs'),
+  // Sätts bara genom Fortnox-väljaren, aldrig som fritext i UI:t.
+  fortnox_customer_id: z.string().optional().or(z.literal('')),
   org_number: z.string().optional(),
   factory_type: z.enum(['modulfabrik', 'vagg_tak_fabrik', 'badrum']).optional().or(z.literal('')),
   building_types: z.array(z.string()).optional(),
