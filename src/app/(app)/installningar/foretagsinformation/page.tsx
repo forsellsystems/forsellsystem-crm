@@ -8,7 +8,8 @@ export default async function ForetagsinformationPage() {
   const rows = await getCompanyInfo()
 
   return (
-    <div className="space-y-6 animate-fade-in-up">
+    // Läsdokument, inte tabell. Håller radlängden nere även på bred skärm.
+    <div className="max-w-3xl space-y-6 animate-fade-in-up">
       <div className="flex items-center gap-4">
         <Link href="/installningar">
           <Button variant="ghost" size="icon-sm">

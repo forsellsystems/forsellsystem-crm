@@ -53,13 +53,13 @@ function draftFrom(row: CompanyInfo): Draft {
   }
 }
 
-function CopyButton({ text, label }: { text: string; label: string }) {
+function CopyButton({ text }: { text: string }) {
   const [done, setDone] = useState(false)
   return (
     <Button
       variant="ghost"
-      size="sm"
-      className="h-7 px-2 text-xs text-[#6B6B6B]"
+      size="icon-sm"
+      aria-label="Kopiera texten"
       onClick={() => {
         navigator.clipboard.writeText(text).then(() => {
           setDone(true)
@@ -67,8 +67,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
         })
       }}
     >
-      {done ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-      {done ? 'Kopierat' : label}
+      {done ? <Check className="size-3.5 text-[#D4A301]" /> : <Copy className="size-3.5" />}
     </Button>
   )
 }
@@ -226,11 +225,11 @@ export function CompanyInfoCard({ rows }: { rows: CompanyInfo[] }) {
           groups.map((group) => {
             const isTerms = group.key === 'ordlista'
             return (
-              <div key={group.key} className="space-y-1">
-                <p className="font-condensed text-[11px] uppercase tracking-[0.12em] text-[#9A9A9A]">
+              <div key={group.key} className="space-y-2 border-t border-[#B8B8B8]/40 pt-5 first:border-t-0 first:pt-0">
+                <p className="font-condensed text-[11px] uppercase tracking-[0.14em] text-[#1A1A1A]">
                   {group.label}
                 </p>
-                <div className="divide-y divide-[#B8B8B8]/40">
+                <div className="space-y-1">
                   {group.items.map((row) => {
                     const first = rows.indexOf(row) === 0
                     const last = rows.indexOf(row) === rows.length - 1
@@ -245,7 +244,7 @@ export function CompanyInfoCard({ rows }: { rows: CompanyInfo[] }) {
                         </Button>
                       </div>
                     ) : (
-                      <div key={row.id} className="flex items-start gap-2 py-3 first:pt-0">
+                      <div key={row.id} className="group flex items-start gap-2 rounded-lg px-2 py-2 -mx-2 hover:bg-[#F7F6F4]">
                         <div className="flex-1 min-w-0">
                           {isTerms ? (
                             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -264,29 +263,29 @@ export function CompanyInfoCard({ rows }: { rows: CompanyInfo[] }) {
                                 </span>
                               )}
                               {(lang === 'en' ? row.content_en ?? row.content : row.content) && (
-                                <span className="w-full text-xs text-[#6B6B6B]">
+                                <span className="w-full max-w-[62ch] text-xs text-[#6B6B6B]">
                                   {lang === 'en' ? row.content_en ?? row.content : row.content}
                                 </span>
                               )}
                             </div>
                           ) : (
                             <>
-                              <p className="text-sm font-medium text-[#1A1A1A]">
+                              <p className="font-medium text-[#1A1A1A]">
                                 {lang === 'en' ? row.title_en ?? row.title : row.title}
                               </p>
                               {lang === 'en' && !row.content_en ? (
                                 <p className="mt-1 text-sm text-[#9A9A9A]">Engelsk text saknas</p>
                               ) : (
-                                <p className="mt-1 whitespace-pre-wrap text-sm text-[#4A4A4A]">
+                                <p className="mt-1.5 max-w-[62ch] whitespace-pre-wrap text-sm leading-relaxed text-[#4A4A4A]">
                                   {lang === 'en' ? row.content_en : row.content}
                                 </p>
                               )}
-                              <div className="mt-1 flex gap-1">
-                                <CopyButton text={(lang === 'en' ? row.content_en : row.content) ?? ''} label="Kopiera" />
-                              </div>
                             </>
                           )}
                         </div>
+                        {!isTerms && (
+                          <CopyButton text={(lang === 'en' ? row.content_en : row.content) ?? ''} />
+                        )}
                         <Button variant="ghost" size="icon-sm" onClick={() => run(() => moveCompanyInfo(row.id, 'up'))} disabled={isPending || first} aria-label="Flytta upp">
                           <ChevronUp className="size-3.5" />
                         </Button>
