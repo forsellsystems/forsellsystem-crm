@@ -22,9 +22,17 @@ const numInput =
   'w-full min-w-0 rounded-lg border border-border bg-background px-2.5 h-8 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50'
 
 const FIELD_BY_KEY = new Map(SPEC_FIELDS.map((f) => [f.key as string, f]))
+const VALUE_TYPE_BY_KEY = new Map(SPEC_VALUE_TYPES.map((t) => [t.key as string, t]))
 
-const nf = new Intl.NumberFormat('sv-SE')
-const num = (v: number) => nf.format(v)
+type Lang = 'sv' | 'en'
+
+// Tusentalsavgränsare och decimaltecken skiljer sig: 3 500 mot 3,500.
+const NUMBER_FORMAT: Record<Lang, Intl.NumberFormat> = {
+  sv: new Intl.NumberFormat('sv-SE'),
+  en: new Intl.NumberFormat('en-US'),
+}
+// mm, kg, s, min och bar är samma på båda språken. Bara stycktalet skiljer.
+const UNIT_EN: Record<string, string> = { st: 'pcs' }
 
 type Draft = {
   spec_key: string
@@ -56,18 +64,30 @@ const EMPTY: Draft = {
   note_en: '',
 }
 
-function labelOf(spec: MachineSpec) {
+function labelOf(spec: MachineSpec, lang: Lang) {
   const field = spec.spec_key ? FIELD_BY_KEY.get(spec.spec_key) : null
-  return field?.label ?? spec.label ?? '—'
+  if (field) return lang === 'en' ? field.label_en : field.label
+  const own = lang === 'en' ? spec.label_en ?? spec.label : spec.label
+  return own ?? '—'
+}
+
+function noteOf(spec: MachineSpec, lang: Lang) {
+  return lang === 'en' ? spec.note_en ?? spec.note : spec.note
 }
 
 // "300 – 6 000 mm", "max 3 000 kg", "2 st". Enhetslösa fält får bara talet.
-function valueOf(spec: MachineSpec) {
-  if (spec.value_type === 'adapt') return 'Anpassas efter behov'
-  if (spec.value_type === 'undocumented') return 'Ej dokumenterat'
-  if (spec.value_type === 'text') return spec.value_text ?? '—'
+function valueOf(spec: MachineSpec, lang: Lang) {
+  if (spec.value_type === 'adapt' || spec.value_type === 'undocumented') {
+    const t = VALUE_TYPE_BY_KEY.get(spec.value_type)
+    return (lang === 'en' ? t?.label_en : t?.label) ?? '—'
+  }
+  if (spec.value_type === 'text') {
+    return (lang === 'en' ? spec.value_text_en ?? spec.value_text : spec.value_text) ?? '—'
+  }
 
-  const unit = spec.unit ? ` ${spec.unit}` : ''
+  const num = (v: number) => NUMBER_FORMAT[lang].format(v)
+  const rawUnit = spec.unit ?? ''
+  const unit = rawUnit ? ` ${lang === 'en' ? UNIT_EN[rawUnit] ?? rawUnit : rawUnit}` : ''
   const min = spec.value_min != null ? Number(spec.value_min) : null
   const max = spec.value_max != null ? Number(spec.value_max) : null
 
@@ -200,6 +220,10 @@ export function MachineSpecsCard({
   const [editId, setEditId] = useState<string | null>(null)
   const [edit, setEdit] = useState<Draft>(EMPTY)
 
+  // Hela kortet läses på ett språk i taget. Siffrorna är ändå desamma, så två
+  // språk sida vid sida hade bara dubblat höjden utan att tillföra något.
+  const [lang, setLang] = useState<Lang>('sv')
+
   // Grupperna följer SPEC_OBJECTS-ordningen; tomma grupper visas inte.
   const groups = SPEC_OBJECTS.map((obj) => ({
     ...obj,
@@ -264,11 +288,28 @@ export function MachineSpecsCard({
             Vad maskinen klarar. &quot;Anpassas efter behov&quot; är ett svar, &quot;ej dokumenterat&quot; är en lucka.
           </p>
         </div>
-        {!adding && (
-          <Button variant="ghost" size="icon-sm" onClick={() => setAdding(true)} disabled={isPending}>
-            <Plus className="size-4" />
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          <div className="flex overflow-hidden rounded-lg border border-border" role="group" aria-label="Språk">
+            {(['sv', 'en'] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                aria-pressed={lang === l}
+                className={`px-2 py-1 font-condensed text-[11px] uppercase tracking-[0.1em] transition-colors ${
+                  lang === l ? 'bg-[#1A1A1A] text-white' : 'text-[#6B6B6B] hover:bg-[#F2F1EE]'
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+          {!adding && (
+            <Button variant="ghost" size="icon-sm" onClick={() => setAdding(true)} disabled={isPending}>
+              <Plus className="size-4" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-5">
         {groups.length === 0 && !adding ? (
@@ -277,7 +318,7 @@ export function MachineSpecsCard({
           groups.map((group) => (
             <div key={group.key} className="space-y-1">
               <p className="font-condensed text-[11px] uppercase tracking-[0.12em] text-[#9A9A9A]">
-                {group.label}
+                {lang === 'en' ? group.label_en : group.label}
               </p>
               <div className="divide-y divide-[#B8B8B8]/40">
                 {group.items.map((spec) => {
@@ -297,7 +338,7 @@ export function MachineSpecsCard({
                     <div key={spec.id} className="flex items-start gap-2 py-2 first:pt-0">
                       <div className="flex-1 min-w-0 sm:flex sm:items-baseline sm:gap-3">
                         <span className="text-sm text-[#6B6B6B] sm:w-[46%] sm:shrink-0">
-                          {labelOf(spec)}
+                          {labelOf(spec, lang)}
                         </span>
                         <span className="block text-sm tabular-nums">
                           <span
@@ -309,10 +350,10 @@ export function MachineSpecsCard({
                                   : 'text-[#1A1A1A]'
                             }
                           >
-                            {valueOf(spec)}
+                            {valueOf(spec, lang)}
                           </span>
-                          {spec.note && (
-                            <span className="block text-xs text-[#9A9A9A]">{spec.note}</span>
+                          {noteOf(spec, lang) && (
+                            <span className="block text-xs text-[#9A9A9A]">{noteOf(spec, lang)}</span>
                           )}
                         </span>
                       </div>
