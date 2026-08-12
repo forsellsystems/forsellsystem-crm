@@ -174,31 +174,15 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
     )
   }
 
-  // 5. Copy projects from prospect to company
-  const { data: projects } = await supabase
+  // 5. Re-anchor projects to the company. Flytta raden i stället för att kopiera
+  // den: projektet behåller sitt id, sina anteckningar, sin logg och sin
+  // /projekt/[id]-länk, och det konverterade prospektet lämnar inget spöke kvar
+  // som dyker upp som dubblett i projektlistan.
+  await supabase
     .from('projects')
-    .select('*')
+    .update({ entity_type: 'company', entity_id: company.id })
     .eq('entity_type', 'prospect')
     .eq('entity_id', prospectId)
-
-  if (projects && projects.length > 0) {
-    await supabase.from('projects').insert(
-      projects.map((project) => ({
-        entity_type: 'company' as const,
-        entity_id: company.id,
-        name: project.name,
-        project_type: project.project_type,
-        status: project.status,
-        description: project.description,
-        value: project.value,
-        value_unknown: project.value_unknown,
-        currency: project.currency,
-        contact_name: project.contact_name,
-        contact_email: project.contact_email,
-        contact_phone: project.contact_phone,
-      }))
-    )
-  }
 
   // 6. Mark prospect as converted
   await supabase
@@ -214,6 +198,7 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
   revalidatePath(basePath)
   revalidatePath(`${basePath}/${prospectId}`)
   revalidatePath(isReseller ? '/aterforsaljare' : '/foretag')
+  revalidatePath('/projekt')
 
   return company.id
 }

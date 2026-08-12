@@ -178,36 +178,17 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
     )
   }
 
-  // 5. Copy projects from company to prospect
-  const { data: projects } = await supabase
+  // 5. Re-anchor projects, meetings + todos to the new prospect so deras historik
+  // följer med flytten, clean the doomed deals' artifacts, and drop the original
+  // company notes (they were copied to the prospect in step 4). Projekt flyttas
+  // rad för rad i stället för att kopieras: id, anteckningar, logg och
+  // /projekt/[id]-länken överlever.
+  await cleanupCompanyDealArtifacts(supabase, companyId)
+  await supabase
     .from('projects')
-    .select('*')
+    .update({ entity_type: 'prospect', entity_id: prospect.id })
     .eq('entity_type', 'company')
     .eq('entity_id', companyId)
-
-  if (projects && projects.length > 0) {
-    await supabase.from('projects').insert(
-      projects.map((project) => ({
-        entity_type: 'prospect' as const,
-        entity_id: prospect.id,
-        name: project.name,
-        project_type: project.project_type,
-        status: project.status,
-        description: project.description,
-        value: project.value,
-        value_unknown: project.value_unknown,
-        currency: project.currency,
-        contact_name: project.contact_name,
-        contact_email: project.contact_email,
-        contact_phone: project.contact_phone,
-      }))
-    )
-  }
-
-  // 5b. Re-anchor meetings + todos to the new prospect so their history follows
-  // the move, clean the doomed deals' artifacts, and drop the original company
-  // notes (they were copied to the prospect in step 4).
-  await cleanupCompanyDealArtifacts(supabase, companyId)
   await supabase
     .from('meetings')
     .update({ entity_type: 'prospect', entity_id: prospect.id })
@@ -220,12 +201,7 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
     .eq('entity_id', companyId)
   await supabase.from('notes').delete().eq('entity_type', 'company').eq('entity_id', companyId)
 
-  // 6. Delete company (and its projects)
-  await supabase
-    .from('projects')
-    .delete()
-    .eq('entity_type', 'company')
-    .eq('entity_id', companyId)
+  // 6. Delete company (projekten ligger redan på prospektet efter steg 5)
   await supabase.from('companies').delete().eq('id', companyId)
 
   if (isReseller) {
@@ -235,6 +211,7 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
     revalidatePath('/foretag')
     revalidatePath('/prospekt')
   }
+  revalidatePath('/projekt')
 
   return prospect.id
 }
