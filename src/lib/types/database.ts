@@ -77,6 +77,8 @@ export type Machine = {
   // Price range. When has_components: cached sum of the component ranges.
   // Otherwise: a direct price range set on the machine. price_max NULL = single price.
   has_components: boolean;
+  // Vilka fabrikstyper maskinen passar. Nycklar ur FACTORY_TYPES.
+  factory_types: string[];
   price_min: number | null;
   price_max: number | null;
   currency: string;

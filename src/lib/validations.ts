@@ -12,6 +12,7 @@ export const machineSchema = z.object({
   // Component-based pricing vs a direct price range on the machine. The price
   // fields are only used (and only sent) when has_components is false.
   has_components: z.boolean().optional(),
+  factory_types: z.array(z.string()).optional(),
   price_min: z.preprocess(
     (v) => (v === '' || v == null ? 0 : v),
     z.coerce.number().min(0, 'Pris måste vara positivt')

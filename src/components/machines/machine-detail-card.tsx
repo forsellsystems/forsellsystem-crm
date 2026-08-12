@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { MACHINE_CATEGORIES, CURRENCIES } from '@/lib/constants'
+import { MACHINE_CATEGORIES, CURRENCIES, FACTORY_TYPES } from '@/lib/constants'
+import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown'
 import { formatCurrency } from '@/lib/utils'
 import { updateMachine } from '@/lib/actions/machine-actions'
 import type { MachineFormData } from '@/lib/validations'
@@ -31,6 +32,7 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
   const [description, setDescription] = useState(machine.description ?? '')
   const [descriptionEn, setDescriptionEn] = useState(machine.description_en ?? '')
   const [hasComponents, setHasComponents] = useState(machine.has_components)
+  const [factoryTypes, setFactoryTypes] = useState<string[]>(machine.factory_types ?? [])
   const [priceMin, setPriceMin] = useState(machine.price_min != null ? String(machine.price_min) : '')
   const [priceMax, setPriceMax] = useState(machine.price_max != null ? String(machine.price_max) : '')
 
@@ -53,6 +55,7 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
     setDescription(machine.description ?? '')
     setDescriptionEn(machine.description_en ?? '')
     setHasComponents(machine.has_components)
+    setFactoryTypes(machine.factory_types ?? [])
     setPriceMin(machine.price_min != null ? String(machine.price_min) : '')
     setPriceMax(machine.price_max != null ? String(machine.price_max) : '')
     setError(null)
@@ -71,6 +74,7 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
           description_en: descriptionEn,
           currency: currency as MachineFormData['currency'],
           has_components: hasComponents,
+          factory_types: factoryTypes,
           price_min: num(priceMin),
           price_max: priceMax.trim() === '' ? undefined : num(priceMax),
         })
@@ -108,6 +112,14 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
                   <option key={c.key} value={c.key}>{c.label}</option>
                 ))}
               </select>
+            </div>
+            <div className="grid gap-1.5">
+              <Label className="text-xs text-[#6B6B6B]">Passar fabrikstyp</Label>
+              <MultiSelectDropdown
+                options={FACTORY_TYPES}
+                value={factoryTypes}
+                onChange={setFactoryTypes}
+              />
             </div>
             <div className="grid gap-1.5">
               <Label className="text-xs text-[#6B6B6B]">Valuta</Label>
@@ -172,6 +184,16 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Pris</span>
               <span className="font-semibold">{priceLabel}</span>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-[#6B6B6B] shrink-0">Passar</span>
+              <span className={machine.factory_types?.length ? 'text-right' : 'text-right text-[#B8B8B8]'}>
+                {machine.factory_types?.length
+                  ? machine.factory_types
+                      .map((k) => FACTORY_TYPES.find((f) => f.key === k)?.label ?? k)
+                      .join(', ')
+                  : 'Ej angivet'}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-[#6B6B6B]">Prissättning</span>
