@@ -24,7 +24,7 @@ async function getResellersWithDetails() {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('companies')
-    .select('id, name, country, email, phone, created_at')
+    .select('id, name, country, email, phone, created_at, fortnox_customer_id')
     .eq('is_reseller', true)
     .order('name')
 
@@ -70,6 +70,7 @@ export default async function AterforsaljarePage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Namn</TableHead>
+                  <TableHead>Kundnummer</TableHead>
                   <TableHead>Land</TableHead>
                   <TableHead>E-post</TableHead>
                   <TableHead>Telefon</TableHead>
@@ -94,6 +95,10 @@ export default async function AterforsaljarePage() {
                           Agent
                         </Badge>
                       </div>
+                    </TableCell>
+                    {/* Kundnumret kommer från Fortnox-kopplingen, tomt utan koppling. */}
+                    <TableCell className="text-sm text-[#6B6B6B]">
+                      {reseller.fortnox_customer_id ?? '—'}
                     </TableCell>
                     <TableCell className="text-sm text-[#6B6B6B]">
                       {reseller.country}

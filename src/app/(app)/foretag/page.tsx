@@ -77,6 +77,7 @@ export default async function ForetagPage({
               <TableHeader>
                 <TableRow>
                   <TableHead>Kund</TableHead>
+                  <TableHead>Kundnummer</TableHead>
                   <TableHead>Fabrikstyp</TableHead>
                   <TableHead>Land</TableHead>
                   <TableHead>Ansvarig</TableHead>
@@ -93,6 +94,10 @@ export default async function ForetagPage({
                       >
                         {company.name}
                       </Link>
+                    </TableCell>
+                    {/* Kundnumret kommer från Fortnox-kopplingen, tomt utan koppling. */}
+                    <TableCell className="text-sm text-[#6B6B6B]">
+                      {company.fortnox_customer_id ?? '—'}
                     </TableCell>
                     <TableCell className="text-sm text-[#6B6B6B]">
                       {getFactoryLabel(company.factory_type)}
