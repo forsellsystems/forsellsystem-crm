@@ -97,6 +97,21 @@ export type MachineComponent = {
   updated_at: string;
 };
 
+// Företagskontext. Prosaposter använder title + content; ordlisteposter använder
+// title (svensk term) + title_en (engelsk term) + term_usage.
+export type CompanyInfo = {
+  id: string;
+  section: string | null;
+  title: string;
+  title_en: string | null;
+  content: string | null;
+  content_en: string | null;
+  term_usage: "vi" | "kunden" | "bada" | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 // En teknisk uppgift om en maskin. spec_key pekar på SPEC_FIELDS (etiketten
 // kommer därifrån, på båda språken); är den null används label/label_en.
 // value_type styr hur raden läses: siffra, text, "anpassas efter behov" eller

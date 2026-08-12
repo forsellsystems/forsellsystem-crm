@@ -78,6 +78,33 @@ export const MACHINE_CATEGORIES = [
 export type MachineCategory = (typeof MACHINE_CATEGORIES)[number]["key"];
 
 // ============================================
+// FÖRETAGSINFORMATION
+// ============================================
+// Kontext om Forsell självt, det enda som inte går att fråga databasen om.
+// Regeln för vad som hör hemma här: kan en query producera det, skriv inte in det.
+export const COMPANY_INFO_SECTIONS = [
+  { key: "positionering", label: "Positionering" },
+  { key: "malgrupp", label: "Målgrupp" },
+  { key: "diskvalificerare", label: "Diskvalificerare" },
+  { key: "regler", label: "Regler i kunddialog" },
+  { key: "invandningar", label: "Invändningar och svar" },
+  { key: "referenser", label: "Referenser" },
+  { key: "ordlista", label: "Ordlista" },
+] as const;
+
+export type CompanyInfoSection = (typeof COMPANY_INFO_SECTIONS)[number]["key"];
+
+// Bara för ordlistan: vems ord är det. Viktigt för AI-lagret, som annars lägger
+// våra ord i kundens mun.
+export const TERM_USAGE = [
+  { key: "vi", label: "Vårt ord" },
+  { key: "kunden", label: "Kundens ord" },
+  { key: "bada", label: "Båda" },
+] as const;
+
+export type TermUsage = (typeof TERM_USAGE)[number]["key"];
+
+// ============================================
 // MASKINSPECAR
 // ============================================
 // Vad en spec beskriver. Måtten på ett element och måtten på en modul är olika

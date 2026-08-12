@@ -44,6 +44,18 @@ export const machineComponentSchema = z.object({
 
 export type MachineComponentFormData = z.infer<typeof machineComponentSchema>
 
+// Företagsinformation: en prosapost eller en ordlisterad.
+export const companyInfoSchema = z.object({
+  section: z.string().optional(),
+  title: z.string().min(1, 'Rubrik eller term krävs'),
+  title_en: z.string().optional(),
+  content: z.string().optional(),
+  content_en: z.string().optional(),
+  term_usage: z.enum(['vi', 'kunden', 'bada']).optional().or(z.literal('')),
+})
+
+export type CompanyInfoFormData = z.infer<typeof companyInfoSchema>
+
 // Teknisk uppgift om en maskin. Antingen spec_key (etikett ur SPEC_FIELDS) eller
 // en egen label. Siffervärden lämnas tomma när value_type inte är 'value'.
 const optionalNumber = z.preprocess(

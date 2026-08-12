@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Users, Wrench, History, ChevronRight } from 'lucide-react'
+import { Users, Wrench, History, Building2, ChevronRight } from 'lucide-react'
 import { getUsers } from '@/lib/queries/users'
 import { USER_ROLES } from '@/lib/constants'
 import { UserDialog, EditUserButton } from '@/components/settings/user-dialog'
@@ -55,6 +55,12 @@ export default async function InstallningarPage({
             icon: History,
             title: 'Logg',
             desc: 'Försäljningsaktivitet per dag',
+          },
+          {
+            href: '/installningar/foretagsinformation',
+            icon: Building2,
+            title: 'Företagsinformation',
+            desc: 'Positionering, målgrupp, regler och termer',
           },
         ].map(({ href, icon: Icon, title, desc }) => (
           <Link key={href} href={href} className="group">
