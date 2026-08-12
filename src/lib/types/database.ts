@@ -97,6 +97,30 @@ export type MachineComponent = {
   updated_at: string;
 };
 
+// En teknisk uppgift om en maskin. spec_key pekar på SPEC_FIELDS (etiketten
+// kommer därifrån, på båda språken); är den null används label/label_en.
+// value_type styr hur raden läses: siffra, text, "anpassas efter behov" eller
+// "ej dokumenterat".
+export type MachineSpec = {
+  id: string;
+  machine_id: string;
+  spec_key: string | null;
+  label: string | null;
+  label_en: string | null;
+  object_type: "element" | "modul" | "maskin";
+  value_type: "value" | "text" | "adapt" | "undocumented";
+  value_min: number | null;
+  value_max: number | null;
+  unit: string | null;
+  value_text: string | null;
+  value_text_en: string | null;
+  note: string | null;
+  note_en: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 // En feature/säljpunkt på en maskin. name = svenska, name_en = engelska (valfri).
 export type MachineFeature = {
   id: string;

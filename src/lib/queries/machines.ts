@@ -4,6 +4,7 @@ import type {
   MachineComponent,
   MachineFeature,
   MachineQuestion,
+  MachineSpec,
 } from '@/lib/types/database'
 
 export async function getMachines(): Promise<Machine[]> {
@@ -47,6 +48,19 @@ export async function getMachineFeatures(machineId: string): Promise<MachineFeat
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('machine_features')
+    .select('*')
+    .eq('machine_id', machineId)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data ?? []
+}
+
+export async function getMachineSpecs(machineId: string): Promise<MachineSpec[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('machine_specs')
     .select('*')
     .eq('machine_id', machineId)
     .order('sort_order', { ascending: true })

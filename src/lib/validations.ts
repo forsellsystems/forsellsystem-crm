@@ -44,6 +44,35 @@ export const machineComponentSchema = z.object({
 
 export type MachineComponentFormData = z.infer<typeof machineComponentSchema>
 
+// Teknisk uppgift om en maskin. Antingen spec_key (etikett ur SPEC_FIELDS) eller
+// en egen label. Siffervärden lämnas tomma när value_type inte är 'value'.
+const optionalNumber = z.preprocess(
+  (v) => (v === '' || v == null ? undefined : v),
+  z.coerce.number().optional()
+)
+
+export const machineSpecSchema = z
+  .object({
+    spec_key: z.string().optional(),
+    label: z.string().optional(),
+    label_en: z.string().optional(),
+    object_type: z.enum(['element', 'modul', 'maskin']),
+    value_type: z.enum(['value', 'text', 'adapt', 'undocumented']),
+    value_min: optionalNumber,
+    value_max: optionalNumber,
+    unit: z.string().optional(),
+    value_text: z.string().optional(),
+    value_text_en: z.string().optional(),
+    note: z.string().optional(),
+    note_en: z.string().optional(),
+  })
+  .refine((v) => (v.spec_key && v.spec_key !== '') || (v.label && v.label.trim() !== ''), {
+    message: 'Välj ett fält eller skriv en egen etikett',
+    path: ['label'],
+  })
+
+export type MachineSpecFormData = z.infer<typeof machineSpecSchema>
+
 // Feature på en maskin: en punkt på svenska + valfri engelsk motsvarighet.
 export const machineFeatureSchema = z.object({
   name: z.string().min(1, 'Feature krävs'),
