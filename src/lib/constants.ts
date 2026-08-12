@@ -83,13 +83,13 @@ export type MachineCategory = (typeof MACHINE_CATEGORIES)[number]["key"];
 // Kontext om Forsell självt, det enda som inte går att fråga databasen om.
 // Regeln för vad som hör hemma här: kan en query producera det, skriv inte in det.
 export const COMPANY_INFO_SECTIONS = [
-  { key: "positionering", label: "Positionering" },
-  { key: "malgrupp", label: "Målgrupp" },
-  { key: "diskvalificerare", label: "Diskvalificerare" },
-  { key: "regler", label: "Regler i kunddialog" },
-  { key: "invandningar", label: "Invändningar och svar" },
-  { key: "referenser", label: "Referenser" },
-  { key: "ordlista", label: "Ordlista" },
+  { key: "positionering", label: "Positionering", label_en: "Positioning" },
+  { key: "malgrupp", label: "Målgrupp", label_en: "Target customers" },
+  { key: "diskvalificerare", label: "Diskvalificerare", label_en: "Disqualifiers" },
+  { key: "regler", label: "Regler i kunddialog", label_en: "Customer dialogue rules" },
+  { key: "invandningar", label: "Invändningar och svar", label_en: "Objections and answers" },
+  { key: "referenser", label: "Referenser", label_en: "References" },
+  { key: "ordlista", label: "Ordlista", label_en: "Glossary" },
 ] as const;
 
 export type CompanyInfoSection = (typeof COMPANY_INFO_SECTIONS)[number]["key"];
@@ -97,9 +97,9 @@ export type CompanyInfoSection = (typeof COMPANY_INFO_SECTIONS)[number]["key"];
 // Bara för ordlistan: vems ord är det. Viktigt för AI-lagret, som annars lägger
 // våra ord i kundens mun.
 export const TERM_USAGE = [
-  { key: "vi", label: "Vårt ord" },
-  { key: "kunden", label: "Kundens ord" },
-  { key: "bada", label: "Båda" },
+  { key: "vi", label: "Vårt ord", label_en: "Our word" },
+  { key: "kunden", label: "Kundens ord", label_en: "Customer's word" },
+  { key: "bada", label: "Båda", label_en: "Both" },
 ] as const;
 
 export type TermUsage = (typeof TERM_USAGE)[number]["key"];

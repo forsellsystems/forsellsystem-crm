@@ -20,7 +20,9 @@ import type { CompanyInfo } from '@/lib/types/database'
 const selectClass =
   'flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50'
 
-const USAGE_LABEL = new Map(TERM_USAGE.map((u) => [u.key as string, u.label]))
+type Lang = 'sv' | 'en'
+
+const USAGE_BY_KEY = new Map(TERM_USAGE.map((u) => [u.key as string, u]))
 
 type Draft = {
   section: string
@@ -142,16 +144,20 @@ export function CompanyInfoCard({ rows }: { rows: CompanyInfo[] }) {
   const [editId, setEditId] = useState<string | null>(null)
   const [edit, setEdit] = useState<Draft>(EMPTY)
 
+  // Allt ska finnas på båda språken. Saknad engelska är därför en lucka och
+  // ska synas som en, annars blir den aldrig ifylld.
+  const [lang, setLang] = useState<Lang>('sv')
+
   const known = new Set<string>(COMPANY_INFO_SECTIONS.map((s) => s.key))
   const groups = [
     ...COMPANY_INFO_SECTIONS.map((s) => ({
       key: s.key as string,
-      label: s.label as string,
+      label: (lang === 'en' ? s.label_en : s.label) as string,
       items: rows.filter((r) => r.section === s.key),
     })),
     {
       key: 'ovrigt',
-      label: 'Övrigt',
+      label: lang === 'en' ? 'Other' : 'Övrigt',
       items: rows.filter((r) => !r.section || !known.has(r.section)),
     },
   ].filter((g) => g.items.length > 0)
@@ -190,11 +196,28 @@ export function CompanyInfoCard({ rows }: { rows: CompanyInfo[] }) {
             Det som inte går att fråga databasen om. Kan en query producera det, skriv inte in det här.
           </p>
         </div>
-        {!adding && (
-          <Button variant="ghost" size="icon-sm" onClick={() => setAdding(true)} disabled={isPending}>
-            <Plus className="size-4" />
-          </Button>
-        )}
+        <div className="flex items-center gap-1">
+          <div className="flex overflow-hidden rounded-lg border border-border" role="group" aria-label="Språk">
+            {(['sv', 'en'] as const).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                aria-pressed={lang === l}
+                className={`px-2 py-1 font-condensed text-[11px] uppercase tracking-[0.1em] transition-colors ${
+                  lang === l ? 'bg-[#1A1A1A] text-white' : 'text-[#6B6B6B] hover:bg-[#F2F1EE]'
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+          {!adding && (
+            <Button variant="ghost" size="icon-sm" onClick={() => setAdding(true)} disabled={isPending}>
+              <Plus className="size-4" />
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {groups.length === 0 && !adding ? (
@@ -226,37 +249,41 @@ export function CompanyInfoCard({ rows }: { rows: CompanyInfo[] }) {
                         <div className="flex-1 min-w-0">
                           {isTerms ? (
                             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                              <span className="text-sm text-[#1A1A1A]">{row.title}</span>
-                              {row.title_en && (
-                                <>
-                                  <span className="text-[#B8B8B8]">→</span>
-                                  <span className="text-sm text-[#1A1A1A]">{row.title_en}</span>
-                                </>
-                              )}
+                              <span className="text-sm text-[#1A1A1A]">
+                                {lang === 'en' ? row.title_en ?? row.title : row.title}
+                              </span>
+                              <span className="text-[#B8B8B8]">→</span>
+                              <span className="text-sm text-[#1A1A1A]">
+                                {lang === 'en' ? row.title : row.title_en ?? '—'}
+                              </span>
                               {row.term_usage && (
                                 <span className="rounded border border-[#D4A301]/40 bg-[#F2BB01]/10 px-1.5 py-px text-[10px] uppercase tracking-[0.1em] text-[#8F6B00]">
-                                  {USAGE_LABEL.get(row.term_usage)}
+                                  {lang === 'en'
+                                    ? USAGE_BY_KEY.get(row.term_usage)?.label_en
+                                    : USAGE_BY_KEY.get(row.term_usage)?.label}
                                 </span>
                               )}
-                              {row.content && (
-                                <span className="w-full text-xs text-[#6B6B6B]">{row.content}</span>
+                              {(lang === 'en' ? row.content_en ?? row.content : row.content) && (
+                                <span className="w-full text-xs text-[#6B6B6B]">
+                                  {lang === 'en' ? row.content_en ?? row.content : row.content}
+                                </span>
                               )}
                             </div>
                           ) : (
                             <>
-                              <p className="text-sm font-medium text-[#1A1A1A]">{row.title}</p>
-                              {row.content && (
-                                <p className="mt-1 whitespace-pre-wrap text-sm text-[#4A4A4A]">{row.content}</p>
+                              <p className="text-sm font-medium text-[#1A1A1A]">
+                                {lang === 'en' ? row.title_en ?? row.title : row.title}
+                              </p>
+                              {lang === 'en' && !row.content_en ? (
+                                <p className="mt-1 text-sm text-[#9A9A9A]">Engelsk text saknas</p>
+                              ) : (
+                                <p className="mt-1 whitespace-pre-wrap text-sm text-[#4A4A4A]">
+                                  {lang === 'en' ? row.content_en : row.content}
+                                </p>
                               )}
-                              {row.content_en && (
-                                <>
-                                  <p className="mt-2 whitespace-pre-wrap text-sm text-[#6B6B6B]">{row.content_en}</p>
-                                  <div className="mt-1 flex gap-1">
-                                    <CopyButton text={row.content ?? ''} label="Kopiera svenska" />
-                                    <CopyButton text={row.content_en} label="Kopiera engelska" />
-                                  </div>
-                                </>
-                              )}
+                              <div className="mt-1 flex gap-1">
+                                <CopyButton text={(lang === 'en' ? row.content_en : row.content) ?? ''} label="Kopiera" />
+                              </div>
                             </>
                           )}
                         </div>
