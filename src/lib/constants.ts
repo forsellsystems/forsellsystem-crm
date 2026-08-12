@@ -174,7 +174,7 @@ export const SPEC_FIELDS = [
   { key: "throughput_time", label: "Genomloppstid", label_en: "Throughput time", unit: "min", object: "maskin" },
   // Omfattning
   { key: "handles", label: "Hanterar", label_en: "Handles", unit: "", object: "maskin" },
-  { key: "used_for", label: "Används vid", label_en: "Used for", unit: "", object: "maskin" },
+  { key: "used_for", label: "Användningsområden", label_en: "Applications", unit: "", object: "maskin" },
 ] as const;
 
 export type SpecFieldKey = (typeof SPEC_FIELDS)[number]["key"];
