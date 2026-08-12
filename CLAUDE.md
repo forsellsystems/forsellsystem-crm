@@ -45,8 +45,8 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - building_types: TEXT[] on both prospects and companies, multi-select checkboxes (flerbostadshus, smahus). Stores keys, not labels.
 
 ## Prospect ↔ Company Flow
-- "Flytta till kund" / "Flytta till återförsäljare" button on prospect detail: creates company (is_reseller derived from prospect_type) + contact + copies notes, marks prospect as converted
-- "Flytta till prospekt" / "Flytta till återförsäljar-prospekt" button on company detail: type-aware (kund → kund-prospekt, återförsäljare → återförsäljar-prospekt). Creates prospect with prospect_type derived from is_reseller, copies notes, DELETES the company
+- "Flytta till kund" / "Flytta till återförsäljare" button on prospect detail: creates company (is_reseller derived from prospect_type) + contact + copies notes, flyttar projekten, marks prospect as converted
+- "Flytta till prospekt" / "Flytta till återförsäljar-prospekt" button on company detail: type-aware (kund → kund-prospekt, återförsäljare → återförsäljar-prospekt). Creates prospect with prospect_type derived from is_reseller, copies notes, flyttar projekt/möten/todos, DELETES the company
 - "Skapa affär" button on company detail: opens NewDealDialog with company pre-selected
 - "Radera" button on prospect detail: permanently deletes prospect + its notes from DB
 - No dialog/confirmation on moves — direct action
@@ -106,7 +106,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - prospect_type on prospects: TEXT NOT NULL DEFAULT 'customer', CHECK IN ('customer', 'reseller')
 - heat on deals: SMALLINT nullable, CHECK IN (1, 2, 3)
 - Polymorphic projects: projects table (entity_type IN ('prospect','company') + entity_id), columns name/project_type/status/description/value/value_unknown/currency/contact_name/contact_email/contact_phone. Same pattern as notes. RLS authenticated-only. value_unknown=true means budget explicitly marked "okänd" (distinct from blank/null = not entered). name is the project's display label (falls back to project_type label, then "Projekt").
-- Projects UI: "Projekt"-kort (flera projekt per bolag) på kund- + kund-prospekt-detaljsidorna (/foretag/[id], /prospekt/[id]) — INTE på återförsäljare. Inline add/edit/delete via ProjectsCard/ProjectItem/ProjectForm (src/components/projects/). project-actions.ts + queries/projects.ts spegla note-actions/notes. Projekt kopieras vid prospekt↔kund-flytt och raderas med entiteten.
+- Projects UI: "Projekt"-kort (flera projekt per bolag) på kund- + kund-prospekt-detaljsidorna (/foretag/[id], /prospekt/[id]) — INTE på återförsäljare. Inline add/edit/delete via ProjectsCard/ProjectItem/ProjectForm (src/components/projects/). project-actions.ts + queries/projects.ts spegla note-actions/notes. Projekt FLYTTAS (UPDATE av entity_type/entity_id) vid prospekt↔kund-flytt, aldrig kopieras — annars blir de kvar på det konverterade prospektet och dyker upp som dubbletter i /projekt, som inte filtrerar på status. Flytt bevarar projektets id, anteckningar, logg och /projekt/[id]-länk. Projekt raderas med entiteten (deleteProspect/deleteCompany rensar även projektens anteckningar + logg).
 - PROJECT_TYPES + PROJECT_STATUSES constants ({ key, label }, statuses also carry color)
 - Projekt-sida (/projekt): top-level nav-flik under Pipeline (sidebar). Tabell med alla projekt (getAllProjects), "Projekt"-cell länkar till projektets egen sida, "Bolag"-cell till kunden/prospektet. Skapa via NewProjectDialog (textknapp + bolagsväljare kunder+kund-prospekt → tomt projekt → /projekt/[id]).
 - Skapa-knappar konsekventa: "+"-ikon på kort (ProjectsCard + Affärer-kortet på /foretag/[id], NewDealDialog triggerStyle="icon"), textknapp på stora sidor (Pipeline "Ny affär", Projekt-fliken "Nytt projekt"). NewDealDialog: prop triggerStyle 'cta'|'icon'.
