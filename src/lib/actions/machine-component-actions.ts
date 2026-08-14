@@ -46,6 +46,8 @@ function rowFrom(v: MachineComponentFormData) {
     price_min: v.price_min,
     price_max: v.price_max != null && v.price_max !== v.price_min ? v.price_max : null,
     quantity: v.quantity,
+    unit: v.unit ?? 'st',
+    price_note: v.price_note?.trim() || null,
   }
 }
 

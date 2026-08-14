@@ -198,6 +198,13 @@ export const USER_ROLES = [
 
 export type UserRole = (typeof USER_ROLES)[number]["key"];
 
+// Enhet för en komponents mängd. Nyckeln lagras, etiketten visas.
+// 'st' = styck, 'm' = löpmeter (måttet får då decimaler, t.ex. 12,5 m).
+export const COMPONENT_UNITS = [
+  { key: 'st', label: 'st' },
+  { key: 'm', label: 'm' },
+] as const
+
 export const COUNTRIES = [
   "Sverige",
   "Norge",

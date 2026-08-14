@@ -37,10 +37,14 @@ export const machineComponentSchema = z.object({
     (v) => (v === '' || v == null ? undefined : v),
     z.coerce.number().min(0, 'Pris måste vara positivt').optional()
   ),
+  // Mängd i komponentens enhet. Inte längre heltal: meter tål decimaler (12,5 m).
   quantity: z.preprocess(
     (v) => (v === '' || v == null ? 1 : v),
-    z.coerce.number().int().min(1, 'Antal måste vara minst 1')
+    z.coerce.number().positive('Måttet måste vara större än noll')
   ),
+  unit: z.enum(['st', 'm']).optional(),
+  // Fri kommentar om just den här komponentens prissättning.
+  price_note: z.string().optional(),
 })
 
 export type MachineComponentFormData = z.infer<typeof machineComponentSchema>

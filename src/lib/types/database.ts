@@ -91,7 +91,9 @@ export type MachineComponent = {
   name: string;
   price_min: number;
   price_max: number | null; // NULL = single price (= price_min)
-  quantity: number;
+  quantity: number; // mängd i unit; decimal när unit = 'm'
+  unit: string; // 'st' | 'm' — nyckel ur COMPONENT_UNITS
+  price_note: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;
