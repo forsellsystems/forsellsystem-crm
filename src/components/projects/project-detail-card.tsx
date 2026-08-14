@@ -166,12 +166,16 @@ export function ProjectDetailCard({
                 )}
               </div>
             )}
-            <FortnoxProjectLink
-              projectId={project.id}
-              projectNumber={project.fortnox_project_id}
-            />
           </div>
         )}
+
+        {/* Kopplingen är inte en del av formuläret och ska synas i båda lägena.
+            Ett tomt projekt öppnas i redigering, och låg blocket bara i
+            visningsläget gick det inte att koppla ett nyskapat projekt alls. */}
+        <FortnoxProjectLink
+          projectId={project.id}
+          projectNumber={project.fortnox_project_id}
+        />
       </CardContent>
     </Card>
   )
