@@ -19,13 +19,20 @@ export const FORTNOX_API_BASE = 'https://api.fortnox.se/3'
 // Scopes we request. `offer` = read/write offers (offerter),
 // `companyinformation` = read the connected company's name (connection check),
 // `print` = fetch documents as PDF (offer preview/print — Accept: application/pdf),
-// `customer` = read/write Fortnox kundregister (söka, hämta och skapa kunder).
+// `customer` = read/write Fortnox kundregister (söka, hämta och skapa kunder),
+// `project` = read/write Fortnox projektregister (samma mönster som kunder).
 //
 // `customer` gav tidigare invalid_scope. Orsaken var att behörigheten "Kund" inte
 // var ikryssad på integrationen i Fortnox Developer Portal, inte att Fortnox
 // saknade den. Kryssas den ur igen slutar kundsökningen fungera (403), och en
 // befintlig anslutning måste alltid göras om för att få nya behörigheter.
-export const FORTNOX_SCOPES = ['companyinformation', 'offer', 'print', 'customer'] as const
+export const FORTNOX_SCOPES = [
+  'companyinformation',
+  'offer',
+  'print',
+  'customer',
+  'project',
+] as const
 
 export const FORTNOX_CLIENT_ID = process.env.FORTNOX_CLIENT_ID ?? ''
 export const FORTNOX_CLIENT_SECRET = process.env.FORTNOX_CLIENT_SECRET ?? ''
