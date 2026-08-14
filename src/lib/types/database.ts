@@ -152,7 +152,6 @@ export type MachineFeature = {
 export type MachineQuestion = {
   id: string;
   machine_id: string;
-  category: string | null; // NULL = inget tema (visas under "Övrigt")
   question: string;
   note: string | null; // valfri "varför / vad svaret påverkar"
   sort_order: number;

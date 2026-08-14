@@ -154,7 +154,7 @@ export const SPEC_FIELDS = [
   { key: "air_pressure", label: "Arbetstryck", label_en: "Working pressure", unit: "bar", object: "maskin" },
   // Vagnar
   { key: "element_cart_load", label: "Last per elementvagn", label_en: "Load per carrier cart", unit: "kg", object: "maskin" },
-  { key: "element_carts_per", label: "Elementvagnar per element", label_en: "Carrier carts per element", unit: "st", object: "maskin" },
+  { key: "element_carts_per", label: "Carrier carts per element", label_en: "Carrier carts per element", unit: "st", object: "maskin" },
   { key: "module_cart_load", label: "Last per modulvagn", label_en: "Load per trolley", unit: "kg", object: "maskin" },
   { key: "module_carts_per", label: "Modulvagnar per modul", label_en: "Trolleys per module", unit: "st", object: "maskin" },
   { key: "floor_beams_per_module", label: "Golvbalkar per modul", label_en: "Floor beams per module", unit: "st", object: "maskin" },
@@ -178,18 +178,6 @@ export const SPEC_FIELDS = [
 ] as const;
 
 export type SpecFieldKey = (typeof SPEC_FIELDS)[number]["key"];
-
-// Teman för maskinernas kunskapsbank (frågor att ställa kunden). Frågor utan
-// tema visas under "Övrigt".
-export const QUESTION_CATEGORIES = [
-  { key: "produktion", label: "Produktion & kapacitet" },
-  { key: "byggnad", label: "Byggnad & moduler" },
-  { key: "teknik", label: "Teknik & installation" },
-  { key: "logistik", label: "Logistik & montage" },
-  { key: "ekonomi", label: "Budget & beslut" },
-] as const;
-
-export type QuestionCategory = (typeof QUESTION_CATEGORIES)[number]["key"];
 
 export const USER_ROLES = [
   { key: "admin", label: "Administratör" },

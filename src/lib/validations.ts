@@ -98,10 +98,9 @@ export const machineFeatureSchema = z.object({
 
 export type MachineFeatureFormData = z.infer<typeof machineFeatureSchema>
 
-// Kunskapsbank: en fråga att ställa kunden, valfritt tema + valfri notering.
+// Kunskapsbank: en fråga att ställa kunden + valfri notering.
 export const machineQuestionSchema = z.object({
   question: z.string().min(1, 'Fråga krävs'),
-  category: z.string().optional().or(z.literal('')),
   note: z.string().optional(),
 })
 

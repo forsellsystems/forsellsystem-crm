@@ -8,11 +8,10 @@ function revalidate(machineId: string) {
   revalidatePath(`/maskiner/${machineId}`)
 }
 
-// Empty tema/note stored as NULL (not '').
+// Empty note stored as NULL (not '').
 function rowFrom(v: MachineQuestionFormData) {
   return {
     question: v.question,
-    category: v.category && v.category.trim() !== '' ? v.category : null,
     note: v.note && v.note.trim() !== '' ? v.note.trim() : null,
   }
 }
