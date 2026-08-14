@@ -271,6 +271,7 @@ export type DealWithRelations = Deal & {
   responsible_name?: string;
   reseller_name?: string;
   project_name?: string;
+  project_fortnox_id?: string | null;
 };
 
 export type CompanyWithRelations = Company & {

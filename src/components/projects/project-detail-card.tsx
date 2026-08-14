@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Pencil, Trash2 } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PROJECT_TYPES, PROJECT_STATUSES } from '@/lib/constants'
@@ -70,27 +70,17 @@ export function ProjectDetailCard({
     }
   }
 
-  function handleDelete() {
-    startTransition(async () => {
-      await deleteProject(project.id, project.entity_type, project.entity_id)
-      router.push('/projekt')
-    })
-  }
-
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Projektdetaljer</CardTitle>
+          {/* Radering ligger som namngiven knapp i sidhuvudet, som på kund och
+              prospekt. Här räcker pennan. */}
           {!editing && (
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon-sm" onClick={() => setEditing(true)}>
-                <Pencil className="size-3.5" />
-              </Button>
-              <Button variant="ghost" size="icon-sm" onClick={handleDelete} disabled={isPending}>
-                <Trash2 className="size-3.5" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="icon-sm" onClick={() => setEditing(true)}>
+              <Pencil className="size-3.5" />
+            </Button>
           )}
         </div>
       </CardHeader>

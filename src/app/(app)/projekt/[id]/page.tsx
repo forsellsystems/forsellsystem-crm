@@ -9,6 +9,7 @@ import { getProjectDeals, getCompanyDeals } from '@/lib/queries/deals'
 import { getMeetingsForProject } from '@/lib/queries/meetings'
 import { PROJECT_TYPES } from '@/lib/constants'
 import { ProjectDetailCard } from '@/components/projects/project-detail-card'
+import { DeleteProjectButton } from '@/components/projects/delete-project-button'
 import { ProjectDealsCard } from '@/components/projects/project-deals-card'
 import { MeetingsCard } from '@/components/meetings/meetings-card'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
@@ -42,7 +43,8 @@ export default async function ProjektDetailPage({
 
   return (
     <div className="space-y-6 animate-fade-in-up">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
         <Link href="/projekt">
           <Button variant="ghost" size="icon-sm">
             <ArrowLeft className="size-4" />
@@ -58,6 +60,13 @@ export default async function ProjektDetailPage({
             {project.entity_name}
           </Link>
         </div>
+        </div>
+        <DeleteProjectButton
+          projectId={project.id}
+          projectName={title}
+          entityType={project.entity_type}
+          entityId={project.entity_id}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

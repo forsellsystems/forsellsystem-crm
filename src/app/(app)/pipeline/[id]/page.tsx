@@ -26,6 +26,7 @@ import { AddNoteForm } from '@/components/notes/add-note-form'
 import { EditDealDialog } from '@/components/pipeline/edit-deal-dialog'
 import { DeleteDealButton } from '@/components/pipeline/delete-deal-button'
 import { UnlinkOfferButton } from '@/components/fortnox/unlink-offer-button'
+import { OfferProjectButton } from '@/components/fortnox/offer-project-button'
 import { isConnected } from '@/lib/fortnox/store'
 import { getOfferSummary } from '@/lib/fortnox/offers'
 import { syncDealFieldsFromOffer } from '@/lib/fortnox/sync'
@@ -212,6 +213,17 @@ export default async function DealDetailPage({
                     <ExternalLink className="size-3" />
                   </a>
                   {offerError && <p className="text-xs text-[#8B3D3D]">{offerError}</p>}
+                  {/* Offerten är där kund och projekt möts i Fortnox. Kunden är
+                      redan satt där (kan vara agenten); projektet är det vi kan
+                      fylla i härifrån. */}
+                  {fortnoxConnected && (
+                    <OfferProjectButton
+                      dealId={deal.id}
+                      offerProject={offerSummary?.project ?? null}
+                      dealProjectNumber={deal.project_fortnox_id ?? null}
+                      dealProjectName={deal.project_name ?? null}
+                    />
+                  )}
                   <UnlinkOfferButton dealId={deal.id} />
                 </div>
               )}

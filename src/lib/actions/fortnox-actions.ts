@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { deleteConnection, isConnected } from '@/lib/fortnox/store'
-import { getOffer, getOfferSummary, listOffers } from '@/lib/fortnox/offers'
+import { getOffer, getOfferSummary, listOffers, setOfferProject } from '@/lib/fortnox/offers'
 import { listCustomers, getCustomerSummary, createCustomer } from '@/lib/fortnox/customers'
 import {
   listProjects,
@@ -423,6 +423,49 @@ function revalidateProject(projectId: string) {
   revalidatePath('/projekt')
 }
 
+
+/**
+ * Projektets bolag och dess Fortnox-koppling. Ett Fortnox-projekt bär ingen kund,
+ * så ordningen måste hållas här i stället: kunden kopplas först, sedan projektet.
+ * Prospekt kan aldrig kopplas, de har ingen kundkoppling alls.
+ */
+async function projectOwner(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  projectId: string
+): Promise<
+  | { ok: true; name: string; customerNumber: string }
+  | { ok: false; error: string }
+> {
+  const { data: project } = await supabase
+    .from('projects')
+    .select('entity_type, entity_id')
+    .eq('id', projectId)
+    .single()
+  if (!project) return { ok: false, error: 'Kunde inte läsa projektet.' }
+
+  if (project.entity_type !== 'company') {
+    return {
+      ok: false,
+      error: 'Projekt på prospekt kan inte kopplas. Flytta prospektet till kund först.',
+    }
+  }
+
+  const { data: company } = await supabase
+    .from('companies')
+    .select('name, fortnox_customer_id')
+    .eq('id', project.entity_id)
+    .single()
+  if (!company) return { ok: false, error: 'Kunde inte läsa projektets bolag.' }
+
+  if (!company.fortnox_customer_id) {
+    return {
+      ok: false,
+      error: `${company.name} är inte kopplad mot Fortnox. Koppla kunden först, sedan projektet.`,
+    }
+  }
+  return { ok: true, name: company.name, customerNumber: String(company.fortnox_customer_id) }
+}
+
 /** Koppla ett CRM-projekt till ett valt projekt i Fortnox. */
 export async function linkProjectToFortnox(
   projectId: string,
@@ -431,6 +474,10 @@ export async function linkProjectToFortnox(
   try {
     const number = projectNumber.trim()
     if (!number) return { ok: false, error: 'Inget projektnummer valt.' }
+
+    const supabaseOwner = await createClient()
+    const owner = await projectOwner(supabaseOwner, projectId)
+    if (!owner.ok) return { ok: false, error: owner.error }
 
     // Projektet måste finnas i Fortnox: kopplingen ska aldrig peka i tomma luften.
     const summary = await getProjectSummary(number)
@@ -559,11 +606,18 @@ export async function createFortnoxProjectForProject(
       }
     }
 
+    const owner = await projectOwner(supabase, projectId)
+    if (!owner.ok) return { ok: false, error: owner.error }
+
     // Fortnox kräver en beskrivning; projektets namn är den enda rimliga källan.
-    const description = (project.name || project.project_type || '').trim()
-    if (!description) {
+    const projectName = (project.name || project.project_type || '').trim()
+    if (!projectName) {
       return { ok: false, error: 'Projektet behöver ett namn innan det kan läggas upp i Fortnox.' }
     }
+
+    // Fortnox-projekt saknar kundruta, så kunden måste stå i namnet för att
+    // projektet ska gå att känna igen där. Samma mönster som "Danwood Polen".
+    const description = `${owner.name} – ${projectName}`
 
     const created = await createFortnoxProject({
       description,
@@ -581,6 +635,59 @@ export async function createFortnoxProjectForProject(
 
     revalidateProject(projectId)
     return { ok: true, data: created }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/**
+ * Skriv affärens projektnummer på dess Fortnox-offert. Det är här kund och
+ * projekt möts i Fortnox: offerten bär båda, projektposten bär ingen kund.
+ * Rör bara projektfältet, aldrig kunden på offerten (den kan vara agenten).
+ */
+export async function setDealOfferProject(
+  dealId: string
+): Promise<Result<{ offer: string; project: string }>> {
+  try {
+    const supabase = await createClient()
+    const { data: deal, error: readError } = await supabase
+      .from('deals')
+      .select('id, fortnox_offer_documentnumber, project_id')
+      .eq('id', dealId)
+      .single()
+    if (readError || !deal) throw new Error('Kunde inte läsa affären.')
+
+    if (!deal.fortnox_offer_documentnumber) {
+      return { ok: false, error: 'Affären är inte kopplad till någon Fortnox-offert.' }
+    }
+    if (!deal.project_id) {
+      return { ok: false, error: 'Affären har inget projekt. Välj projekt på affären först.' }
+    }
+
+    const { data: project } = await supabase
+      .from('projects')
+      .select('name, project_type, fortnox_project_id')
+      .eq('id', deal.project_id)
+      .single()
+    if (!project) return { ok: false, error: 'Kunde inte läsa affärens projekt.' }
+    if (!project.fortnox_project_id) {
+      const label = project.name || project.project_type || 'Projektet'
+      return { ok: false, error: `${label} är inte kopplat mot Fortnox. Koppla projektet först.` }
+    }
+
+    await setOfferProject(
+      String(deal.fortnox_offer_documentnumber),
+      String(project.fortnox_project_id)
+    )
+
+    revalidatePath(`/pipeline/${dealId}`)
+    return {
+      ok: true,
+      data: {
+        offer: String(deal.fortnox_offer_documentnumber),
+        project: String(project.fortnox_project_id),
+      },
+    }
   } catch (err) {
     return fail(err)
   }

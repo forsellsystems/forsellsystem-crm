@@ -9,6 +9,8 @@ function toSummary(offer: FortnoxOffer): FortnoxOfferSummary {
     offerDate: offer.OfferDate ?? null,
     total: typeof offer.Total === 'number' ? offer.Total : null,
     currency: offer.Currency ?? null,
+    // Fortnox svarar med tom sträng när projekt saknas, inte null.
+    project: offer.Project ? String(offer.Project) : null,
   }
 }
 
@@ -64,4 +66,22 @@ export async function getCompanyName(): Promise<string | null> {
     'hämta företagsinfo'
   )
   return data.CompanyInformation?.CompanyName ?? null
+}
+
+/**
+ * Sätt projektnumret på en offert i Fortnox. Skriver bara Project-fältet;
+ * kunden på offerten lämnas orörd, eftersom Fortnox redan har rätt part där
+ * (som kan vara agenten och inte slutkunden).
+ */
+export async function setOfferProject(
+  documentNumber: string,
+  projectNumber: string
+): Promise<FortnoxOfferSummary> {
+  const res = await fortnoxFetch(`/offers/${encodeURIComponent(documentNumber)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ Offer: { Project: projectNumber } }),
+  })
+  const data = await fortnoxJson<{ Offer: FortnoxOffer }>(res, 'sätta projekt på offert')
+  if (!data.Offer) throw new Error('Fortnox svarade utan offert.')
+  return toSummary(data.Offer)
 }

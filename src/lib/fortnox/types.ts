@@ -36,6 +36,9 @@ export interface FortnoxOffer {
   OrderReference?: string
   YourReference?: string
   OurReference?: string
+  // Projektnummer på offerten. Tom sträng när inget projekt är satt.
+  // Det är HÄR kund och projekt möts i Fortnox: projektposten själv bär ingen kund.
+  Project?: string
 }
 
 // Compact shape used by the offer picker in the deal UI.
@@ -46,6 +49,7 @@ export interface FortnoxOfferSummary {
   offerDate: string | null
   total: number | null
   currency: string | null
+  project: string | null
 }
 
 // A Fortnox customer (kund). Requires the `customer` scope to read.

@@ -107,7 +107,7 @@ export async function getDeal(id: string): Promise<
     supabase
       .from('deals')
       .select(
-        '*, companies!deals_company_id_fkey(name), contacts!deals_contact_id_fkey(name), users!deals_responsible_user_id_fkey(name), reseller:companies!deals_reseller_id_fkey(name), projects!deals_project_id_fkey(name, project_type)'
+        '*, companies!deals_company_id_fkey(name), contacts!deals_contact_id_fkey(name), users!deals_responsible_user_id_fkey(name), reseller:companies!deals_reseller_id_fkey(name), projects!deals_project_id_fkey(name, project_type, fortnox_project_id)'
       )
       .eq('id', id)
       .single(),
@@ -139,6 +139,10 @@ export async function getDeal(id: string): Promise<
         'Projekt'
       )
     })(),
+    // Projektets Fortnox-nummer, för knappen som skriver det på offerten.
+    project_fortnox_id:
+      (deal.projects as { fortnox_project_id: string | null } | null)?.fortnox_project_id ??
+      null,
     machines: (machinesRes.data ?? []).map((dm) => {
       const m = dm.machines as unknown as { id: string; name: string; category: string } | null
       return {
