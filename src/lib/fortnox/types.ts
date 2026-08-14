@@ -76,7 +76,10 @@ export interface FortnoxProject {
   Status?: string
   StartDate?: string
   EndDate?: string
+  // Comments och ContactPerson finns BARA på enskilt projekt (/projects/{nr}),
+  // aldrig i listan (/projects). Verifierat mot skarpa API:et 2026-08-14.
   Comments?: string
+  ContactPerson?: string
   ProjectLeader?: string
 }
 
@@ -88,6 +91,7 @@ export interface FortnoxProjectSummary {
   startDate: string | null
   endDate: string | null
   comments: string | null
+  contactPerson: string | null
   projectLeader: string | null
 }
 

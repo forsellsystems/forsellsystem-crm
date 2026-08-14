@@ -507,6 +507,7 @@ export async function importFortnoxProjectInfo(
     const update: Record<string, string> = {}
     if (summary.description) update.name = summary.description
     if (summary.comments) update.description = summary.comments
+    if (summary.contactPerson) update.contact_name = summary.contactPerson
 
     if (Object.keys(update).length === 0) {
       return { ok: false, error: 'Projektet i Fortnox saknar uppgifter att hämta.' }
@@ -517,7 +518,11 @@ export async function importFortnoxProjectInfo(
     if (error) throw new Error(error.message)
 
     revalidateProject(projectId)
-    const labels: Record<string, string> = { name: 'namn', description: 'beskrivning' }
+    const labels: Record<string, string> = {
+      name: 'namn',
+      description: 'beskrivning',
+      contact_name: 'kontaktperson',
+    }
     return {
       ok: true,
       data: {

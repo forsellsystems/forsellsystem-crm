@@ -14,7 +14,9 @@ function toSummary(project: FortnoxProject): FortnoxProjectSummary {
     status: project.Status ?? null,
     startDate: project.StartDate ?? null,
     endDate: project.EndDate ?? null,
+    // Tomma i listan, ifyllda på enskilt projekt. Se FortnoxProject.
     comments: project.Comments ?? null,
+    contactPerson: project.ContactPerson ?? null,
     projectLeader: project.ProjectLeader ?? null,
   }
 }
