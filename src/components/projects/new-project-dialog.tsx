@@ -17,10 +17,13 @@ import { createProject } from '@/lib/actions/project-actions'
 
 interface NewProjectDialogProps {
   companies: { id: string; name: string }[]
+  // Agenter är också bolag och kan ha egna projekt, t.ex. när de driver
+  // en affär mot slutkund. Egen grupp så det syns vad man valt.
+  resellers: { id: string; name: string }[]
   prospects: { id: string; name: string }[]
 }
 
-export function NewProjectDialog({ companies, prospects }: NewProjectDialogProps) {
+export function NewProjectDialog({ companies, resellers, prospects }: NewProjectDialogProps) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -71,6 +74,13 @@ export function NewProjectDialog({ companies, prospects }: NewProjectDialogProps
                 <optgroup label="Kunder">
                   {companies.map((c) => (
                     <option key={c.id} value={`company:${c.id}`}>{c.name}</option>
+                  ))}
+                </optgroup>
+              )}
+              {resellers.length > 0 && (
+                <optgroup label="Agenter">
+                  {resellers.map((r) => (
+                    <option key={r.id} value={`company:${r.id}`}>{r.name}</option>
                   ))}
                 </optgroup>
               )}

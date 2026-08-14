@@ -10,16 +10,17 @@ import {
 } from '@/components/ui/table'
 import { FolderKanban } from 'lucide-react'
 import { getAllProjects } from '@/lib/queries/projects'
-import { getCustomerCompaniesForSelect } from '@/lib/queries/companies'
+import { getCustomerCompaniesForSelect, getResellers } from '@/lib/queries/companies'
 import { getCustomerProspectsForSelect } from '@/lib/queries/prospects'
 import { PROJECT_TYPES, PROJECT_STATUSES } from '@/lib/constants'
 import { formatCurrency } from '@/lib/utils'
 import { NewProjectDialog } from '@/components/projects/new-project-dialog'
 
 export default async function ProjektPage() {
-  const [projects, companies, prospects] = await Promise.all([
+  const [projects, companies, resellers, prospects] = await Promise.all([
     getAllProjects(),
     getCustomerCompaniesForSelect(),
+    getResellers(),
     getCustomerProspectsForSelect(),
   ])
 
@@ -29,10 +30,10 @@ export default async function ProjektPage() {
         <div>
           <h2 className="font-display text-3xl text-[#1A1A1A]">Projekt</h2>
           <p className="text-sm text-[#6B6B6B] mt-1">
-            Alla projekt hos kunder och prospekt
+            Alla projekt hos kunder, agenter och prospekt
           </p>
         </div>
-        <NewProjectDialog companies={companies} prospects={prospects} />
+        <NewProjectDialog companies={companies} resellers={resellers} prospects={prospects} />
       </div>
 
       {projects.length === 0 ? (

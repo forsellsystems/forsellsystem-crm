@@ -15,6 +15,8 @@ import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
 import { MeetingsCard } from '@/components/meetings/meetings-card'
 import { FortnoxCompanyLink } from '@/components/fortnox/fortnox-company-link'
+import { ProjectsCard } from '@/components/projects/projects-card'
+import { getProjects } from '@/lib/queries/projects'
 
 async function getReseller(id: string) {
   const supabase = await createClient()
@@ -43,10 +45,12 @@ export default async function ResellerDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [reseller, notes, meetings] = await Promise.all([
+  const [reseller, notes, meetings, projects] = await Promise.all([
     getReseller(id),
     getNotes('company', id),
     getMeetings('company', id),
+    // Agenter kan driva egna projekt, t.ex. mot slutkund som de fakturerar.
+    getProjects('company', id),
   ])
 
   if (!reseller) notFound()
@@ -209,6 +213,8 @@ export default async function ResellerDetailPage({
               </CardContent>
             </Card>
           )}
+
+          <ProjectsCard entityType="company" entityId={reseller.id} projects={projects} />
 
           <MeetingsCard
             entityType="company"
