@@ -55,7 +55,6 @@ export const PROJECT_TYPES = [
 export type ProjectType = (typeof PROJECT_TYPES)[number]["key"];
 
 export const PROJECT_STATUSES = [
-  { key: "planerad", label: "Planerad", color: "#808080" },
   { key: "pagaende", label: "Pågående", color: "#E89B3F" },
   { key: "vilande", label: "Vilande", color: "#9A9A9A" },
   { key: "avslutad", label: "Avslutad", color: "#333333" },
