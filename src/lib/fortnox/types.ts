@@ -66,6 +66,31 @@ export interface FortnoxCustomer {
   Country?: string
 }
 
+// Ett Fortnox-projekt. Kräver `project`-scopet.
+export interface FortnoxProject {
+  '@url'?: string
+  ProjectNumber: string
+  Description?: string
+  // NOTSTARTED | ONGOING | COMPLETED enligt Fortnox. Läses som text, aldrig som
+  // union: ett okänt värde ska visas som det är, inte krascha listan.
+  Status?: string
+  StartDate?: string
+  EndDate?: string
+  Comments?: string
+  ProjectLeader?: string
+}
+
+// Kompakt projektform som väljaren och kopplingsblocket arbetar med.
+export interface FortnoxProjectSummary {
+  projectNumber: string
+  description: string | null
+  status: string | null
+  startDate: string | null
+  endDate: string | null
+  comments: string | null
+  projectLeader: string | null
+}
+
 // Kompakt kundform som väljaren och kopplingskortet arbetar med.
 export interface FortnoxCustomerSummary {
   customerNumber: string

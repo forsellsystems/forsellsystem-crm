@@ -5,10 +5,19 @@ import { createClient } from '@/lib/supabase/server'
 import { deleteConnection, isConnected } from '@/lib/fortnox/store'
 import { getOffer, getOfferSummary, listOffers } from '@/lib/fortnox/offers'
 import { listCustomers, getCustomerSummary, createCustomer } from '@/lib/fortnox/customers'
+import {
+  listProjects,
+  getProjectSummary,
+  createProject as createFortnoxProject,
+} from '@/lib/fortnox/projects'
 import { codeFromCountry, countryFromCode } from '@/lib/fortnox/countries'
 import { FortnoxNotConnectedError } from '@/lib/fortnox/client'
 import { logActivity } from '@/lib/actions/activity-actions'
-import type { FortnoxOfferSummary, FortnoxCustomerSummary } from '@/lib/fortnox/types'
+import type {
+  FortnoxOfferSummary,
+  FortnoxCustomerSummary,
+  FortnoxProjectSummary,
+} from '@/lib/fortnox/types'
 
 type Result<T = undefined> =
   | ({ ok: true } & (T extends undefined ? object : { data: T }))
@@ -366,6 +375,207 @@ export async function createCompanyFromFortnox(
     })
     revalidatePath('/foretag')
     return { ok: true, data: company }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+// ============================================
+// PROJEKT
+// Speglar kundkopplingen: du väljer alltid ur listan, systemet kopplar aldrig
+// själv, och ett projektnummer som inte kommer från Fortnox får inte finnas.
+// ============================================
+
+/** Hela Fortnox projektregister, att välja ur när ett CRM-projekt ska kopplas. */
+export async function fetchFortnoxProjectList(): Promise<Result<FortnoxProjectSummary[]>> {
+  try {
+    return { ok: true, data: await listProjects() }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/** Vilka CRM-projekt som redan är kopplade, så väljaren kan gråa ut upptagna. */
+export async function fetchLinkedProjectNumbers(): Promise<
+  Result<{ projectNumber: string; projectId: string; projectName: string }[]>
+> {
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('projects')
+      .select('id, name, project_type, fortnox_project_id')
+      .not('fortnox_project_id', 'is', null)
+    return {
+      ok: true,
+      data: (data ?? []).map((p) => ({
+        projectNumber: String(p.fortnox_project_id),
+        projectId: p.id,
+        projectName: p.name || p.project_type || 'Projekt',
+      })),
+    }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+function revalidateProject(projectId: string) {
+  revalidatePath(`/projekt/${projectId}`)
+  revalidatePath('/projekt')
+}
+
+/** Koppla ett CRM-projekt till ett valt projekt i Fortnox. */
+export async function linkProjectToFortnox(
+  projectId: string,
+  projectNumber: string
+): Promise<Result<FortnoxProjectSummary>> {
+  try {
+    const number = projectNumber.trim()
+    if (!number) return { ok: false, error: 'Inget projektnummer valt.' }
+
+    // Projektet måste finnas i Fortnox: kopplingen ska aldrig peka i tomma luften.
+    const summary = await getProjectSummary(number)
+    if (!summary) return { ok: false, error: `Projekt ${number} finns inte i Fortnox.` }
+
+    const supabase = await createClient()
+    const { data: taken } = await supabase
+      .from('projects')
+      .select('id, name, project_type')
+      .eq('fortnox_project_id', number)
+      .neq('id', projectId)
+      .limit(1)
+    if (taken?.[0]) {
+      const label = taken[0].name || taken[0].project_type || 'ett annat projekt'
+      return { ok: false, error: `Fortnox-projekt ${number} är redan kopplat till ${label}.` }
+    }
+
+    const { error } = await supabase
+      .from('projects')
+      .update({ fortnox_project_id: number, updated_at: new Date().toISOString() })
+      .eq('id', projectId)
+    if (error) throw new Error(error.message)
+
+    revalidateProject(projectId)
+    return { ok: true, data: summary }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/** Ta bort projektets Fortnox-koppling. Rör inget i Fortnox. */
+export async function unlinkProjectFromFortnox(projectId: string): Promise<Result> {
+  try {
+    const supabase = await createClient()
+    const { error } = await supabase
+      .from('projects')
+      .update({ fortnox_project_id: null, updated_at: new Date().toISOString() })
+      .eq('id', projectId)
+    if (error) throw new Error(error.message)
+    revalidateProject(projectId)
+    return { ok: true }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/**
+ * Hämta projektets uppgifter från Fortnox in på CRM-projektet. Tomma fält i
+ * Fortnox lämnar CRM:ets uppgift orörd, så en hämtning aldrig raderar något.
+ */
+export async function importFortnoxProjectInfo(
+  projectId: string
+): Promise<Result<{ updated: string[] }>> {
+  try {
+    const supabase = await createClient()
+    const { data: project, error: readError } = await supabase
+      .from('projects')
+      .select('id, fortnox_project_id')
+      .eq('id', projectId)
+      .single()
+    if (readError || !project) throw new Error('Kunde inte läsa projektet.')
+    if (!project.fortnox_project_id) {
+      return { ok: false, error: 'Projektet är inte kopplat till Fortnox.' }
+    }
+
+    const summary = await getProjectSummary(String(project.fortnox_project_id))
+    if (!summary) {
+      return {
+        ok: false,
+        error: `Projekt ${project.fortnox_project_id} finns inte längre i Fortnox.`,
+      }
+    }
+
+    const update: Record<string, string> = {}
+    if (summary.description) update.name = summary.description
+    if (summary.comments) update.description = summary.comments
+
+    if (Object.keys(update).length === 0) {
+      return { ok: false, error: 'Projektet i Fortnox saknar uppgifter att hämta.' }
+    }
+
+    update.updated_at = new Date().toISOString()
+    const { error } = await supabase.from('projects').update(update).eq('id', projectId)
+    if (error) throw new Error(error.message)
+
+    revalidateProject(projectId)
+    const labels: Record<string, string> = { name: 'namn', description: 'beskrivning' }
+    return {
+      ok: true,
+      data: {
+        updated: Object.keys(update)
+          .filter((k) => k !== 'updated_at')
+          .map((k) => labels[k] ?? k),
+      },
+    }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/**
+ * Lägg upp CRM-projektet i Fortnox och koppla det. Fortnox delar ut numret.
+ * Avbryts om projektet redan är kopplat, så ett dubbelklick inte skapar en
+ * dubblett i deras register.
+ */
+export async function createFortnoxProjectForProject(
+  projectId: string
+): Promise<Result<FortnoxProjectSummary>> {
+  try {
+    const supabase = await createClient()
+    const { data: project, error: readError } = await supabase
+      .from('projects')
+      .select('id, name, project_type, description, fortnox_project_id')
+      .eq('id', projectId)
+      .single()
+    if (readError || !project) throw new Error('Kunde inte läsa projektet.')
+    if (project.fortnox_project_id) {
+      return {
+        ok: false,
+        error: `Projektet är redan kopplat till Fortnox-projekt ${project.fortnox_project_id}.`,
+      }
+    }
+
+    // Fortnox kräver en beskrivning; projektets namn är den enda rimliga källan.
+    const description = (project.name || project.project_type || '').trim()
+    if (!description) {
+      return { ok: false, error: 'Projektet behöver ett namn innan det kan läggas upp i Fortnox.' }
+    }
+
+    const created = await createFortnoxProject({
+      description,
+      comments: project.description,
+    })
+
+    const { error } = await supabase
+      .from('projects')
+      .update({
+        fortnox_project_id: created.projectNumber,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', projectId)
+    if (error) throw new Error(error.message)
+
+    revalidateProject(projectId)
+    return { ok: true, data: created }
   } catch (err) {
     return fail(err)
   }

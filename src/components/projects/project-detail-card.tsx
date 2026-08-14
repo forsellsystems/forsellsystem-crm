@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PROJECT_TYPES, PROJECT_STATUSES } from '@/lib/constants'
 import { formatCurrency } from '@/lib/utils'
+import { FortnoxProjectLink } from '@/components/fortnox/fortnox-project-link'
 import { updateProject, deleteProject } from '@/lib/actions/project-actions'
 import { ProjectForm, type ProjectFormValues } from './project-form'
 import type { Project } from '@/lib/types/database'
@@ -175,6 +176,10 @@ export function ProjectDetailCard({
                 )}
               </div>
             )}
+            <FortnoxProjectLink
+              projectId={project.id}
+              projectNumber={project.fortnox_project_id}
+            />
           </div>
         )}
       </CardContent>

@@ -214,6 +214,8 @@ export type Project = {
   contact_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
+  // Projektnummer i Fortnox. Sätts bara via kopplingen, aldrig som fritext.
+  fortnox_project_id: string | null;
   created_at: string;
   updated_at: string;
 };
