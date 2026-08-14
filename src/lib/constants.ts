@@ -152,11 +152,12 @@ export const SPEC_FIELDS = [
   { key: "lifting_capacity", label: "Lyftkapacitet, max", label_en: "Lifting capacity, max", unit: "kg", object: "maskin" },
   { key: "power_source", label: "Drivning", label_en: "Power source", unit: "", object: "maskin" },
   { key: "air_pressure", label: "Arbetstryck", label_en: "Working pressure", unit: "bar", object: "maskin" },
-  // Vagnar
-  { key: "element_cart_load", label: "Last per elementvagn", label_en: "Load per carrier cart", unit: "kg", object: "maskin" },
+  // Carrier carts (Modutrack, Painttrack) och trolleys (Skate System).
+  // Komponentnamnen översätts aldrig, så de står på engelska även i svenskan.
+  { key: "element_cart_load", label: "Last per carrier cart", label_en: "Load per carrier cart", unit: "kg", object: "maskin" },
   { key: "element_carts_per", label: "Carrier carts per element", label_en: "Carrier carts per element", unit: "st", object: "maskin" },
-  { key: "module_cart_load", label: "Last per modulvagn", label_en: "Load per trolley", unit: "kg", object: "maskin" },
-  { key: "module_carts_per", label: "Modulvagnar per modul", label_en: "Trolleys per module", unit: "st", object: "maskin" },
+  { key: "module_cart_load", label: "Last per trolley", label_en: "Load per trolley", unit: "kg", object: "maskin" },
+  { key: "module_carts_per", label: "Trolleys per modul", label_en: "Trolleys per module", unit: "st", object: "maskin" },
   { key: "floor_beams_per_module", label: "Golvbalkar per modul", label_en: "Floor beams per module", unit: "st", object: "maskin" },
   // Banor
   { key: "stations", label: "Antal stationer", label_en: "Number of stations", unit: "st", object: "maskin" },
