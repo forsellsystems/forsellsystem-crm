@@ -12,7 +12,7 @@ import {
   Handshake,
 } from 'lucide-react'
 import { getCompany, getResellers } from '@/lib/queries/companies'
-import { getNotes } from '@/lib/queries/notes'
+import { getNotesWithProjects } from '@/lib/queries/notes'
 import { getProjects } from '@/lib/queries/projects'
 import { getMeetings } from '@/lib/queries/meetings'
 import { getActiveUsers } from '@/lib/queries/users'
@@ -42,7 +42,7 @@ export default async function ForetagDetailPage({
   const supabase = await createClient()
   const [company, notes, projects, meetings, resellers, users, machines] = await Promise.all([
     getCompany(id),
-    getNotes('company', id),
+    getNotesWithProjects('company', id),
     getProjects('company', id),
     getMeetings('company', id),
     getResellers(),

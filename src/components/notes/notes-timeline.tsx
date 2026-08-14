@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { formatDateTime } from '@/lib/utils'
 import type { NoteWithAuthor } from '@/lib/queries/notes'
 import { DeleteNoteButton } from '@/components/notes/delete-note-button'
@@ -42,11 +43,26 @@ export function NotesTimeline({ notes, entityType, entityId }: NotesTimelineProp
                   </span>
                 </>
               )}
-              <DeleteNoteButton
-                noteId={note.id}
-                entityType={entityType}
-                entityId={entityId}
-              />
+              {/* Anteckningen ligger på ett projekt och visas bara här. Den
+                  raderas där den hör hemma, annars skulle den försvinna från
+                  projektet utan att någon som tittar där förstår varför. */}
+              {note.project_id ? (
+                <>
+                  <span>&middot;</span>
+                  <Link
+                    href={`/projekt/${note.project_id}`}
+                    className="text-[#656565] hover:underline"
+                  >
+                    Projekt: {note.project_name}
+                  </Link>
+                </>
+              ) : (
+                <DeleteNoteButton
+                  noteId={note.id}
+                  entityType={entityType}
+                  entityId={entityId}
+                />
+              )}
             </div>
             <p className="text-sm text-[#1A1A1A] whitespace-pre-wrap">
               {note.content}

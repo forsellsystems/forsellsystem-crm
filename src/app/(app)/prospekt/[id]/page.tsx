@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Building2 } from 'lucide-react'
 import { getProspect } from '@/lib/queries/prospects'
 import { getResellers } from '@/lib/queries/companies'
-import { getNotes } from '@/lib/queries/notes'
+import { getNotesWithProjects } from '@/lib/queries/notes'
 import { getProjects } from '@/lib/queries/projects'
 import { getMeetings } from '@/lib/queries/meetings'
 import { formatDate } from '@/lib/utils'
@@ -34,7 +34,7 @@ export default async function ProspektDetailPage({
   const { id } = await params
   const [prospect, notes, projects, meetings, resellers] = await Promise.all([
     getProspect(id),
-    getNotes('prospect', id),
+    getNotesWithProjects('prospect', id),
     getProjects('prospect', id),
     getMeetings('prospect', id),
     getResellers(),

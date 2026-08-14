@@ -7,7 +7,7 @@ import { ArrowLeft, Mail, Phone, Globe, Building2, Briefcase } from 'lucide-reac
 import { DeleteCompanyButton } from '@/components/companies/delete-company-button'
 import { MoveToProspectButton } from '@/components/companies/move-to-prospect-button'
 import { createClient } from '@/lib/supabase/server'
-import { getNotes } from '@/lib/queries/notes'
+import { getNotesWithProjects } from '@/lib/queries/notes'
 import { getMeetings } from '@/lib/queries/meetings'
 import { PIPELINE_STAGES } from '@/lib/constants'
 import { formatDate, formatCurrency } from '@/lib/utils'
@@ -47,7 +47,7 @@ export default async function ResellerDetailPage({
   const { id } = await params
   const [reseller, notes, meetings, projects] = await Promise.all([
     getReseller(id),
-    getNotes('company', id),
+    getNotesWithProjects('company', id),
     getMeetings('company', id),
     // Agenter kan driva egna projekt, t.ex. mot slutkund som de fakturerar.
     getProjects('company', id),

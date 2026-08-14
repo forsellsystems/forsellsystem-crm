@@ -25,10 +25,13 @@ function prospectHref(id: string, prospectType: string) {
   return prospectType === 'reseller' ? `/aterforsaljar-prospekt/${id}` : `/prospekt/${id}`
 }
 
+/** Möte plus namnet på projektet det hör till, när det finns ett. */
+export type MeetingWithProject = Meeting & { project_name?: string | null }
+
 export async function getMeetings(
   entityType: string,
   entityId: string
-): Promise<Meeting[]> {
+): Promise<MeetingWithProject[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('meetings')
@@ -39,7 +42,28 @@ export async function getMeetings(
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return data ?? []
+  const meetings = data ?? []
+
+  // Ett möte som skapats på ett projekt ankras på projektets bolag, så det
+  // hamnar här av sig självt. Hämta projektnamnet så det syns VILKET projekt.
+  const projectIds = [...new Set(meetings.map((m) => m.project_id).filter(Boolean))]
+  if (projectIds.length === 0) return meetings
+
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('id, name, project_type')
+    .in('id', projectIds as string[])
+  const nameById = new Map(
+    (projects ?? []).map((p) => [
+      p.id,
+      p.name?.trim() || PROJECT_TYPES.find((t) => t.key === p.project_type)?.label || 'Projekt',
+    ])
+  )
+
+  return meetings.map((m) => ({
+    ...m,
+    project_name: m.project_id ? nameById.get(m.project_id) ?? null : null,
+  }))
 }
 
 export async function getMeeting(id: string): Promise<MeetingWithDetails | null> {

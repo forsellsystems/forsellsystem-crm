@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Handshake } from 'lucide-react'
 import { getProspect } from '@/lib/queries/prospects'
-import { getNotes } from '@/lib/queries/notes'
+import { getNotesWithProjects } from '@/lib/queries/notes'
 import { getMeetings } from '@/lib/queries/meetings'
 import { formatDate } from '@/lib/utils'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
@@ -31,7 +31,7 @@ export default async function AterforsaljarProspektDetailPage({
   const { id } = await params
   const [prospect, notes, meetings] = await Promise.all([
     getProspect(id),
-    getNotes('prospect', id),
+    getNotesWithProjects('prospect', id),
     getMeetings('prospect', id),
   ])
 

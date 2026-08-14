@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { MEETING_STATUSES } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
 import { NewMeetingDialog } from './new-meeting-dialog'
-import type { Meeting } from '@/lib/types/database'
+import type { MeetingWithProject } from '@/lib/queries/meetings'
 
 export function MeetingsCard({
   entityType,
@@ -16,7 +16,7 @@ export function MeetingsCard({
 }: {
   entityType: 'prospect' | 'company' | 'deal' | 'project'
   entityId: string
-  meetings: Meeting[]
+  meetings: MeetingWithProject[]
   editable?: boolean
 }) {
   return (
@@ -56,6 +56,14 @@ export function MeetingsCard({
                     )}
                     <span className="text-sm font-medium text-[#1A1A1A] truncate">{label}</span>
                     {status && <span className="text-xs text-[#6B6B6B]">{status.label}</span>}
+                    {/* Projektmöten ankras på projektets bolag och dyker upp här.
+                        Utan den här märkningen ser de ut som vanliga bolagsmöten.
+                        På projektets eget kort vore den förstås bara brus. */}
+                    {entityType !== 'project' && m.project_name && (
+                      <span className="shrink-0 rounded bg-[#F2F2F0] px-1.5 py-0.5 text-[11px] text-[#6B6B6B]">
+                        {m.project_name}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {m.title?.trim() && m.meeting_date && (
