@@ -74,6 +74,8 @@ export type ProjectSpecInput = {
   unit?: string | null
   value_text?: string | null
   note?: string | null
+  // Vilka av projektets produkter förutsättningen gäller. Tom = ingen.
+  project_machine_ids?: string[]
 }
 
 // Värden sparas bara för den typ de hör till. Annars ligger ett gammalt mått
@@ -93,6 +95,20 @@ function rowFrom(v: ProjectSpecInput) {
   }
 }
 
+/** Sätter om taggarna till exakt den lista som skickas in. */
+async function syncSpecMachines(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  specId: string,
+  machineIds: string[] | undefined
+) {
+  await supabase.from('project_spec_machines').delete().eq('project_spec_id', specId)
+  const ids = [...new Set(machineIds ?? [])]
+  if (ids.length === 0) return
+  await supabase
+    .from('project_spec_machines')
+    .insert(ids.map((id) => ({ project_spec_id: specId, project_machine_id: id })))
+}
+
 export async function createProjectSpec(projectId: string, data: ProjectSpecInput) {
   const supabase = await createClient()
 
@@ -103,12 +119,18 @@ export async function createProjectSpec(projectId: string, data: ProjectSpecInpu
     .order('sort_order', { ascending: false })
     .limit(1)
 
-  const { error } = await supabase.from('project_specs').insert({
-    project_id: projectId,
-    ...rowFrom(data),
-    sort_order: (last?.[0]?.sort_order ?? -1) + 1,
-  })
+  const { data: created, error } = await supabase
+    .from('project_specs')
+    .insert({
+      project_id: projectId,
+      ...rowFrom(data),
+      sort_order: (last?.[0]?.sort_order ?? -1) + 1,
+    })
+    .select('id')
+    .single()
   if (error) throw new Error(`Kunde inte lägga till uppgift: ${error.message}`)
+
+  await syncSpecMachines(supabase, created.id, data.project_machine_ids)
   revalidate(projectId)
 }
 
@@ -123,6 +145,8 @@ export async function updateProjectSpec(
     .update({ ...rowFrom(data), updated_at: new Date().toISOString() })
     .eq('id', id)
   if (error) throw new Error(`Kunde inte uppdatera uppgift: ${error.message}`)
+
+  await syncSpecMachines(supabase, id, data.project_machine_ids)
   revalidate(projectId)
 }
 

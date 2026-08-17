@@ -123,15 +123,27 @@ export async function getProjectMachines(projectId: string): Promise<ProjectMach
   })
 }
 
+/** Förutsättning plus vilka av projektets produkter den gäller. */
+export type ProjectSpecRow = ProjectSpec & {
+  project_machine_ids: string[]
+}
+
 /** Projektets förutsättningar, i den ordning de lagts in. */
-export async function getProjectSpecs(projectId: string): Promise<ProjectSpec[]> {
+export async function getProjectSpecs(projectId: string): Promise<ProjectSpecRow[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('project_specs')
-    .select('*')
+    .select('*, project_spec_machines(project_machine_id)')
     .eq('project_id', projectId)
     .order('sort_order', { ascending: true })
 
   if (error) throw error
-  return (data ?? []) as ProjectSpec[]
+  return (data ?? []).map((row) => {
+    const tags = (row.project_spec_machines ?? []) as { project_machine_id: string }[]
+    return {
+      ...(row as unknown as ProjectSpec),
+      project_spec_machines: undefined,
+      project_machine_ids: tags.map((t) => t.project_machine_id),
+    }
+  }) as ProjectSpecRow[]
 }

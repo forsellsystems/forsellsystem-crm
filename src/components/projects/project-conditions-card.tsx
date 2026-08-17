@@ -14,7 +14,7 @@ import {
   updateProjectConditionsNote,
   type ProjectSpecInput,
 } from '@/lib/actions/project-context-actions'
-import type { ProjectSpec } from '@/lib/types/database'
+import type { ProjectSpecRow } from '@/lib/queries/projects'
 
 const inputClass =
   'w-full rounded-lg border border-border bg-background px-2.5 h-8 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50'
@@ -25,12 +25,12 @@ const numClass =
 function fieldOf(spec: { spec_key: string | null }) {
   return PROJECT_SPEC_FIELDS.find((f) => f.key === spec.spec_key)
 }
-function labelOf(spec: ProjectSpec) {
+function labelOf(spec: ProjectSpecRow) {
   return fieldOf(spec)?.label ?? spec.label ?? 'Uppgift'
 }
 
 /** Hur värdet läses beroende på typ. Luckorna visas som text, inte som tomt. */
-function valueOf(spec: ProjectSpec) {
+function valueOf(spec: ProjectSpecRow) {
   if (spec.value_type === 'pending') return 'Ej utredd'
   if (spec.value_type === 'unknown') return 'Kunden vet inte'
   if (spec.value_type === 'text') return spec.value_text || '—'
@@ -51,15 +51,25 @@ const EMPTY: ProjectSpecInput = {
   unit: '',
   value_text: '',
   note: '',
+  project_machine_ids: [],
 }
 
 function SpecFields({
   draft,
   setDraft,
+  products,
 }: {
   draft: ProjectSpecInput
   setDraft: (next: ProjectSpecInput) => void
+  products: { id: string; name: string }[]
 }) {
+  const tagged = new Set(draft.project_machine_ids ?? [])
+  function toggle(id: string) {
+    const next = new Set(tagged)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setDraft({ ...draft, project_machine_ids: [...next] })
+  }
   const chosen = PROJECT_SPEC_FIELDS.find((f) => f.key === draft.spec_key)
   const isValue = draft.value_type === 'value'
   const isText = draft.value_type === 'text'
@@ -152,6 +162,31 @@ function SpecFields({
         onChange={(e) => setDraft({ ...draft, note: e.target.value })}
         placeholder="Notering (valfritt)"
       />
+
+      {/* Noll, en eller flera produkter. Finns inga valda produkter på projektet
+          än finns inget att tagga mot, och då står det så. */}
+      {products.length > 0 ? (
+        <div className="space-y-1">
+          <p className="text-xs text-[#6B6B6B]">Gäller produkt</p>
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            {products.map((p) => (
+              <label key={p.id} className="flex items-center gap-1.5 text-sm">
+                <input
+                  type="checkbox"
+                  checked={tagged.has(p.id)}
+                  onChange={() => toggle(p.id)}
+                  className="size-3.5"
+                />
+                {p.name}
+              </label>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="text-xs text-[#9A9A9A]">
+          Inga produkter valda på projektet än, så det finns inget att koppla mot.
+        </p>
+      )}
     </div>
   )
 }
@@ -166,11 +201,14 @@ export function ProjectConditionsCard({
   projectId,
   specs,
   conditionsNote,
+  products,
 }: {
   projectId: string
-  specs: ProjectSpec[]
+  specs: ProjectSpecRow[]
   conditionsNote: string | null
+  products: { id: string; name: string }[]
 }) {
+  const productName = new Map(products.map((p) => [p.id, p.name]))
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -196,7 +234,7 @@ export function ProjectConditionsCard({
     })
   }
 
-  function startEdit(spec: ProjectSpec) {
+  function startEdit(spec: ProjectSpecRow) {
     setEditId(spec.id)
     setEditDraft({
       spec_key: spec.spec_key ?? '',
@@ -207,6 +245,7 @@ export function ProjectConditionsCard({
       unit: spec.unit ?? '',
       value_text: spec.value_text ?? '',
       note: spec.note ?? '',
+      project_machine_ids: spec.project_machine_ids,
     })
     setError(null)
   }
@@ -235,7 +274,7 @@ export function ProjectConditionsCard({
             {specs.map((spec) =>
               editId === spec.id ? (
                 <div key={spec.id} className="flex items-start gap-2 py-2 first:pt-0">
-                  <SpecFields draft={editDraft} setDraft={setEditDraft} />
+                  <SpecFields draft={editDraft} setDraft={setEditDraft} products={products} />
                   <Button
                     variant="ghost"
                     size="icon-sm"
@@ -280,6 +319,18 @@ export function ProjectConditionsCard({
                       <Trash2 className="size-3.5" />
                     </Button>
                   </div>
+                  {spec.project_machine_ids.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {spec.project_machine_ids.map((id) => (
+                        <span
+                          key={id}
+                          className="rounded bg-[#F2F2F0] px-1.5 py-0.5 text-[11px] text-[#6B6B6B]"
+                        >
+                          {productName.get(id) ?? 'Produkt'}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {spec.note && <p className="text-xs text-[#9A9A9A]">{spec.note}</p>}
                 </div>
               )
@@ -289,7 +340,7 @@ export function ProjectConditionsCard({
 
         {adding && (
           <div className="flex items-start gap-2 border-t border-[#B8B8B8]/40 pt-3">
-            <SpecFields draft={newDraft} setDraft={setNewDraft} />
+            <SpecFields draft={newDraft} setDraft={setNewDraft} products={products} />
             <Button
               variant="ghost"
               size="icon-sm"

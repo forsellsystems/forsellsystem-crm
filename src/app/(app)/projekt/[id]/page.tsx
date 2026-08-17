@@ -92,6 +92,7 @@ export default async function ProjektDetailPage({
             projectId={project.id}
             specs={specs}
             conditionsNote={project.conditions_note}
+            products={projectMachines.map((m) => ({ id: m.id, name: m.machine_name }))}
           />
 
           {isCompanyProject && (
