@@ -150,8 +150,14 @@ export const SPEC_FIELDS = [
   { key: "element_thickness", label: "Elementtjocklek", label_en: "Element thickness", unit: "mm", object: "element" },
   { key: "element_weight", label: "Elementvikt", label_en: "Element weight", unit: "kg", object: "element" },
   // Modulen
-  { key: "module_size", label: "Modulstorlek", label_en: "Module size", unit: "", object: "modul" },
+  { key: "module_length", label: "Modullängd", label_en: "Module length", unit: "mm", object: "modul" },
+  { key: "module_width", label: "Modulbredd", label_en: "Module width", unit: "mm", object: "modul" },
+  { key: "module_height", label: "Modulhöjd", label_en: "Module height", unit: "mm", object: "modul" },
   { key: "module_weight", label: "Modulvikt", label_en: "Module weight", unit: "kg", object: "modul" },
+  // Modulstorlek som ett samlat mått finns kvar för maskinerna (Skate System
+  // svarar "Ingen fast gräns"), men erbjuds inte på projekt: där vill man ha
+  // längd, bredd och höjd var för sig.
+  { key: "module_size", label: "Modulstorlek", label_en: "Module size", unit: "", object: "modul" },
   // Plattformar
   { key: "platform_count", label: "Antal plattformar", label_en: "Number of platforms", unit: "st", object: "maskin" },
   { key: "platform_load", label: "Last per plattform", label_en: "Load per platform", unit: "kg", object: "maskin" },
@@ -407,7 +413,13 @@ export const COUNTRIES = [
   "Östtimor",
 ] as const;
 
+// Samlingsmått som ersatts av separata mått på projekt. Nyckeln lever kvar i
+// SPEC_FIELDS för maskinernas skull, men ska inte gå att välja här.
+const PROJECT_SPEC_EXCLUDED: string[] = ["module_size"];
+
 /** Fälten som går att välja i ett projekts förutsättningar: kundens element och moduler. */
 export const PROJECT_SPEC_FIELDS = SPEC_FIELDS.filter(
-  (f) => f.object === "element" || f.object === "modul"
+  (f) =>
+    (f.object === "element" || f.object === "modul") &&
+    !PROJECT_SPEC_EXCLUDED.includes(f.key)
 );
