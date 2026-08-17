@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, Building2 } from 'lucide-react'
-import { getProject } from '@/lib/queries/projects'
+import { getProject, getProjectMachines, getProjectSpecs } from '@/lib/queries/projects'
 import { getNotes } from '@/lib/queries/notes'
 import { getProjectDeals, getCompanyDeals } from '@/lib/queries/deals'
 import { getMeetingsForProject } from '@/lib/queries/meetings'
@@ -11,6 +11,9 @@ import { PROJECT_TYPES } from '@/lib/constants'
 import { ProjectDetailCard } from '@/components/projects/project-detail-card'
 import { DeleteProjectButton } from '@/components/projects/delete-project-button'
 import { ProjectDealsCard } from '@/components/projects/project-deals-card'
+import { ProjectMachinesCard } from '@/components/projects/project-machines-card'
+import { ProjectConditionsCard } from '@/components/projects/project-conditions-card'
+import { getMachines } from '@/lib/queries/machines'
 import { MeetingsCard } from '@/components/meetings/meetings-card'
 import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
@@ -21,10 +24,13 @@ export default async function ProjektDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [project, notes, meetings] = await Promise.all([
+  const [project, notes, meetings, projectMachines, specs, machines] = await Promise.all([
     getProject(id),
     getNotes('project', id),
     getMeetingsForProject(id),
+    getProjectMachines(id),
+    getProjectSpecs(id),
+    getMachines(),
   ])
 
   if (!project) notFound()
@@ -75,6 +81,19 @@ export default async function ProjektDetailPage({
         </div>
 
         <div className="lg:col-span-2 space-y-6">
+          {/* Utredningen kommer före affären: vad kunden behöver, och vad vi vet. */}
+          <ProjectMachinesCard
+            projectId={project.id}
+            machines={projectMachines}
+            options={machines.map((m) => ({ id: m.id, name: m.name, category: m.category }))}
+          />
+
+          <ProjectConditionsCard
+            projectId={project.id}
+            specs={specs}
+            conditionsNote={project.conditions_note}
+          />
+
           {isCompanyProject && (
             <ProjectDealsCard
               projectId={project.id}

@@ -138,6 +138,35 @@ export type MachineSpec = {
   updated_at: string;
 };
 
+// En av våra produkter som är aktuell för ett projekt, med valfri motivering.
+export type ProjectMachine = {
+  id: string;
+  project_id: string;
+  machine_id: string;
+  note: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+// En förutsättning i ett projekt: kundens mått eller uppgift. value_type
+// 'pending'/'unknown' är medvetna luckor och bär inget värde.
+export type ProjectSpec = {
+  id: string;
+  project_id: string;
+  spec_key: string | null;
+  label: string | null;
+  value_type: "value" | "text" | "pending" | "unknown";
+  value_min: number | null;
+  value_max: number | null;
+  unit: string | null;
+  value_text: string | null;
+  note: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
 // En feature/säljpunkt på en maskin. name = svenska, name_en = engelska (valfri).
 export type MachineFeature = {
   id: string;
@@ -216,6 +245,8 @@ export type Project = {
   contact_phone: string | null;
   // Projektnummer i Fortnox. Sätts bara via kopplingen, aldrig som fritext.
   fortnox_project_id: string | null;
+  // Fritext under förutsättningarna, för det som inte passar i ett fält.
+  conditions_note: string | null;
   created_at: string;
   updated_at: string;
 };

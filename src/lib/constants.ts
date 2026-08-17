@@ -128,6 +128,18 @@ export const SPEC_VALUE_TYPES = [
 
 export type SpecValueType = (typeof SPEC_VALUE_TYPES)[number]["key"];
 
+// Värdetyper för ett projekts förutsättningar. "pending" och "unknown" är
+// poängen med listan: en känd lucka är information, inte en tom rad.
+// Ej utredd = vi har inte frågat än. Kunden vet inte = vi frågade, svaret finns inte.
+export const PROJECT_SPEC_VALUE_TYPES = [
+  { key: "value", label: "Värde" },
+  { key: "text", label: "Text" },
+  { key: "pending", label: "Ej utredd" },
+  { key: "unknown", label: "Kunden vet inte" },
+] as const;
+
+export type ProjectSpecValueType = (typeof PROJECT_SPEC_VALUE_TYPES)[number]["key"];
+
 // Gemensam fältlista. Håller etiketterna lika mellan maskiner så att samma mått
 // går att fråga efter en gång och besvaras av alla maskiner kunden köper.
 // Maskinunika uppgifter läggs som fria rader med egen etikett.
@@ -394,3 +406,8 @@ export const COUNTRIES = [
   "Österrike",
   "Östtimor",
 ] as const;
+
+/** Fälten som går att välja i ett projekts förutsättningar: kundens element och moduler. */
+export const PROJECT_SPEC_FIELDS = SPEC_FIELDS.filter(
+  (f) => f.object === "element" || f.object === "modul"
+);

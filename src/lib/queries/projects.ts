@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Project } from '@/lib/types/database'
+import type { Project, ProjectMachine, ProjectSpec } from '@/lib/types/database'
 
 export type ProjectWithEntity = Project & {
   entity_name: string
@@ -96,4 +96,42 @@ export async function getProjects(
 
   if (error) throw error
   return data ?? []
+}
+
+export type ProjectMachineRow = ProjectMachine & {
+  machine_name: string
+  machine_category: string
+}
+
+/** Produkterna som är aktuella för ett projekt, med maskinens namn. */
+export async function getProjectMachines(projectId: string): Promise<ProjectMachineRow[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('project_machines')
+    .select('*, machines!project_machines_machine_id_fkey(name, category)')
+    .eq('project_id', projectId)
+    .order('sort_order', { ascending: true })
+
+  if (error) throw error
+  return (data ?? []).map((row) => {
+    const m = row.machines as { name: string; category: string } | null
+    return {
+      ...(row as unknown as ProjectMachine),
+      machine_name: m?.name ?? 'Okänd produkt',
+      machine_category: m?.category ?? '',
+    }
+  })
+}
+
+/** Projektets förutsättningar, i den ordning de lagts in. */
+export async function getProjectSpecs(projectId: string): Promise<ProjectSpec[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('project_specs')
+    .select('*')
+    .eq('project_id', projectId)
+    .order('sort_order', { ascending: true })
+
+  if (error) throw error
+  return (data ?? []) as ProjectSpec[]
 }
