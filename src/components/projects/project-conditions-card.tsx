@@ -29,17 +29,26 @@ function labelOf(spec: ProjectSpecRow) {
   return fieldOf(spec)?.label ?? spec.label ?? 'Uppgift'
 }
 
-/** Hur värdet läses beroende på typ. Luckorna visas som text, inte som tomt. */
+/**
+ * Hur värdet läses beroende på typ. Luckorna visas som text, inte som tomt.
+ * Min och max är oberoende: bara max ("max 900 kg") är lika giltigt som bara
+ * min eller ett intervall. Samma regler som maskinernas specar.
+ */
 function valueOf(spec: ProjectSpecRow) {
   if (spec.value_type === 'pending') return 'Ej utredd'
   if (spec.value_type === 'unknown') return 'Kunden vet inte'
   if (spec.value_type === 'text') return spec.value_text || '—'
+
   const unit = spec.unit ? ` ${spec.unit}` : ''
-  if (spec.value_min == null) return '—'
-  if (spec.value_max != null && spec.value_max !== spec.value_min) {
-    return `${spec.value_min}–${spec.value_max}${unit}`
+  const min = spec.value_min != null ? Number(spec.value_min) : null
+  const max = spec.value_max != null ? Number(spec.value_max) : null
+
+  if (min != null && max != null) {
+    return min === max ? `${min}${unit}` : `${min}–${max}${unit}`
   }
-  return `${spec.value_min}${unit}`
+  if (max != null) return `max ${max}${unit}`
+  if (min != null) return `min ${min}${unit}`
+  return '—'
 }
 
 const EMPTY: ProjectSpecInput = {
@@ -70,7 +79,6 @@ function SpecFields({
     else next.add(id)
     setDraft({ ...draft, project_machine_ids: [...next] })
   }
-  const chosen = PROJECT_SPEC_FIELDS.find((f) => f.key === draft.spec_key)
   const isValue = draft.value_type === 'value'
   const isText = draft.value_type === 'text'
 
@@ -124,8 +132,8 @@ function SpecFields({
             onChange={(e) =>
               setDraft({ ...draft, value_min: e.target.value === '' ? null : Number(e.target.value) })
             }
-            placeholder="Från"
-            aria-label="Från"
+            placeholder="Min"
+            aria-label="Min (valfritt)"
           />
           <span className="text-xs text-[#6B6B6B]">–</span>
           <input
@@ -135,8 +143,8 @@ function SpecFields({
             onChange={(e) =>
               setDraft({ ...draft, value_max: e.target.value === '' ? null : Number(e.target.value) })
             }
-            placeholder="Till"
-            aria-label="Till (valfritt)"
+            placeholder="Max"
+            aria-label="Max (valfritt)"
           />
           <input
             className={`${numClass} text-left`}
@@ -145,7 +153,7 @@ function SpecFields({
             placeholder="Enhet"
             aria-label="Enhet"
           />
-          {chosen && <span className="text-xs text-[#9A9A9A]">Intervall är valfritt</span>}
+          <span className="text-xs text-[#9A9A9A]">Fyll i en eller båda</span>
         </div>
       )}
 
