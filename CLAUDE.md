@@ -44,6 +44,24 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - factory_type: optional on both prospects and companies (nullable)
 - building_types: TEXT[] on both prospects and companies, multi-select checkboxes (flerbostadshus, smahus). Stores keys, not labels.
 
+## Detaljsidornas navigering
+- Alla fem detaljsidor (kund, agent, kund-prospekt, agent-prospekt, projekt) har flikraden HÖGST UPP och visar ett kort i taget, aldrig staplade kort i kolumner. Innan dess hade kundsidan nio kort och projektsidan sex, vilket inte gick att överblicka.
+- SectionTabs (components/layout/section-tabs.tsx) är flikar INOM en sida, till skillnad från ListTabs som växlar mellan sidor. Aktiv flik avgörs av anroparen via `?flik=`, så komponenten är en server-komponent och sidan slipper bli klientkod.
+- Flikordningen är densamma överallt: uppgifter först och som förval, sedan Anteckningar, sedan Möten, sedan det entitetsspecifika. Kund: Företagsuppgifter · Anteckningar · Möten · Projekt · Affärer · Mejl. Agent: samma men Kunder i stället för Mejl. Projekt: Projektdetaljer · Anteckningar · Möten · Förutsättningar · Produkter · Affärer. Prospekt: Företagsuppgifter · Anteckningar · Möten (+ Projekt på kund-prospekt).
+- Flikarna bär INTE antal på kund- och prospektsidorna. Projektsidan har antal på Möten och Affärer.
+- Företagsuppgifter är ETT kort: bolagsuppgifter, kontakter och Fortnox-kopplingen tillsammans. Separata kort för kontaktuppgifter, beskrivning och kontakter är borttagna. CompanyDetailsCard används för både kund och agent och döljer själv fabrikstyp, byggnadstyp, material och Agent-fältet när is_reseller är sant: en agent driver ingen fabrik och har ingen egen agent.
+- Beskrivning finns på prospekt men INTE på kunder. Ingen av 17 kunder hade text där, medan 24 av 34 prospekt hade, så fältet togs bort på kunder och behölls på prospekt (inne i Företagsuppgifter, inte som eget kort).
+- Affärer har en egen sida /affarer med menypost, som platt lista vid sidan av pipeline-tavlan. Samma affärer, lättare att skanna.
+
+## Kontakter
+- Kontakter är polymorfa: contacts.company_id ELLER contacts.prospect_id, aldrig båda, enforcat av contacts_one_owner_check. Avviker medvetet från husets entity_type/entity_id-mönster, eftersom company_id är FK:ad från deals.contact_id och projects.contact_id och används brett.
+- En person bor BARA i kontakter. Bolagets och prospektets egna e-post/telefon-fält togs ur UI:t; prospects.contact_person/email/phone är helt borta ur databasen. 31 prospekt fick sina fritextuppgifter migrerade till kontaktposter, varav 16 som "Okänd kontakt" eftersom de bara hade e-post eller telefon (namn är obligatoriskt).
+- companies.email/phone finns kvar men sätts bara maskinellt (Fortnox-import, prospektflytt) och används bara till att matcha Outlook-korrespondens. De redigeras och visas inte.
+- Vid flytt prospekt↔kund FLYTTAS kontakterna med sina id, i båda riktningarna. Kund→prospekt måste flytta, inte kopiera, eftersom bolaget raderas i samma operation.
+- Kontakter kan raderas, med bekräftelse. deals.contact_id och projects.contact_id är SET NULL, så affären eller projektet blir kvar utan kontaktperson.
+- Projektets kontaktperson är projects.contact_id, vald ur ÄGARENS kontakter (bolagets eller prospektets), aldrig fritext.
+- Möten kan INTE kopplas till en affär. Möten hålls på kund- eller projektnivå. Affärsväljaren i mötesdialogen och /api/deals är borttagna.
+
 ## Prospect ↔ Company Flow
 - "Flytta till kund" / "Flytta till återförsäljare" button on prospect detail: creates company (is_reseller derived from prospect_type) + contact + copies notes, flyttar projekten, marks prospect as converted
 - "Flytta till prospekt" / "Flytta till återförsäljar-prospekt" button on company detail: type-aware (kund → kund-prospekt, återförsäljare → återförsäljar-prospekt). Creates prospect with prospect_type derived from is_reseller, copies notes, flyttar projekt/möten/todos, DELETES the company
@@ -104,6 +122,7 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - Offertens kund i Fortnox är INTE alltid affärens kund: den kan vara affärens AGENT när agenten fakturerar slutkund (offert 11 är ställd till Randek fast affären är Danwoods). Validera därför aldrig att offertens kund = affärens kund. OfferProjectButton skriver bara Project-fältet och rör aldrig kunden på offerten.
 - projects.fortnox_project_id kopplar ett CRM-projekt mot Fortnox projektregister, exakt samma mönster och regler som kundkopplingen (FortnoxProjectLink på /projekt/[id]). Sätts bara via väljaren eller "Lägg upp i Fortnox", aldrig fritext. Unikt partiellt index. Hämta info drar Description → name, Comments → description, ContactPerson → contact_name.
 - Fortnox projektformer skiljer sig också mellan endpoints: listan (/projects) saknar `Comments` och `ContactPerson`, enskilt projekt (/projects/{nr}) har båda. Status är NOTSTARTED | ONGOING | COMPLETED men läses som fri text, så ett okänt värde visas i stället för att krascha.
+- Fortnox-kunden bär en PERSON i EmailOffer/EmailOrder och namnet i YourReference. Det generella `Email`-fältet står tomt hos Forsell, liksom Phone1, eftersom adressen alltid är en människas. EmailInvoice är ekonomins funktionsadress och används inte som säljkontakt. "Hämta kontaktperson" på bolagskortet läser dessa och lägger personen som KONTAKT efter bekräftelse; bolagets egna fält skrivs inte. Verifierat mot skarpa registret 2026-08-17: kundposten har 64 fält.
 - Fortnox-API:ets kundformer skiljer sig mellan endpoints: listan (/customers) ger `Phone` och saknar `CountryCode`, enskild kund (/customers/{nr}) ger `Phone1` och `CountryCode`. toSummary i lib/fortnox/customers.ts läser båda.
 - customer-scopet ("Kund" i Fortnox Developer Portal) krävs för allt kundregisterarbete. Scopet begärs i FORTNOX_SCOPES, men måste också vara ikryssat på integrationen (heter "Forsell CRM"). Ändrade behörigheter kräver ALLTID ny anslutning (Koppla från + Anslut); befintliga tokens behåller sina gamla rättigheter.
 - Landsöversättning Fortnox ↔ CRM sker i lib/fortnox/countries.ts. Okänt land översätts inte alls (utelämnas vid skapande, lämnas orört vid hämtning) hellre än att gissa.
