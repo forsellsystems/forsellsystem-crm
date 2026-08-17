@@ -17,7 +17,8 @@ import type { ProjectMachineRow } from '@/lib/queries/projects'
 /**
  * Vilka av våra produkter som är aktuella för projektet. Tom i början och fylls
  * på när utredningen går framåt, så en tom lista betyder att vi inte vet än.
- * Noteringen svarar på varför just den produkten är med.
+ * Kommentaren är fri plats för information om produkten i det här projektet,
+ * inte en motivering till varför den finns med.
  */
 export function ProjectMachinesCard({
   projectId,
@@ -113,7 +114,7 @@ export function ProjectMachinesCard({
                 </div>
 
                 {editId === m.id ? (
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex items-start gap-2">
                     <input
                       type="number"
                       min={1}
@@ -124,10 +125,11 @@ export function ProjectMachinesCard({
                       placeholder="Antal"
                       aria-label="Antal"
                     />
-                    <Input
+                    <textarea
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      placeholder="Varför är den aktuell? (valfritt)"
+                      placeholder="Kommentar om produkten (valfritt)"
+                      className="min-h-16 flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
                     />
                     <Button
                       variant="ghost"
@@ -150,7 +152,9 @@ export function ProjectMachinesCard({
                     </Button>
                   </div>
                 ) : (
-                  m.note && <p className="text-xs text-[#6B6B6B]">{m.note}</p>
+                  m.note && (
+                    <p className="text-xs text-[#6B6B6B] whitespace-pre-wrap">{m.note}</p>
+                  )
                 )}
               </div>
             ))}
