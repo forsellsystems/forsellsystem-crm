@@ -15,10 +15,14 @@ import type { Project } from '@/lib/types/database'
 export function ProjectDetailCard({
   project,
   entityHref,
+  contacts = [],
 }: {
   project: Project
   entityHref: string
+  // Bolagets kontakter: en av dem kan vara projektets kontaktperson.
+  contacts?: { id: string; name: string; email: string | null; phone: string | null }[]
 }) {
+  const contact = contacts.find((c) => c.id === project.contact_id) ?? null
   // A freshly created project has no data yet → open straight in edit mode.
   const isEmpty =
     !project.name?.trim() &&
@@ -27,9 +31,7 @@ export function ProjectDetailCard({
     project.value == null &&
     !project.value_unknown &&
     !project.description?.trim() &&
-    !project.contact_name?.trim() &&
-    !project.contact_email?.trim() &&
-    !project.contact_phone?.trim()
+    !project.contact_id
 
   const [editing, setEditing] = useState(isEmpty)
   const [isPending, startTransition] = useTransition()
@@ -48,9 +50,7 @@ export function ProjectDetailCard({
         currency: values.currency || null,
         value: values.value_unknown ? null : values.value ? Number(values.value) : null,
         value_unknown: values.value_unknown,
-        contact_name: values.contact_name || null,
-        contact_email: values.contact_email || null,
-        contact_phone: values.contact_phone || null,
+        contact_id: values.contact_id || null,
       })
       setEditing(false)
       router.refresh()
@@ -95,13 +95,12 @@ export function ProjectDetailCard({
               value_unknown: project.value_unknown,
               currency: project.currency ?? 'SEK',
               description: project.description ?? '',
-              contact_name: project.contact_name ?? '',
-              contact_email: project.contact_email ?? '',
-              contact_phone: project.contact_phone ?? '',
+              contact_id: project.contact_id ?? '',
             }}
             onSave={handleSave}
             onCancel={handleCancel}
             disabled={isPending}
+            contacts={contacts}
           />
         ) : (
           <div className="space-y-3 text-sm">
@@ -139,28 +138,27 @@ export function ProjectDetailCard({
                 <p className="text-[#1A1A1A] whitespace-pre-wrap">{project.description}</p>
               </div>
             )}
-            {(project.contact_name || project.contact_email || project.contact_phone) && (
-              <div className="border-t border-[#B8B8B8]/40 pt-3 space-y-2">
+            {/* Uppgifterna kommer från bolagets kontakt, så de aldrig glider isär. */}
+            {contact && (
+              <div className="space-y-2 border-t border-[#B8B8B8]/40 pt-3">
                 <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B6B6B]">Kontaktperson</p>
-                {project.contact_name && (
-                  <div className="flex justify-between">
-                    <span className="text-[#6B6B6B]">Namn</span>
-                    <span>{project.contact_name}</span>
-                  </div>
-                )}
-                {project.contact_email && (
+                <div className="flex justify-between">
+                  <span className="text-[#6B6B6B]">Namn</span>
+                  <span>{contact.name}</span>
+                </div>
+                {contact.email && (
                   <div className="flex justify-between">
                     <span className="text-[#6B6B6B]">E-post</span>
-                    <a href={`mailto:${project.contact_email}`} className="text-[#656565] hover:underline">
-                      {project.contact_email}
+                    <a href={`mailto:${contact.email}`} className="text-[#656565] hover:underline">
+                      {contact.email}
                     </a>
                   </div>
                 )}
-                {project.contact_phone && (
+                {contact.phone && (
                   <div className="flex justify-between">
                     <span className="text-[#6B6B6B]">Telefon</span>
-                    <a href={`tel:${project.contact_phone}`} className="text-[#656565] hover:underline">
-                      {project.contact_phone}
+                    <a href={`tel:${contact.phone}`} className="text-[#656565] hover:underline">
+                      {contact.phone}
                     </a>
                   </div>
                 )}

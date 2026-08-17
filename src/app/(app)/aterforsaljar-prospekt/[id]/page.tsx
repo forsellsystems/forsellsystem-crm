@@ -12,9 +12,9 @@ import { NotesTimeline } from '@/components/notes/notes-timeline'
 import { AddNoteForm } from '@/components/notes/add-note-form'
 import { DeleteProspectButton } from '@/components/prospects/delete-prospect-button'
 import { MoveToCompanyButton } from '@/components/prospects/move-to-company-button'
-import { ProspectDescription } from '@/components/prospects/prospect-description'
-import { ProspectContactCard } from '@/components/prospects/prospect-contact-card'
 import { ProspectDetailsCard } from '@/components/prospects/prospect-details-card'
+import { SectionTabs } from '@/components/layout/section-tabs'
+import { createClient } from '@/lib/supabase/server'
 import { MeetingsCard } from '@/components/meetings/meetings-card'
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
@@ -25,10 +25,13 @@ const statusLabels: Record<string, { label: string; variant: 'default' | 'second
 
 export default async function AterforsaljarProspektDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ flik?: string }>
 }) {
   const { id } = await params
+  const { flik } = await searchParams
   const [prospect, notes, meetings] = await Promise.all([
     getProspect(id),
     getNotesWithProjects('prospect', id),
@@ -36,6 +39,18 @@ export default async function AterforsaljarProspektDetailPage({
   ])
 
   if (!prospect || prospect.prospect_type !== 'reseller') notFound()
+
+  const supabase = await createClient()
+  const { data: contactRows } = await supabase
+    .from('contacts')
+    .select('*')
+    .eq('prospect_id', prospect.id)
+    .order('is_primary', { ascending: false })
+    .order('name')
+  const contacts = contactRows ?? []
+
+  const base = `/aterforsaljar-prospekt/${prospect.id}`
+  const tab = flik === 'anteckningar' || flik === 'moten' ? flik : 'uppgifter'
 
   const status = statusLabels[prospect.status]
 
@@ -81,46 +96,50 @@ export default async function AterforsaljarProspektDetailPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 space-y-6">
-          <ProspectContactCard
-            prospect={prospect}
-            editable={prospect.status === 'active'}
-          />
+      {/* Samma flikar som kund-prospekt. Agent-prospekt har varken Fortnox eller
+          projekt, så raden är kortare. */}
+      <SectionTabs
+        items={[
+          { label: 'Företagsuppgifter', href: base, active: tab === 'uppgifter' },
+          {
+            label: 'Anteckningar',
+            href: `${base}?flik=anteckningar`,
+            active: tab === 'anteckningar',
+          },
+          { label: 'Möten', href: `${base}?flik=moten`, active: tab === 'moten' },
+        ]}
+      />
 
-          <ProspectDescription
-            prospectId={prospect.id}
-            description={prospect.description}
-            editable={prospect.status === 'active'}
-          />
+      {tab === 'uppgifter' && (
+        <ProspectDetailsCard
+          prospect={prospect}
+          editable={prospect.status === 'active'}
+          contacts={contacts}
+        />
+      )}
 
-          <ProspectDetailsCard
-            prospect={prospect}
-            editable={prospect.status === 'active'}
-          />
-        </div>
+      {tab === 'anteckningar' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Anteckningar</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {prospect.status === 'active' && (
+              <AddNoteForm entityType="prospect" entityId={prospect.id} />
+            )}
+            <NotesTimeline notes={notes} entityType="prospect" entityId={prospect.id} />
+          </CardContent>
+        </Card>
+      )}
 
-        <div className="lg:col-span-2 space-y-6">
-          <MeetingsCard
-            entityType="prospect"
-            entityId={prospect.id}
-            meetings={meetings}
-            editable={prospect.status === 'active'}
-          />
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Anteckningar</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {prospect.status === 'active' && (
-                <AddNoteForm entityType="prospect" entityId={prospect.id} />
-              )}
-              <NotesTimeline notes={notes} entityType="prospect" entityId={prospect.id} />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      {tab === 'moten' && (
+        <MeetingsCard
+          entityType="prospect"
+          entityId={prospect.id}
+          meetings={meetings}
+          editable={prospect.status === 'active'}
+        />
+      )}
     </div>
   )
 }

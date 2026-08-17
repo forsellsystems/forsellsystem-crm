@@ -4,6 +4,9 @@ import type { FortnoxCustomer, FortnoxCustomerSummary } from './types'
 // Fortnox kundregister. Kräver `customer`-scopet, som sitter på integrationen i
 // Fortnox Developer Portal ("Kund"). Saknas det svarar allt här 403.
 
+// Fortnox svarar med tom sträng snarare än null för fält som inte är ifyllda.
+const nonEmpty = (v?: string | null) => (v && v.trim() !== '' ? v.trim() : null)
+
 function toSummary(customer: FortnoxCustomer): FortnoxCustomerSummary {
   return {
     customerNumber: String(customer.CustomerNumber),
@@ -13,6 +16,14 @@ function toSummary(customer: FortnoxCustomer): FortnoxCustomerSummary {
     phone: customer.Phone1 ?? customer.Phone ?? null,
     city: customer.City ?? null,
     countryCode: customer.CountryCode ?? null,
+    // Personen: namn ur YourReference, adress ur offert- eller orderfältet.
+    // EmailInvoice används INTE, den är ekonomins funktionsadress.
+    contactName: nonEmpty(customer.YourReference),
+    contactEmail:
+      nonEmpty(customer.EmailOffer) ??
+      nonEmpty(customer.EmailOrder) ??
+      nonEmpty(customer.Email),
+    contactPhone: nonEmpty(customer.Phone1) ?? nonEmpty(customer.Phone2) ?? nonEmpty(customer.Phone),
   }
 }
 

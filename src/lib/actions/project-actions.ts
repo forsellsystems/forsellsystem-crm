@@ -32,9 +32,7 @@ export async function createProject(data: ProjectFormData): Promise<string> {
       value: validated.value_unknown ? null : (validated.value ?? null),
       value_unknown: validated.value_unknown ?? false,
       currency: validated.currency || 'SEK',
-      contact_name: validated.contact_name || null,
-      contact_email: validated.contact_email || null,
-      contact_phone: validated.contact_phone || null,
+      contact_id: validated.contact_id || null,
     })
     .select('id')
     .single()
@@ -67,8 +65,7 @@ export async function updateProject(
   entityId: string,
   fields: Partial<
     Record<
-      'name' | 'project_type' | 'status' | 'description' | 'currency'
-        | 'contact_name' | 'contact_email' | 'contact_phone',
+      'name' | 'project_type' | 'status' | 'description' | 'currency' | 'contact_id',
       string | null
     > & {
       value: number | null

@@ -34,9 +34,24 @@ interface NewDealDialogProps {
   users: User[]
   machines: Machine[]
   triggerStyle?: 'cta' | 'icon'
+  // Förval när dialogen öppnas från ett projekt: då är svaret redan känt och ska
+  // inte behöva väljas igen. Agentprojekt förväljer agenten, inte kunden, för
+  // kunden är slutkunden och den vet vi inte.
+  defaultCompanyId?: string
+  defaultProjectId?: string
+  defaultResellerId?: string
 }
 
-export function NewDealDialog({ companies, resellers, users, machines, triggerStyle = 'cta' }: NewDealDialogProps) {
+export function NewDealDialog({
+  companies,
+  resellers,
+  users,
+  machines,
+  triggerStyle = 'cta',
+  defaultCompanyId,
+  defaultProjectId,
+  defaultResellerId,
+}: NewDealDialogProps) {
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [contacts, setContacts] = useState<{ id: string; name: string }[]>([])
@@ -59,14 +74,14 @@ export function NewDealDialog({ companies, resellers, users, machines, triggerSt
     resolver: formResolver(dealSchema),
     defaultValues: {
       quote_number: '',
-      company_id: '',
+      company_id: defaultCompanyId ?? '',
       contact_id: '',
       stage: 'offert',
       value: undefined,
       currency: 'SEK',
       responsible_user_id: '',
-      reseller_id: '',
-      project_id: '',
+      reseller_id: defaultResellerId ?? '',
+      project_id: defaultProjectId ?? '',
       quote_date: '',
       heat: null,
       fortnox_offer_documentnumber: '',

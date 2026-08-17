@@ -20,9 +20,6 @@ export async function createProspect(data: ProspectFormData) {
       building_types: validated.building_types ?? [],
       material: validated.material || null,
       country: validated.country,
-      contact_person: validated.contact_person || null,
-      email: validated.email || null,
-      phone: validated.phone || null,
       reseller_id: validated.reseller_id || null,
     })
     .select('id')
@@ -54,9 +51,6 @@ export async function updateProspect(id: string, data: ProspectFormData) {
       building_types: validated.building_types ?? [],
       material: validated.material || null,
       country: validated.country,
-      contact_person: validated.contact_person || null,
-      email: validated.email || null,
-      phone: validated.phone || null,
       description: validated.description || null,
       reseller_id: validated.reseller_id || null,
     })
@@ -71,7 +65,7 @@ export async function updateProspect(id: string, data: ProspectFormData) {
 
 export async function updateProspectFields(
   id: string,
-  fields: Partial<Record<'contact_person' | 'email' | 'phone' | 'website' | 'description' | 'factory_type' | 'material' | 'country' | 'reseller_id', string | null> & { building_types: string[] }>
+  fields: Partial<Record<'website' | 'description' | 'factory_type' | 'material' | 'country' | 'reseller_id', string | null> & { building_types: string[] }>
 ) {
   const supabase = await createClient()
 
@@ -119,8 +113,6 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
       building_types: prospect.building_types ?? [],
       material: prospect.material ?? null,
       country: prospect.country,
-      email: prospect.email || null,
-      phone: prospect.phone || null,
       website: prospect.website || null,
       description: prospect.description || null,
       reseller_id: prospect.reseller_id || null,
@@ -142,16 +134,13 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
     },
   })
 
-  // 3. Create contact if contact_person exists
-  if (prospect.contact_person) {
-    await supabase.from('contacts').insert({
-      company_id: company.id,
-      name: prospect.contact_person,
-      email: prospect.email || null,
-      phone: prospect.phone || null,
-      is_primary: true,
-    })
-  }
+  // 3. Flytta prospektets kontakter till kunden. Tidigare skapades EN kontakt av
+  // fritextfälten; nu är kontakterna riktiga poster och alla följer med, med sina
+  // id, så inget dubbleras och inget lämnas kvar på det konverterade prospektet.
+  await supabase
+    .from('contacts')
+    .update({ company_id: company.id, prospect_id: null })
+    .eq('prospect_id', prospectId)
 
   // 4. Copy notes from prospect to company
   const { data: notes } = await supabase

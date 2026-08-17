@@ -362,11 +362,35 @@ export type NewBolagInput = {
   org_number?: string | null
   website?: string | null
   responsible_user_id?: string | null
-  // prospect-only
+  // Kontaktpersonen blir en riktig kontaktpost, inte fält på bolaget/prospektet.
   contact_person?: string | null
 }
 
 const clean = (v?: string | null) => (v && v.trim() !== '' ? v.trim() : null)
+
+/**
+ * Kontaktuppgifterna från nytt-bolag-formuläret blir en riktig kontaktpost, på
+ * bolaget eller prospektet. Saknas namnet men finns e-post eller telefon skapas
+ * den som "Okänd kontakt", så uppgiften inte tappas bara för att namnet uteblev.
+ */
+async function createOwnerContact(
+  supabase: DbClient,
+  owner: { company_id?: string; prospect_id?: string },
+  nb: NewBolagInput
+) {
+  const name = clean(nb.contact_person)
+  const email = clean(nb.email)
+  const phone = clean(nb.phone)
+  if (!name && !email && !phone) return
+  await supabase.from('contacts').insert({
+    company_id: owner.company_id ?? null,
+    prospect_id: owner.prospect_id ?? null,
+    name: name ?? 'Okänd kontakt',
+    email,
+    phone,
+    is_primary: true,
+  })
+}
 
 // Create the bolag (kund/agent = company, kund-/agent-prospekt = prospect) and
 // return its entity_type + id. Best-effort activity log, like other create flows.
@@ -392,13 +416,14 @@ async function createBolag(
         material: clean(nb.material),
         responsible_user_id: clean(nb.responsible_user_id),
         reseller_id: isReseller ? null : clean(nb.reseller_id),
-        email: clean(nb.email),
-        phone: clean(nb.phone),
         website: clean(nb.website),
       })
       .select('id')
       .single()
     if (error || !data) throw new Error(`Kunde inte skapa bolag: ${error?.message}`)
+
+    // Kontaktuppgifterna blir en kontaktpost. Bolaget bär dem inte längre.
+    await createOwnerContact(supabase, { company_id: data.id }, nb)
 
     await logActivity(supabase, {
       action: 'company_created',
@@ -426,9 +451,6 @@ async function createBolag(
       building_types: isReseller ? [] : nb.building_types ?? [],
       material: isReseller ? null : clean(nb.material),
       reseller_id: isReseller ? null : clean(nb.reseller_id),
-      contact_person: clean(nb.contact_person),
-      email: clean(nb.email),
-      phone: clean(nb.phone),
     })
     .select('id')
     .single()
@@ -446,6 +468,7 @@ async function createBolag(
           : `/prospekt/${data.id}`,
     },
   })
+  await createOwnerContact(supabase, { prospect_id: data.id }, nb)
   return { entity_type: 'prospect', entity_id: data.id }
 }
 

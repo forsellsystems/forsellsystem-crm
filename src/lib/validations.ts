@@ -128,9 +128,6 @@ export const prospectSchema = z.object({
   building_types: z.array(z.string()).optional(),
   material: z.string().optional().or(z.literal('')),
   country: z.string().min(1, 'Land krävs'),
-  contact_person: z.string().optional(),
-  email: z.string().email('Ogiltig e-postadress').optional().or(z.literal('')),
-  phone: z.string().optional(),
   description: z.string().optional(),
   reseller_id: z.string().uuid().optional().or(z.literal('')),
 })
@@ -163,7 +160,9 @@ export type CompanyFormData = z.infer<typeof companySchema>
 // CONTACTS
 // ============================================
 export const contactSchema = z.object({
-  company_id: z.string().uuid('Företag krävs'),
+  // Exakt en ägare: kontakten hör till ett bolag ELLER ett prospekt.
+  company_id: z.string().uuid().optional(),
+  prospect_id: z.string().uuid().optional(),
   name: z.string().min(1, 'Namn krävs'),
   title: z.string().optional(),
   email: z.string().email('Ogiltig e-postadress').optional().or(z.literal('')),
@@ -215,9 +214,8 @@ export const projectSchema = z.object({
   value: z.coerce.number().min(0, 'Värde måste vara positivt').optional(),
   value_unknown: z.boolean().optional(),
   currency: z.string().optional(),
-  contact_name: z.string().optional(),
-  contact_email: z.string().email('Ogiltig e-postadress').optional().or(z.literal('')),
-  contact_phone: z.string().optional(),
+  // Kontaktpersonen väljs ur bolagets kontakter, aldrig som fritext.
+  contact_id: z.string().optional().or(z.literal('')),
 })
 
 export type ProjectFormData = z.infer<typeof projectSchema>

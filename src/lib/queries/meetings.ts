@@ -142,20 +142,7 @@ export async function getMeeting(id: string): Promise<MeetingWithDetails | null>
   }
 }
 
-/** Meetings linked to a specific deal (shown on the deal detail page). */
-export async function getMeetingsForDeal(dealId: string): Promise<Meeting[]> {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('meetings')
-    .select('*')
-    .eq('deal_id', dealId)
-    .order('meeting_date', { ascending: false, nullsFirst: false })
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data ?? []
-}
 
-/** Meetings linked to a specific project (shown on the project detail page). */
 export async function getMeetingsForProject(projectId: string): Promise<Meeting[]> {
   const supabase = await createClient()
   const { data, error } = await supabase

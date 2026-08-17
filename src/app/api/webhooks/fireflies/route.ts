@@ -54,17 +54,20 @@ async function matchEntity(
   )
   if (emails.size === 0) return { entity_type: null, entity_id: null }
 
-  const { data: contacts } = await supabase.from('contacts').select('company_id, email')
+  // Kontakterna först: de bär personernas adresser, och en kontakt hör antingen
+  // till ett bolag eller till ett prospekt. Prospekt har inga egna e-postfält
+  // längre, så matchningen mot dem går via deras kontakter.
+  const { data: contacts } = await supabase
+    .from('contacts')
+    .select('company_id, prospect_id, email')
   const contact = (contacts ?? []).find((c) => c.email && emails.has(c.email.toLowerCase()))
   if (contact?.company_id) return { entity_type: 'company', entity_id: contact.company_id }
+  if (contact?.prospect_id) return { entity_type: 'prospect', entity_id: contact.prospect_id }
 
+  // Bolagets egen adress som sista utväg. Den sätts bara maskinellt numera.
   const { data: companies } = await supabase.from('companies').select('id, email')
   const company = (companies ?? []).find((c) => c.email && emails.has(c.email.toLowerCase()))
   if (company) return { entity_type: 'company', entity_id: company.id }
-
-  const { data: prospects } = await supabase.from('prospects').select('id, email')
-  const prospect = (prospects ?? []).find((p) => p.email && emails.has(p.email.toLowerCase()))
-  if (prospect) return { entity_type: 'prospect', entity_id: prospect.id }
 
   return { entity_type: null, entity_id: null }
 }

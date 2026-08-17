@@ -4,6 +4,9 @@ import type { Project, ProjectMachine, ProjectSpec } from '@/lib/types/database'
 export type ProjectWithEntity = Project & {
   entity_name: string
   entity_href: string
+  // Agentprojekt beter sig annorlunda: agentens affärer har agenten som
+  // reseller_id, inte som company_id.
+  entity_is_reseller: boolean
 }
 
 export async function getAllProjects(): Promise<ProjectWithEntity[]> {
@@ -35,6 +38,7 @@ export async function getAllProjects(): Promise<ProjectWithEntity[]> {
       ...p,
       entity_name:
         (p.entity_type === 'company' ? company?.name : prospectMap.get(p.entity_id)) ?? 'Okänt',
+      entity_is_reseller: company?.isReseller ?? false,
       entity_href:
         p.entity_type === 'company'
           ? `${company?.isReseller ? '/aterforsaljare' : '/foretag'}/${p.entity_id}`
@@ -75,6 +79,7 @@ export async function getProject(id: string): Promise<ProjectWithEntity | null> 
   return {
     ...project,
     entity_name,
+    entity_is_reseller: isReseller,
     entity_href:
       project.entity_type === 'company'
         ? `${isReseller ? '/aterforsaljare' : '/foretag'}/${project.entity_id}`

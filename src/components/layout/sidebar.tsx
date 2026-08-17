@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Kanban,
+  Briefcase,
   FolderKanban,
   CalendarDays,
   ListChecks,
@@ -29,6 +30,7 @@ const navItems: {
   { href: "/dashboard", label: "DASHBOARD", icon: LayoutDashboard },
   { href: "/todo", label: "TO-DO", icon: ListChecks },
   { href: "/pipeline", label: "PIPELINE", icon: Kanban },
+  { href: "/affarer", label: "AFFÄRER", icon: Briefcase },
   { href: "/projekt", label: "PROJEKT", icon: FolderKanban },
   { href: "/moten", label: "MÖTEN", icon: CalendarDays },
   { href: "/foretag", label: "KUNDER", icon: Building2, alsoActiveOn: ["/prospekt"] },

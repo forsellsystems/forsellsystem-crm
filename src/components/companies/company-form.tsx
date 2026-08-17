@@ -46,8 +46,6 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
           building_types: company.building_types ?? [],
           material: company.material ?? '',
           country: company.country,
-          phone: company.phone ?? '',
-          email: company.email ?? '',
           website: company.website ?? '',
           responsible_user_id: company.responsible_user_id ?? '',
           is_reseller: company.is_reseller,
@@ -61,8 +59,6 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
           building_types: [],
           material: '',
           country: 'Sverige',
-          phone: '',
-          email: '',
           website: '',
           responsible_user_id: '',
           is_reseller: false,
@@ -256,26 +252,8 @@ export function CompanyForm({ company, users, resellers }: CompanyFormProps) {
             </div>
           )}
 
-          <div className="border-t border-[#B8B8B8]/40 pt-4 mt-2">
-            <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B6B6B] mb-3">
-              Kontaktuppgifter
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">E-post</Label>
-              <Input id="email" type="email" {...register('email')} />
-              {errors.email && (
-                <p className="text-xs text-[#8B3D3D]">{errors.email.message}</p>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Telefon</Label>
-              <Input id="phone" type="tel" {...register('phone')} />
-            </div>
-          </div>
-
+          {/* Bara webbplats hör till bolaget. E-post och telefon tillhör personer
+              och läggs som kontakter på kundkortet, inte här. */}
           <div className="grid gap-2">
             <Label htmlFor="website">Webbplats</Label>
             <Input

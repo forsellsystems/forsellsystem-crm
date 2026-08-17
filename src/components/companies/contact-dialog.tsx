@@ -20,12 +20,15 @@ import { createContact, updateContact } from '@/lib/actions/contact-actions'
 import type { Contact } from '@/lib/types/database'
 
 interface ContactDialogProps {
-  companyId: string
+  // Exakt en av dem: kontakten hör till ett bolag eller ett prospekt.
+  companyId?: string
+  prospectId?: string
   contact?: Contact
   trigger?: React.ReactElement
 }
 
-export function ContactDialog({ companyId, contact, trigger }: ContactDialogProps) {
+export function ContactDialog({ companyId, prospectId, contact, trigger }: ContactDialogProps) {
+  const owner = { company_id: companyId, prospect_id: prospectId }
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const isEditing = !!contact
@@ -39,7 +42,7 @@ export function ContactDialog({ companyId, contact, trigger }: ContactDialogProp
     resolver: formResolver(contactSchema),
     defaultValues: contact
       ? {
-          company_id: companyId,
+          ...owner,
           name: contact.name,
           title: contact.title ?? '',
           email: contact.email ?? '',
@@ -47,7 +50,7 @@ export function ContactDialog({ companyId, contact, trigger }: ContactDialogProp
           is_primary: contact.is_primary,
         }
       : {
-          company_id: companyId,
+          ...owner,
           name: '',
           title: '',
           email: '',
@@ -143,10 +146,19 @@ export function ContactDialog({ companyId, contact, trigger }: ContactDialogProp
   )
 }
 
-export function EditContactButton({ companyId, contact }: { companyId: string; contact: Contact }) {
+export function EditContactButton({
+  companyId,
+  prospectId,
+  contact,
+}: {
+  companyId?: string
+  prospectId?: string
+  contact: Contact
+}) {
   return (
     <ContactDialog
       companyId={companyId}
+      prospectId={prospectId}
       contact={contact}
       trigger={<Button variant="ghost" size="icon-sm"><Pencil className="size-3.5" /></Button>}
     />

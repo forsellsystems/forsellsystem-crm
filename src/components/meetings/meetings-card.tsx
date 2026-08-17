@@ -14,7 +14,8 @@ export function MeetingsCard({
   meetings,
   editable = true,
 }: {
-  entityType: 'prospect' | 'company' | 'deal' | 'project'
+  // Ingen 'deal': möten hålls på kund- eller projektnivå, aldrig på en affär.
+  entityType: 'prospect' | 'company' | 'project'
   entityId: string
   meetings: MeetingWithProject[]
   editable?: boolean

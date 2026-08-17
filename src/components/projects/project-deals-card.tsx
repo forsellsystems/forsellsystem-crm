@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Plus, X, Briefcase } from 'lucide-react'
+import { Plus, Link2, X, Briefcase } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -19,10 +19,13 @@ export function ProjectDealsCard({
   projectId,
   linkedDeals,
   candidateDeals,
+  createSlot,
 }: {
   projectId: string
   linkedDeals: ProjectDeal[]
   candidateDeals: ProjectDeal[]
+  // Skapa-affär-knappen. Utan den går affärer bara att skapa från Pipeline.
+  createSlot?: React.ReactNode
 }) {
   const [adding, setAdding] = useState(false)
   const [selected, setSelected] = useState('')
@@ -54,11 +57,17 @@ export function ProjectDealsCard({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">Affärer</CardTitle>
-          {!adding && candidates.length > 0 && (
-            <Button variant="ghost" size="icon-sm" onClick={() => setAdding(true)}>
-              <Plus className="size-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {/* Koppla en befintlig affär. Finns inga lediga syns knappen inte. */}
+            {!adding && candidates.length > 0 && (
+              <Button variant="ghost" size="icon-sm" onClick={() => setAdding(true)}>
+                <Link2 className="size-4" />
+              </Button>
+            )}
+            {/* Skapa ny affär. Renderas av servern, som äger listorna dialogen
+                behöver, så kortet slipper bära dem. */}
+            {createSlot}
+          </div>
         </div>
       </CardHeader>
       <CardContent>

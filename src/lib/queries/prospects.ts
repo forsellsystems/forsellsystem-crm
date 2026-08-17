@@ -1,12 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Prospect } from '@/lib/types/database'
 
+/** Prospekt plus namnet på dess primära kontakt, för listorna. */
+export type ProspectWithContact = Prospect & { primary_contact: string | null }
+
 export async function getProspects(filters?: {
   status?: string
   factory_type?: string
   search?: string
   prospect_type?: 'customer' | 'reseller'
-}): Promise<Prospect[]> {
+}): Promise<ProspectWithContact[]> {
   const supabase = await createClient()
   let query = supabase.from('prospects').select('*').order('created_at', { ascending: false })
 
@@ -21,13 +24,29 @@ export async function getProspects(filters?: {
   }
   if (filters?.search) {
     query = query.or(
-      `company_name.ilike.%${filters.search}%,contact_person.ilike.%${filters.search}%`
+      `company_name.ilike.%${filters.search}%`
     )
   }
 
   const { data, error } = await query
   if (error) throw error
-  return data ?? []
+  const prospects = data ?? []
+  if (prospects.length === 0) return []
+
+  // Kontaktpersonen är numera en riktig kontaktpost. Listan visar den primära.
+  const { data: contacts } = await supabase
+    .from('contacts')
+    .select('prospect_id, name, is_primary')
+    .in('prospect_id', prospects.map((p) => p.id))
+    .order('is_primary', { ascending: false })
+    .order('name')
+
+  const byProspect = new Map<string, string>()
+  for (const c of contacts ?? []) {
+    if (c.prospect_id && !byProspect.has(c.prospect_id)) byProspect.set(c.prospect_id, c.name)
+  }
+
+  return prospects.map((p) => ({ ...p, primary_contact: byProspect.get(p.id) ?? null }))
 }
 
 export async function getCustomerProspectsForSelect(): Promise<{ id: string; name: string }[]> {

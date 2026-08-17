@@ -34,7 +34,9 @@ export type Company = {
 
 export type Contact = {
   id: string;
-  company_id: string;
+  // Exakt en av dessa är satt: kontakten hör till ett bolag eller ett prospekt.
+  company_id: string | null;
+  prospect_id: string | null;
   name: string;
   title: string | null;
   email: string | null;
@@ -52,9 +54,7 @@ export type Prospect = {
   building_types: string[];
   material: string | null;
   country: string;
-  contact_person: string | null;
-  email: string | null;
-  phone: string | null;
+  // Kontaktpersonen är en riktig kontaktpost på prospektet, inte fält här.
   status: "active" | "converted" | "archived";
   reseller_id: string | null;
   converted_at: string | null;
@@ -241,9 +241,8 @@ export type Project = {
   value: number | null;
   value_unknown: boolean;
   currency: string;
-  contact_name: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
+  // Kontaktpersonen är en av bolagets kontakter, inte fritext.
+  contact_id: string | null;
   // Projektnummer i Fortnox. Sätts bara via kopplingen, aldrig som fritext.
   fortnox_project_id: string | null;
   // Fritext under förutsättningarna, för det som inte passar i ett fält.

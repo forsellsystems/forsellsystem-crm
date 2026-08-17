@@ -105,7 +105,7 @@ export default async function ProspektPage({
                       {prospect.country}
                     </TableCell>
                     <TableCell className="text-sm text-[#6B6B6B]">
-                      {prospect.contact_person ?? '—'}
+                      {prospect.primary_contact ?? '—'}
                     </TableCell>
                     <TableCell className="text-sm text-[#6B6B6B]">
                       {formatDate(prospect.created_at)}

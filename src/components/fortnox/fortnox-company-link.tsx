@@ -2,14 +2,17 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Link2, Link2Off, DownloadCloud, Plus } from 'lucide-react'
+import { Link2, Link2Off, DownloadCloud, Plus, UserPlus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FortnoxCustomerPicker } from '@/components/fortnox/fortnox-customer-picker'
+import { Input } from '@/components/ui/input'
 import {
   linkCompanyToFortnox,
   unlinkCompanyFromFortnox,
   importFortnoxCustomerInfo,
   createFortnoxCustomerForCompany,
+  fetchFortnoxCustomerContact,
+  saveFortnoxCustomerContact,
 } from '@/lib/actions/fortnox-actions'
 import type { FortnoxCustomerSummary } from '@/lib/fortnox/types'
 
@@ -33,9 +36,52 @@ export function FortnoxCompanyLink({
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
 
+  // Kontaktpersonen från Fortnox: hämtas som förslag, sparas först när du
+  // bekräftar. Namnet saknas ofta i Fortnox och får då skrivas här.
+  const [candidate, setCandidate] = useState<{
+    name: string | null
+    email: string | null
+    phone: string | null
+    existingContactName: string | null
+  } | null>(null)
+  const [candidateName, setCandidateName] = useState('')
+
   function reset() {
     setError(null)
     setMessage(null)
+  }
+
+  function fetchContact() {
+    reset()
+    setCandidate(null)
+    startTransition(async () => {
+      const res = await fetchFortnoxCustomerContact(companyId)
+      if (!res.ok) {
+        setError(res.error)
+        return
+      }
+      setCandidate(res.data)
+      setCandidateName(res.data.name ?? res.data.existingContactName ?? '')
+    })
+  }
+
+  function saveContact() {
+    if (!candidate) return
+    reset()
+    startTransition(async () => {
+      const res = await saveFortnoxCustomerContact(companyId, {
+        name: candidateName,
+        email: candidate.email,
+        phone: candidate.phone,
+      })
+      if (!res.ok) {
+        setError(res.error)
+        return
+      }
+      setCandidate(null)
+      setMessage(res.data.created ? 'Kontakten är tillagd.' : 'Kontakten är uppdaterad.')
+      router.refresh()
+    })
   }
 
   function pick(customer: FortnoxCustomerSummary) {
@@ -115,6 +161,16 @@ export function FortnoxCompanyLink({
             size="sm"
             className="text-[#6B6B6B]"
             disabled={isPending}
+            onClick={fetchContact}
+          >
+            <UserPlus className="size-4" data-icon="inline-start" />
+            Hämta kontaktperson
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-[#6B6B6B]"
+            disabled={isPending}
             onClick={unlink}
           >
             <Link2Off className="size-4" data-icon="inline-start" />
@@ -159,6 +215,37 @@ export function FortnoxCompanyLink({
               Lägg upp i Fortnox
             </Button>
           </div>
+        </div>
+      )}
+
+      {candidate && (
+        <div className="space-y-2 rounded-lg border border-[#D4A301]/40 bg-[#F2BB01]/10 px-3 py-2">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-xs text-[#6B6B6B]">
+              {candidate.existingContactName
+                ? `Adressen finns redan på ${candidate.existingContactName}, som uppdateras.`
+                : 'Fortnox har dessa uppgifter. Kontrollera namnet innan du sparar.'}
+            </p>
+            <button
+              type="button"
+              onClick={() => setCandidate(null)}
+              className="text-[#6B6B6B] hover:text-[#1A1A1A]"
+            >
+              <X className="size-3.5" />
+            </button>
+          </div>
+          <Input
+            value={candidateName}
+            onChange={(e) => setCandidateName(e.target.value)}
+            placeholder="Namn på kontaktpersonen"
+          />
+          <p className="text-xs text-[#6B6B6B]">
+            {[candidate.email, candidate.phone].filter(Boolean).join(' · ') ||
+              'Fortnox saknar e-post och telefon'}
+          </p>
+          <Button size="sm" disabled={isPending || !candidateName.trim()} onClick={saveContact}>
+            {candidate.existingContactName ? 'Uppdatera kontakten' : 'Lägg till som kontakt'}
+          </Button>
         </div>
       )}
 

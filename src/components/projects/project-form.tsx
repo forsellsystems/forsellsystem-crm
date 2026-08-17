@@ -16,9 +16,7 @@ export type ProjectFormValues = {
   value_unknown: boolean
   currency: string
   description: string
-  contact_name: string
-  contact_email: string
-  contact_phone: string
+  contact_id: string
 }
 
 const selectClass =
@@ -29,11 +27,14 @@ export function ProjectForm({
   onSave,
   onCancel,
   disabled,
+  contacts = [],
 }: {
   initial?: Partial<ProjectFormValues>
   onSave: (values: ProjectFormValues) => void
   onCancel: () => void
   disabled?: boolean
+  // Bolagets kontakter, att välja projektets kontaktperson ur.
+  contacts?: { id: string; name: string }[]
 }) {
   const [values, setValues] = useState<ProjectFormValues>({
     name: initial?.name ?? '',
@@ -43,9 +44,7 @@ export function ProjectForm({
     value_unknown: initial?.value_unknown ?? false,
     currency: initial?.currency ?? 'SEK',
     description: initial?.description ?? '',
-    contact_name: initial?.contact_name ?? '',
-    contact_email: initial?.contact_email ?? '',
-    contact_phone: initial?.contact_phone ?? '',
+    contact_id: initial?.contact_id ?? '',
   })
 
   return (
@@ -133,36 +132,26 @@ export function ProjectForm({
         />
       </div>
 
-      <div className="border-t border-[#B8B8B8]/40 pt-3 space-y-3">
-        <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B6B6B]">Kontaktperson</p>
-        <div className="grid gap-1.5">
-          <Label className="text-xs text-[#6B6B6B]">Namn</Label>
-          <Input
-            value={values.contact_name}
-            onChange={(e) => setValues((v) => ({ ...v, contact_name: e.target.value }))}
-            placeholder="Förnamn Efternamn"
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="grid gap-1.5">
-            <Label className="text-xs text-[#6B6B6B]">E-post</Label>
-            <Input
-              type="email"
-              value={values.contact_email}
-              onChange={(e) => setValues((v) => ({ ...v, contact_email: e.target.value }))}
-              placeholder="namn@foretag.se"
-            />
-          </div>
-          <div className="grid gap-1.5">
-            <Label className="text-xs text-[#6B6B6B]">Telefon</Label>
-            <Input
-              type="tel"
-              value={values.contact_phone}
-              onChange={(e) => setValues((v) => ({ ...v, contact_phone: e.target.value }))}
-              placeholder="+46 70 123 45 67"
-            />
-          </div>
-        </div>
+      {/* Kontaktpersonen väljs ur bolagets kontakter. Samma person ska inte
+          skrivas in på nytt här, då finns hen på två ställen och kan glida isär. */}
+      <div className="border-t border-[#B8B8B8]/40 pt-3 space-y-2">
+        <Label className="text-xs text-[#6B6B6B]">Kontaktperson</Label>
+        {contacts.length === 0 ? (
+          <p className="text-xs text-[#9A9A9A]">
+            Bolaget har inga kontakter än. Lägg till en på bolagets kort först.
+          </p>
+        ) : (
+          <select
+            className="flex h-8 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+            value={values.contact_id}
+            onChange={(e) => setValues((v) => ({ ...v, contact_id: e.target.value }))}
+          >
+            <option value="">Ingen kontaktperson</option>
+            {contacts.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       <div className="flex justify-end gap-1">

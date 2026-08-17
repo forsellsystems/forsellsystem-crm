@@ -23,9 +23,11 @@ interface NewMeetingDialogProps {
   customerProspects?: { id: string; name: string }[]
   resellerProspects?: { id: string; name: string }[]
   // When set, the bolag selector is hidden and the meeting is locked to this
-  // entity. 'company'/'prospect' come from a kund/agent/prospekt card; 'deal'/
-  // 'project' come from a deal/project card (the anchor is derived server-side).
-  fixedEntity?: { type: 'company' | 'prospect' | 'deal' | 'project'; id: string }
+  // entity. 'company'/'prospect' come from a kund/agent/prospekt card; 'project'
+  // comes from ett projektkort (ankaret härleds på servern).
+  //
+  // Möten hålls på kund- eller projektnivå, aldrig på en affär.
+  fixedEntity?: { type: 'company' | 'prospect' | 'project'; id: string }
   triggerStyle?: 'cta' | 'icon'
 }
 
@@ -42,9 +44,7 @@ export function NewMeetingDialog({
 }: NewMeetingDialogProps) {
   const [open, setOpen] = useState(false)
   const [selected, setSelected] = useState('')
-  const [dealId, setDealId] = useState('')
   const [projectId, setProjectId] = useState('')
-  const [deals, setDeals] = useState<{ id: string; label: string }[]>([])
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([])
   const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
@@ -56,9 +56,9 @@ export function NewMeetingDialog({
   const router = useRouter()
 
   const fixedType = fixedEntity?.type
-  const lockedToDealOrProject = fixedType === 'deal' || fixedType === 'project'
+  const lockedToProject = fixedType === 'project'
 
-  // The company/prospect whose deals/projects can be linked (a fixed kund/prospekt,
+  // The company/prospect whose projects can be linked (a fixed kund/prospekt,
   // or the one picked in the Bolag selector). Null for internal / fixed deal/project.
   const activeType: 'company' | 'prospect' | null =
     fixedType === 'company' || fixedType === 'prospect'
@@ -73,28 +73,22 @@ export function NewMeetingDialog({
         ? selected.split(':')[1]
         : null
 
-  // Cascade: load the active entity's deals (companies only) + projects.
-  // Lists are cleared in the Bolag onChange so the effect stays fully async
-  // (no synchronous setState in an effect).
+  // Cascade: load the active entity's projects. Affärer hämtas inte längre:
+  // möten hålls på kund- eller projektnivå, aldrig på en affär.
+  // Listan töms i Bolag-väljarens onChange så effekten förblir helt asynkron
+  // (ingen synkron setState i en effect).
   useEffect(() => {
-    if (lockedToDealOrProject || !activeType || !activeId) return
+    if (lockedToProject || !activeType || !activeId) return
     let cancelled = false
-    const dealsP =
-      activeType === 'company'
-        ? fetch(`/api/deals?company_id=${activeId}`)
-            .then((r) => (r.ok ? r.json() : []))
-            .catch(() => [])
-        : Promise.resolve([])
     const param = activeType === 'company' ? 'company_id' : 'prospect_id'
-    const projectsP = fetch(`/api/projects?${param}=${activeId}`)
+    fetch(`/api/projects?${param}=${activeId}`)
       .then((r) => (r.ok ? r.json() : []))
       .catch(() => [])
-    dealsP.then((d) => !cancelled && setDeals(d))
-    projectsP.then((p) => !cancelled && setProjects(p))
+      .then((p) => !cancelled && setProjects(p))
     return () => {
       cancelled = true
     }
-  }, [activeType, activeId, lockedToDealOrProject])
+  }, [activeType, activeId, lockedToProject])
 
   async function handleCreate() {
     setIsSubmitting(true)
@@ -107,9 +101,7 @@ export function NewMeetingDialog({
         participants,
         agenda,
       }
-      if (fixedType === 'deal') {
-        payload.deal_id = fixedEntity!.id
-      } else if (fixedType === 'project') {
+      if (fixedType === 'project') {
         payload.project_id = fixedEntity!.id
       } else {
         if (fixedType === 'company' || fixedType === 'prospect') {
@@ -120,7 +112,6 @@ export function NewMeetingDialog({
           payload.entity_type = t as 'company' | 'prospect'
           payload.entity_id = i
         }
-        if (dealId) payload.deal_id = dealId
         if (projectId) payload.project_id = projectId
       }
       const id = await createMeeting(payload)
@@ -169,9 +160,7 @@ export function NewMeetingDialog({
                 value={selected}
                 onChange={(e) => {
                   setSelected(e.target.value)
-                  setDealId('')
                   setProjectId('')
-                  setDeals([])
                   setProjects([])
                 }}
               >
@@ -208,24 +197,7 @@ export function NewMeetingDialog({
             </div>
           )}
 
-          {!lockedToDealOrProject && deals.length > 0 && (
-            <div className="grid gap-2">
-              <Label htmlFor="meeting-deal">Affär (valfritt)</Label>
-              <select
-                id="meeting-deal"
-                className={selectClass}
-                value={dealId}
-                onChange={(e) => setDealId(e.target.value)}
-              >
-                <option value="">Ingen affär</option>
-                {deals.map((d) => (
-                  <option key={d.id} value={d.id}>{d.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {!lockedToDealOrProject && projects.length > 0 && (
+          {!lockedToProject && projects.length > 0 && (
             <div className="grid gap-2">
               <Label htmlFor="meeting-project">Projekt (valfritt)</Label>
               <select

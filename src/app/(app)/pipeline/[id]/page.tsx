@@ -14,8 +14,6 @@ import {
 } from 'lucide-react'
 import { getDeal } from '@/lib/queries/deals'
 import { getNotes } from '@/lib/queries/notes'
-import { getMeetingsForDeal } from '@/lib/queries/meetings'
-import { MeetingsCard } from '@/components/meetings/meetings-card'
 import { getCompaniesForSelect, getResellers } from '@/lib/queries/companies'
 import { getActiveUsers } from '@/lib/queries/users'
 import { getMachines } from '@/lib/queries/machines'
@@ -38,14 +36,13 @@ export default async function DealDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [deal, notes, companies, resellers, users, machines, meetings] = await Promise.all([
+  const [deal, notes, companies, resellers, users, machines] = await Promise.all([
     getDeal(id),
     getNotes('deal', id),
     getCompaniesForSelect(),
     getResellers(),
     getActiveUsers(),
     getMachines(),
-    getMeetingsForDeal(id),
   ])
 
   if (!deal) notFound()
@@ -296,8 +293,6 @@ export default async function DealDetailPage({
             </Card>
           )}
 
-          {/* Meetings linked to this deal */}
-          <MeetingsCard entityType="deal" entityId={deal.id} meetings={meetings} />
         </div>
 
         {/* Right column - Notes */}

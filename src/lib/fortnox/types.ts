@@ -57,10 +57,19 @@ export interface FortnoxCustomer {
   CustomerNumber: string
   Name?: string
   OrganisationNumber?: string
+  // Det generella Email-fältet står oftast TOMT hos Forsell. Personens adress
+  // ligger i EmailOffer/EmailOrder, och EmailInvoice är ekonomins funktionsadress.
+  // Verifierat mot skarpa registret 2026-08-17.
   Email?: string
+  EmailOffer?: string
+  EmailOrder?: string
+  EmailInvoice?: string
+  // YourReference = kundens kontaktperson hos Fortnox. Fritext, ofta tom.
+  YourReference?: string
   // Listan (/customers) svarar med `Phone`, enskild kund (/customers/{nr}) med
   // `Phone1`. Båda måste läsas, annars tappas telefonnumret i väljaren.
   Phone1?: string
+  Phone2?: string
   Phone?: string
   Address1?: string
   ZipCode?: string
@@ -108,4 +117,9 @@ export interface FortnoxCustomerSummary {
   phone: string | null
   city: string | null
   countryCode: string | null
+  // Kontaktpersonen hos kunden, så långt Fortnox känner den. Namnet kommer från
+  // YourReference och saknas ofta; adressen är en människas, inte bolagets.
+  contactName: string | null
+  contactEmail: string | null
+  contactPhone: string | null
 }

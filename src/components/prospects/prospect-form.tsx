@@ -40,9 +40,6 @@ export function ProspectForm({ prospect, prospectType = 'customer', resellers = 
           building_types: prospect.building_types ?? [],
           material: prospect.material ?? '',
           country: prospect.country,
-          contact_person: prospect.contact_person ?? '',
-          email: prospect.email ?? '',
-          phone: prospect.phone ?? '',
           reseller_id: prospect.reseller_id ?? '',
         }
       : {
@@ -52,9 +49,6 @@ export function ProspectForm({ prospect, prospectType = 'customer', resellers = 
           building_types: [],
           material: '',
           country: 'Sverige',
-          contact_person: '',
-          email: '',
-          phone: '',
           reseller_id: '',
         },
   })
@@ -187,48 +181,6 @@ export function ProspectForm({ prospect, prospectType = 'customer', resellers = 
               </select>
             </div>
           )}
-
-          <div className="border-t border-[#B8B8B8]/40 pt-4 mt-2">
-            <p className="font-condensed text-[10px] tracking-[0.12em] text-[#6B6B6B] mb-3">
-              Kontaktuppgifter
-            </p>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="contact_person">Kontaktperson</Label>
-            <Input
-              id="contact_person"
-              placeholder="Förnamn Efternamn"
-              {...register('contact_person')}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">E-post</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="namn@foretag.se"
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="text-xs text-[#8B3D3D]">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Telefon</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="+46 70 123 45 67"
-                {...register('phone')}
-              />
-            </div>
-          </div>
 
           {error && <p className="text-sm text-[#8B3D3D]">{error}</p>}
 

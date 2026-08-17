@@ -95,6 +95,22 @@ export async function getCompanyDeals(companyId: string): Promise<ProjectDeal[]>
   return data ?? []
 }
 
+/**
+ * Affärer som går via en agent. En agents egna projekt ska kunna kopplas till
+ * dessa: agenten står som reseller_id, kunden som company_id.
+ */
+export async function getResellerDeals(resellerId: string): Promise<ProjectDeal[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('deals')
+    .select('id, quote_number, stage, value, project_id')
+    .eq('reseller_id', resellerId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+  return data ?? []
+}
+
 export async function getDeal(id: string): Promise<
   | (DealWithRelations & {
       machines: { id: string; name: string; category: string; quantity: number }[]
@@ -155,4 +171,61 @@ export async function getDeal(id: string): Promise<
   } as DealWithRelations & {
     machines: { id: string; name: string; category: string; quantity: number }[]
   }
+}
+
+export type DealListRow = {
+  id: string
+  quote_number: string | null
+  quote_date: string | null
+  stage: string
+  value: number | null
+  currency: string
+  heat: number | null
+  company_name: string
+  company_href: string
+  project_name: string | null
+  project_id: string | null
+  reseller_name: string | null
+}
+
+/**
+ * Alla affärer som en platt lista. Pipeline är tavlan, den här är listan: lättare
+ * att skanna och att söka i när man vill se allt på en gång.
+ */
+export async function getAllDeals(): Promise<DealListRow[]> {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('deals')
+    .select(
+      '*, companies!deals_company_id_fkey(name, is_reseller), reseller:companies!deals_reseller_id_fkey(name), projects!deals_project_id_fkey(name, project_type)'
+    )
+    .order('heat', { ascending: true, nullsFirst: false })
+    .order('quote_date', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  return (data ?? []).map((deal) => {
+    const company = deal.companies as { name: string; is_reseller: boolean } | null
+    const project = deal.projects as { name: string | null; project_type: string | null } | null
+    return {
+      id: deal.id,
+      quote_number: deal.quote_number,
+      quote_date: deal.quote_date,
+      stage: deal.stage,
+      value: deal.value,
+      currency: deal.currency,
+      heat: deal.heat,
+      company_name: company?.name ?? 'Okänt',
+      // Agenter bor på /aterforsaljare, kunder på /foretag.
+      company_href: `${company?.is_reseller ? '/aterforsaljare' : '/foretag'}/${deal.company_id}`,
+      project_id: deal.project_id,
+      project_name: project
+        ? project.name?.trim() ||
+          PROJECT_TYPES.find((t) => t.key === project.project_type)?.label ||
+          'Projekt'
+        : null,
+      reseller_name: (deal.reseller as { name: string } | null)?.name ?? null,
+    }
+  })
 }

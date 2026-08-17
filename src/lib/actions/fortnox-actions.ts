@@ -242,9 +242,10 @@ export async function importFortnoxCustomerInfo(
     const update: Record<string, string> = {}
     if (summary.name) update.name = summary.name
     if (summary.orgNumber) update.org_number = summary.orgNumber
-    if (summary.email) update.email = summary.email
-    if (summary.phone) update.phone = summary.phone
     if (country) update.country = country
+    // E-post och telefon skrivs INTE på bolaget. Adresserna i Fortnox är en
+    // människas, inte företagets, och personer hör i kontakter. Se
+    // fetchFortnoxCustomerContact nedan.
 
     if (Object.keys(update).length === 0) {
       return { ok: false, error: 'Kunden i Fortnox saknar uppgifter att hämta.' }
@@ -258,8 +259,6 @@ export async function importFortnoxCustomerInfo(
     const labels: Record<string, string> = {
       name: 'namn',
       org_number: 'orgnr',
-      email: 'e-post',
-      phone: 'telefon',
       country: 'land',
     }
     return {
@@ -554,7 +553,8 @@ export async function importFortnoxProjectInfo(
     const update: Record<string, string> = {}
     if (summary.description) update.name = summary.description
     if (summary.comments) update.description = summary.comments
-    if (summary.contactPerson) update.contact_name = summary.contactPerson
+    // ContactPerson hämtas INTE in: projektets kontaktperson är en av bolagets
+    // kontakter, och Fortnox fritext går inte att matcha mot en kontaktpost.
 
     if (Object.keys(update).length === 0) {
       return { ok: false, error: 'Projektet i Fortnox saknar uppgifter att hämta.' }
@@ -565,11 +565,7 @@ export async function importFortnoxProjectInfo(
     if (error) throw new Error(error.message)
 
     revalidateProject(projectId)
-    const labels: Record<string, string> = {
-      name: 'namn',
-      description: 'beskrivning',
-      contact_name: 'kontaktperson',
-    }
+    const labels: Record<string, string> = { name: 'namn', description: 'beskrivning' }
     return {
       ok: true,
       data: {
@@ -688,6 +684,129 @@ export async function setDealOfferProject(
         project: String(project.fortnox_project_id),
       },
     }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/**
+ * Kontaktpersonen som Fortnox känner till för bolagets kund. Personens adress
+ * ligger i EmailOffer/EmailOrder, inte i det generella Email-fältet, och namnet
+ * i YourReference som ofta är tomt. EmailInvoice används inte: den är ekonomins
+ * funktionsadress, inte en säljkontakt.
+ *
+ * Returnerar bara underlaget. Ingenting sparas förrän användaren bekräftar, för
+ * namnet kan behöva fyllas i och en kontakt ska inte uppstå av ett knapptryck
+ * som bara skulle "titta".
+ */
+export async function fetchFortnoxCustomerContact(companyId: string): Promise<
+  Result<{
+    name: string | null
+    email: string | null
+    phone: string | null
+    existingContactId: string | null
+    existingContactName: string | null
+  }>
+> {
+  try {
+    const supabase = await createClient()
+    const { data: company } = await supabase
+      .from('companies')
+      .select('fortnox_customer_id')
+      .eq('id', companyId)
+      .single()
+    if (!company?.fortnox_customer_id) {
+      return { ok: false, error: 'Bolaget är inte kopplat till Fortnox.' }
+    }
+
+    const summary = await getCustomerSummary(String(company.fortnox_customer_id))
+    if (!summary) {
+      return { ok: false, error: `Kund ${company.fortnox_customer_id} finns inte i Fortnox.` }
+    }
+    if (!summary.contactEmail && !summary.contactName && !summary.contactPhone) {
+      return { ok: false, error: 'Fortnox har inga kontaktuppgifter på den här kunden.' }
+    }
+
+    // Matcha på e-post: samma adress är samma person, oavsett stavning på namnet.
+    let existing: { id: string; name: string } | null = null
+    if (summary.contactEmail) {
+      const { data } = await supabase
+        .from('contacts')
+        .select('id, name')
+        .eq('company_id', companyId)
+        .ilike('email', summary.contactEmail)
+        .limit(1)
+      existing = data?.[0] ?? null
+    }
+
+    return {
+      ok: true,
+      data: {
+        name: summary.contactName,
+        email: summary.contactEmail,
+        phone: summary.contactPhone,
+        existingContactId: existing?.id ?? null,
+        existingContactName: existing?.name ?? null,
+      },
+    }
+  } catch (err) {
+    return fail(err)
+  }
+}
+
+/**
+ * Spara kontaktpersonen från Fortnox som en kontakt på bolaget. Finns adressen
+ * redan uppdateras den kontakten i stället för att en dubblett skapas.
+ */
+export async function saveFortnoxCustomerContact(
+  companyId: string,
+  fields: { name: string; email: string | null; phone: string | null }
+): Promise<Result<{ created: boolean }>> {
+  try {
+    const name = fields.name.trim()
+    if (!name) {
+      return { ok: false, error: 'Kontakten behöver ett namn. Fortnox saknar det, så skriv in det.' }
+    }
+
+    const supabase = await createClient()
+    const email = fields.email?.trim() || null
+    const phone = fields.phone?.trim() || null
+
+    if (email) {
+      const { data: existing } = await supabase
+        .from('contacts')
+        .select('id')
+        .eq('company_id', companyId)
+        .ilike('email', email)
+        .limit(1)
+      if (existing?.[0]) {
+        const { error } = await supabase
+          .from('contacts')
+          .update({ name, phone, updated_at: new Date().toISOString() })
+          .eq('id', existing[0].id)
+        if (error) throw new Error(error.message)
+        revalidateCompany(companyId)
+        return { ok: true, data: { created: false } }
+      }
+    }
+
+    // Första kontakten på bolaget blir primär: någon ska vara det.
+    const { count } = await supabase
+      .from('contacts')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', companyId)
+
+    const { error } = await supabase.from('contacts').insert({
+      company_id: companyId,
+      name,
+      email,
+      phone,
+      is_primary: (count ?? 0) === 0,
+    })
+    if (error) throw new Error(error.message)
+
+    revalidateCompany(companyId)
+    return { ok: true, data: { created: true } }
   } catch (err) {
     return fail(err)
   }

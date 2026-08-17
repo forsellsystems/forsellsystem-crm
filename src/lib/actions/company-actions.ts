@@ -123,17 +123,8 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
 
   const isReseller = company.is_reseller === true
 
-  // 2. Get primary contact info
-  const { data: contacts } = await supabase
-    .from('contacts')
-    .select('name, email, phone')
-    .eq('company_id', companyId)
-    .eq('is_primary', true)
-    .limit(1)
-
-  const primaryContact = contacts?.[0]
-
-  // 3. Create prospect
+  // 2. Create prospect. Kontaktuppgifterna följer inte med som fält: prospekt har
+  // inga sådana längre, kontakterna FLYTTAS i steg 3 med sina id i behåll.
   const { data: prospect, error: prospectError } = await supabase
     .from('prospects')
     .insert({
@@ -143,9 +134,6 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
       building_types: company.building_types ?? [],
       material: company.material || null,
       country: company.country,
-      contact_person: primaryContact?.name || null,
-      email: primaryContact?.email || company.email || null,
-      phone: primaryContact?.phone || company.phone || null,
       website: company.website || null,
       description: company.description || null,
       reseller_id: company.reseller_id || null,
@@ -165,6 +153,13 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
       href: isReseller ? `/aterforsaljar-prospekt/${prospect.id}` : `/prospekt/${prospect.id}`,
     },
   })
+
+  // 3. Flytta kontakterna till prospektet. Bolaget raderas i steg 6, så de måste
+  // flyttas, inte kopieras: annars försvinner de med bolaget.
+  await supabase
+    .from('contacts')
+    .update({ prospect_id: prospect.id, company_id: null })
+    .eq('company_id', companyId)
 
   // 4. Copy notes from company to prospect
   const { data: notes } = await supabase
