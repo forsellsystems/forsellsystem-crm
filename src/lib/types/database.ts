@@ -143,6 +143,7 @@ export type ProjectMachine = {
   id: string;
   project_id: string;
   machine_id: string;
+  quantity: number;
   note: string | null;
   sort_order: number;
   created_at: string;

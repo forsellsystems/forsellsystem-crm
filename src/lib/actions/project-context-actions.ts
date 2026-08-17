@@ -40,17 +40,23 @@ export async function addProjectMachine(projectId: string, machineId: string) {
   revalidate(projectId)
 }
 
-export async function updateProjectMachineNote(
+export async function updateProjectMachine(
   id: string,
   projectId: string,
-  note: string
+  fields: { quantity: number; note: string }
 ) {
   const supabase = await createClient()
   const { error } = await supabase
     .from('project_machines')
-    .update({ note: trimmed(note), updated_at: new Date().toISOString() })
+    .update({
+      // Minst 1: noll av en produkt betyder att den inte är aktuell, och då
+      // hör den inte hemma i listan alls.
+      quantity: Math.max(1, Math.round(fields.quantity) || 1),
+      note: trimmed(fields.note),
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
-  if (error) throw new Error(`Kunde inte spara noteringen: ${error.message}`)
+  if (error) throw new Error(`Kunde inte spara produkten: ${error.message}`)
   revalidate(projectId)
 }
 

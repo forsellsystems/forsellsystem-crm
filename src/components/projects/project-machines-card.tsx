@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
   addProjectMachine,
-  updateProjectMachineNote,
+  updateProjectMachine,
   removeProjectMachine,
 } from '@/lib/actions/project-context-actions'
 import type { ProjectMachineRow } from '@/lib/queries/projects'
@@ -34,6 +34,7 @@ export function ProjectMachinesCard({
   const [adding, setAdding] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [note, setNote] = useState('')
+  const [qty, setQty] = useState('1')
 
   const chosen = new Set(machines.map((m) => m.machine_id))
   const available = options.filter((o) => !chosen.has(o.id))
@@ -76,10 +77,15 @@ export function ProjectMachinesCard({
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/maskiner/${m.machine_id}`}
-                    className="flex-1 min-w-0 truncate text-sm font-medium text-[#656565] hover:underline"
+                    className="min-w-0 truncate text-sm font-medium text-[#656565] hover:underline"
                   >
                     {m.machine_name}
                   </Link>
+                  {/* 1 är förvalet och säger ingenting, så det visas inte. */}
+                  {m.quantity > 1 && (
+                    <span className="shrink-0 text-sm text-[#6B6B6B]">× {m.quantity}</span>
+                  )}
+                  <span className="flex-1" />
                   {m.machine_category && (
                     <span className="shrink-0 text-xs text-[#9A9A9A]">{m.machine_category}</span>
                   )}
@@ -90,6 +96,7 @@ export function ProjectMachinesCard({
                     onClick={() => {
                       setEditId(m.id)
                       setNote(m.note ?? '')
+                      setQty(String(m.quantity ?? 1))
                       setError(null)
                     }}
                   >
@@ -107,6 +114,16 @@ export function ProjectMachinesCard({
 
                 {editId === m.id ? (
                   <div className="mt-2 flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={qty}
+                      onChange={(e) => setQty(e.target.value)}
+                      className="w-16 shrink-0 rounded-lg border border-border bg-background px-2 h-8 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                      placeholder="Antal"
+                      aria-label="Antal"
+                    />
                     <Input
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
@@ -118,7 +135,10 @@ export function ProjectMachinesCard({
                       disabled={isPending}
                       onClick={() =>
                         run(async () => {
-                          await updateProjectMachineNote(m.id, projectId, note)
+                          await updateProjectMachine(m.id, projectId, {
+                            quantity: Number(qty) || 1,
+                            note,
+                          })
                           setEditId(null)
                         })
                       }
