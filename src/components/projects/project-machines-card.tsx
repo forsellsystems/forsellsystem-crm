@@ -128,7 +128,7 @@ export function ProjectMachinesCard({
                     <textarea
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      placeholder="Kommentar om produkten (valfritt)"
+                      placeholder="Kommentar (valfritt)"
                       className="min-h-16 flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
                     />
                     <Button
