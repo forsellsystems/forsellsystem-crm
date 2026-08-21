@@ -63,6 +63,7 @@ const entityPathMap: Record<string, string> = {
   deal: '/pipeline',
   contact: '/foretag',
   project: '/projekt',
+  machine: '/maskiner',
 }
 
 export async function createNote(
@@ -90,7 +91,9 @@ export async function createNote(
   // Optional: turn this comment into a to-do (separate "next step" text + due date).
   if (todo?.content?.trim()) {
     const entityType =
-      validated.entity_type === 'contact' ? undefined : validated.entity_type
+      validated.entity_type === 'contact' || validated.entity_type === 'machine'
+        ? undefined
+        : validated.entity_type
     await createTodo({
       content: todo.content.trim(),
       entity_type: entityType,
@@ -101,17 +104,21 @@ export async function createNote(
     })
   }
 
-  const parent = await resolveNoteParent(supabase, validated.entity_type, validated.entity_id)
-  await logActivity(supabase, {
-    action: 'note_added',
-    entity_type: validated.entity_type,
-    entity_id: validated.entity_id,
-    metadata: {
-      label: parent.label,
-      href: parent.href,
-      snippet: validated.content.slice(0, 80),
-    },
-  })
+  // Loggen är kundaktivitet. En kommentar om en av våra egna produkter är
+  // inte något som hände hos en kund, så den hör inte hemma i flödet.
+  if (validated.entity_type !== 'machine') {
+    const parent = await resolveNoteParent(supabase, validated.entity_type, validated.entity_id)
+    await logActivity(supabase, {
+      action: 'note_added',
+      entity_type: validated.entity_type,
+      entity_id: validated.entity_id,
+      metadata: {
+        label: parent.label,
+        href: parent.href,
+        snippet: validated.content.slice(0, 80),
+      },
+    })
+  }
 
   const basePath = entityPathMap[validated.entity_type] ?? ''
   revalidatePath(`${basePath}/${validated.entity_id}`)

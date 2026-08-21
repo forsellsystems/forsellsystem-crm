@@ -54,19 +54,3 @@ export async function deleteQuestion(id: string, machineId: string) {
   revalidate(machineId)
 }
 
-/** Kunskapsbankens fritext: allt om produkten som inte passar som en fråga. */
-export async function updateMachineKnowledgeNote(machineId: string, note: string) {
-  const supabase = await createClient()
-
-  const trimmed = note.trim()
-  const { error } = await supabase
-    .from('machines')
-    .update({
-      knowledge_note: trimmed === '' ? null : trimmed,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', machineId)
-  if (error) throw new Error(`Kunde inte spara texten: ${error.message}`)
-
-  revalidate(machineId)
-}

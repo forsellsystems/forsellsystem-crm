@@ -81,8 +81,6 @@ export type Machine = {
   price_max: number | null;
   currency: string;
   is_active: boolean;
-  // Fritext i Kunskapsbanken: allt som inte passar som en fråga.
-  knowledge_note: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -223,7 +221,7 @@ export type DealMachine = {
 
 export type Note = {
   id: string;
-  entity_type: "prospect" | "company" | "deal" | "contact" | "project";
+  entity_type: "prospect" | "company" | "deal" | "contact" | "project" | "machine";
   entity_id: string;
   content: string;
   author_user_id: string | null;

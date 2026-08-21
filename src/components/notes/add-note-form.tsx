@@ -9,11 +9,16 @@ import { Send, ListChecks, X } from 'lucide-react'
 import { createNote } from '@/lib/actions/note-actions'
 
 interface AddNoteFormProps {
-  entityType: 'prospect' | 'company' | 'deal' | 'contact' | 'project'
+  entityType: 'prospect' | 'company' | 'deal' | 'contact' | 'project' | 'machine'
   entityId: string
+  placeholder?: string
 }
 
-export function AddNoteForm({ entityType, entityId }: AddNoteFormProps) {
+export function AddNoteForm({ entityType, entityId, placeholder }: AddNoteFormProps) {
+  // En to-do hänger på ett bolag, en affär eller ett projekt. En av våra egna
+  // produkter är inget av det, så maskiner får ingen to-do-knapp.
+  const canAddTodo = entityType !== 'machine'
+
   const [content, setContent] = useState('')
   const [showTodo, setShowTodo] = useState(false)
   const [todoContent, setTodoContent] = useState('')
@@ -59,13 +64,13 @@ export function AddNoteForm({ entityType, entityId }: AddNoteFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
       <Textarea
-        placeholder="Skriv en anteckning..."
+        placeholder={placeholder ?? 'Skriv en anteckning...'}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={3}
       />
 
-      {showTodo ? (
+      {canAddTodo && showTodo ? (
         <div className="rounded-lg border border-[#B8B8B8]/50 bg-[#F2F2F0]/60 p-3 space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-xs text-[#6B6B6B] flex items-center gap-1.5">
@@ -97,7 +102,7 @@ export function AddNoteForm({ entityType, entityId }: AddNoteFormProps) {
       {error && <p className="text-xs text-[#8B3D3D]">{error}</p>}
 
       <div className="flex items-center justify-between">
-        {!showTodo ? (
+        {canAddTodo && !showTodo ? (
           <Button
             type="button"
             variant="ghost"

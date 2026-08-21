@@ -255,7 +255,7 @@ export type TodoFormData = z.infer<typeof todoSchema>
 // NOTES
 // ============================================
 export const noteSchema = z.object({
-  entity_type: z.enum(['prospect', 'company', 'deal', 'contact', 'project']),
+  entity_type: z.enum(['prospect', 'company', 'deal', 'contact', 'project', 'machine']),
   entity_id: z.string().uuid(),
   content: z.string().min(1, 'Anteckning krävs'),
 })

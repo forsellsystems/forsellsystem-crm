@@ -10,6 +10,7 @@ import {
   getMachineQuestions,
   getMachineSpecs,
 } from '@/lib/queries/machines'
+import { getNotes } from '@/lib/queries/notes'
 import { DeleteMachineButton } from '@/components/machines/delete-machine-button'
 import { MachineDetailCard } from '@/components/machines/machine-detail-card'
 import { MachineFeaturesCard } from '@/components/machines/machine-features-card'
@@ -23,12 +24,13 @@ export default async function MachineDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [machine, components, features, specs, questions] = await Promise.all([
+  const [machine, components, features, specs, questions, notes] = await Promise.all([
     getMachine(id),
     getMachineComponents(id),
     getMachineFeatures(id),
     getMachineSpecs(id),
     getMachineQuestions(id),
+    getNotes('machine', id),
   ])
 
   if (!machine) notFound()
@@ -80,11 +82,7 @@ export default async function MachineDetailPage({
               hasComponents
             />
           )}
-          <MachineKnowledgeCard
-            machineId={machine.id}
-            questions={questions}
-            note={machine.knowledge_note}
-          />
+          <MachineKnowledgeCard machineId={machine.id} questions={questions} notes={notes} />
         </div>
       </div>
     </div>
