@@ -80,7 +80,11 @@ export default async function MachineDetailPage({
               hasComponents
             />
           )}
-          <MachineKnowledgeCard machineId={machine.id} questions={questions} />
+          <MachineKnowledgeCard
+            machineId={machine.id}
+            questions={questions}
+            note={machine.knowledge_note}
+          />
         </div>
       </div>
     </div>

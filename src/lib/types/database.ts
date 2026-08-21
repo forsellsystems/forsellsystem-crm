@@ -81,6 +81,8 @@ export type Machine = {
   price_max: number | null;
   currency: string;
   is_active: boolean;
+  // Fritext i Kunskapsbanken: allt som inte passar som en fråga.
+  knowledge_note: string | null;
   created_at: string;
   updated_at: string;
 };

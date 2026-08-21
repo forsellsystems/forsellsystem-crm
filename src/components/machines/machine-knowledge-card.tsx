@@ -10,6 +10,7 @@ import {
   createQuestion,
   updateQuestion,
   deleteQuestion,
+  updateMachineKnowledgeNote,
 } from '@/lib/actions/machine-question-actions'
 import type { MachineQuestion } from '@/lib/types/database'
 
@@ -31,9 +32,11 @@ function EditFields({
 export function MachineKnowledgeCard({
   machineId,
   questions,
+  note,
 }: {
   machineId: string
   questions: MachineQuestion[]
+  note: string | null
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -46,6 +49,9 @@ export function MachineKnowledgeCard({
   const [editId, setEditId] = useState<string | null>(null)
   const [eQ, setEQ] = useState('')
   const [eNote, setENote] = useState('')
+
+  const [editingNote, setEditingNote] = useState(false)
+  const [noteDraft, setNoteDraft] = useState(note ?? '')
 
   function run(fn: () => Promise<void>) {
     setError(null)
@@ -92,7 +98,7 @@ export function MachineKnowledgeCard({
             Kunskapsbank
           </CardTitle>
           <p className="mt-1 text-xs text-[#9A9A9A]">
-            Frågor att ställa för att förstå kundens behov
+            Frågor att ställa för att förstå kundens behov, och allt annat ni vet om produkten
           </p>
         </div>
         {!adding && (
@@ -164,6 +170,70 @@ export function MachineKnowledgeCard({
             </Button>
           </div>
         )}
+
+        {/* Fritext under frågorna, för allt som inte är en fråga. */}
+        <div className="border-t border-[#B8B8B8]/40 pt-4">
+          <p className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B] mb-2">
+            KOMMENTARER
+          </p>
+          {editingNote ? (
+            <div className="space-y-2">
+              <textarea
+                className="w-full min-h-40 rounded-lg border border-border bg-background px-2.5 py-2 text-sm outline-none focus:border-ring focus:ring-3 focus:ring-ring/50"
+                value={noteDraft}
+                onChange={(e) => setNoteDraft(e.target.value)}
+                placeholder="Allt ni vet om produkten: erfarenheter, invändningar, jämförelser, sådant som inte passar någon annanstans"
+              />
+              <div className="flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => {
+                    setEditingNote(false)
+                    setNoteDraft(note ?? '')
+                  }}
+                  disabled={isPending}
+                >
+                  <X className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  disabled={isPending}
+                  onClick={() =>
+                    run(async () => {
+                      await updateMachineKnowledgeNote(machineId, noteDraft)
+                      setEditingNote(false)
+                    })
+                  }
+                >
+                  <Check className="size-4" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start justify-between gap-2">
+              {note ? (
+                <p className="text-sm text-[#1A1A1A] whitespace-pre-wrap">{note}</p>
+              ) : (
+                <p className="text-sm text-[#B8B8B8]">
+                  Fritext om produkten. Skriv in vad som helst.
+                </p>
+              )}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => {
+                  setNoteDraft(note ?? '')
+                  setEditingNote(true)
+                }}
+                disabled={isPending}
+              >
+                <Pencil className="size-3.5" />
+              </Button>
+            </div>
+          )}
+        </div>
 
         {error && <p className="text-sm text-[#8B3D3D]">{error}</p>}
       </CardContent>
