@@ -6,14 +6,12 @@ import { ArrowLeft } from 'lucide-react'
 import {
   getMachine,
   getMachineComponents,
-  getMachineFeatures,
   getMachineQuestions,
   getMachineSpecs,
 } from '@/lib/queries/machines'
 import { getNotes } from '@/lib/queries/notes'
 import { DeleteMachineButton } from '@/components/machines/delete-machine-button'
 import { MachineDetailCard } from '@/components/machines/machine-detail-card'
-import { MachineFeaturesCard } from '@/components/machines/machine-features-card'
 import { MachineSpecsCard } from '@/components/machines/machine-specs-card'
 import { MachineComponentsCard } from '@/components/machines/machine-components-card'
 import { MachineKnowledgeCard } from '@/components/machines/machine-knowledge-card'
@@ -24,10 +22,9 @@ export default async function MachineDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [machine, components, features, specs, questions, notes] = await Promise.all([
+  const [machine, components, specs, questions, notes] = await Promise.all([
     getMachine(id),
     getMachineComponents(id),
-    getMachineFeatures(id),
     getMachineSpecs(id),
     getMachineQuestions(id),
     getNotes('machine', id),
@@ -55,13 +52,12 @@ export default async function MachineDetailPage({
         <DeleteMachineButton machineId={machine.id} machineName={machine.name} redirectTo="/maskiner" />
       </div>
 
-      {/* Vänsterspalten är produktens egen data: detaljer, features och komponentlista.
+      {/* Vänsterspalten är produktens egen data: detaljer och komponentlista.
           Komponenterna flyttar till högerspalten när de sätter priset — då är de
           prisdrivande och behöver bredden. */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
           <MachineDetailCard machine={machine} />
-          <MachineFeaturesCard machineId={machine.id} features={features} />
           {!machine.has_components && (
             <MachineComponentsCard
               machineId={machine.id}

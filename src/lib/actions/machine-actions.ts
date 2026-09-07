@@ -11,8 +11,6 @@ export async function createMachine(data: MachineFormData) {
   const { error } = await supabase.from('machines').insert({
     name: validated.name,
     category: validated.category,
-    description: validated.description || null,
-    description_en: validated.description_en || null,
     currency: validated.currency,
     factory_types: validated.factory_types ?? [],
   })
@@ -30,8 +28,6 @@ export async function updateMachine(id: string, data: MachineFormData) {
   const update: Record<string, unknown> = {
     name: validated.name,
     category: validated.category,
-    description: validated.description || null,
-    description_en: validated.description_en || null,
     currency: validated.currency,
     has_components: hasComponents,
     factory_types: validated.factory_types ?? [],

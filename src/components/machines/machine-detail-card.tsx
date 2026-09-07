@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { MACHINE_CATEGORIES, CURRENCIES, FACTORY_TYPES } from '@/lib/constants'
 import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown'
 import { formatCurrency } from '@/lib/utils'
@@ -29,8 +28,6 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
   const [name, setName] = useState(machine.name)
   const [category, setCategory] = useState(machine.category)
   const [currency, setCurrency] = useState(machine.currency)
-  const [description, setDescription] = useState(machine.description ?? '')
-  const [descriptionEn, setDescriptionEn] = useState(machine.description_en ?? '')
   const [hasComponents, setHasComponents] = useState(machine.has_components)
   const [factoryTypes, setFactoryTypes] = useState<string[]>(machine.factory_types ?? [])
   const [priceMin, setPriceMin] = useState(machine.price_min != null ? String(machine.price_min) : '')
@@ -52,8 +49,6 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
     setName(machine.name)
     setCategory(machine.category)
     setCurrency(machine.currency)
-    setDescription(machine.description ?? '')
-    setDescriptionEn(machine.description_en ?? '')
     setHasComponents(machine.has_components)
     setFactoryTypes(machine.factory_types ?? [])
     setPriceMin(machine.price_min != null ? String(machine.price_min) : '')
@@ -70,8 +65,6 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
         await updateMachine(machine.id, {
           name: name.trim(),
           category,
-          description,
-          description_en: descriptionEn,
           currency: currency as MachineFormData['currency'],
           has_components: hasComponents,
           factory_types: factoryTypes,
@@ -157,14 +150,6 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
               </div>
             )}
 
-            <div className="grid gap-1.5">
-              <Label className="text-xs text-[#6B6B6B]">Produktinformation (svenska)</Label>
-              <Textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Produktinformation på svenska..." />
-            </div>
-            <div className="grid gap-1.5">
-              <Label className="text-xs text-[#6B6B6B]">Produktinformation (engelska)</Label>
-              <Textarea rows={3} value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} placeholder="Product information in English..." />
-            </div>
             {error && <p className="text-sm text-[#8B3D3D]">{error}</p>}
             <div className="flex justify-end gap-1">
               <Button variant="ghost" size="icon-sm" onClick={cancel} disabled={isPending}>
@@ -203,18 +188,6 @@ export function MachineDetailCard({ machine }: { machine: Machine }) {
               <span className="text-[#6B6B6B]">Valuta</span>
               <span>{machine.currency}</span>
             </div>
-            {machine.description && (
-              <div className="pt-1">
-                <p className="text-[#6B6B6B] mb-1">Produktinformation (svenska)</p>
-                <p className="text-[#1A1A1A] whitespace-pre-wrap">{machine.description}</p>
-              </div>
-            )}
-            {machine.description_en && (
-              <div className="pt-1">
-                <p className="text-[#6B6B6B] mb-1">Produktinformation (engelska)</p>
-                <p className="text-[#1A1A1A] whitespace-pre-wrap">{machine.description_en}</p>
-              </div>
-            )}
           </>
         )}
       </CardContent>

@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { MACHINE_CATEGORIES, CURRENCIES } from '@/lib/constants'
 import { machineSchema, type MachineFormData } from '@/lib/validations'
 import { createMachine, updateMachine } from '@/lib/actions/machine-actions'
@@ -42,15 +41,11 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
       ? {
           name: machine.name,
           category: machine.category,
-          description: machine.description ?? '',
-          description_en: machine.description_en ?? '',
           currency: (machine.currency as MachineFormData['currency']) ?? 'SEK',
         }
       : {
           name: '',
           category: 'Element Handling',
-          description: '',
-          description_en: '',
           currency: 'SEK',
         },
   })
@@ -134,26 +129,6 @@ export function MachineDialog({ machine, trigger }: MachineDialogProps) {
               ))}
             </select>
             <p className="text-xs text-[#6B6B6B]">Priset räknas ihop från maskinens komponenter.</p>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="description">Produktinformation (svenska)</Label>
-            <Textarea
-              id="description"
-              placeholder="Produktinformation på svenska..."
-              rows={3}
-              {...register('description')}
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="description_en">Produktinformation (engelska)</Label>
-            <Textarea
-              id="description_en"
-              placeholder="Product information in English..."
-              rows={3}
-              {...register('description_en')}
-            />
           </div>
 
           {error && (

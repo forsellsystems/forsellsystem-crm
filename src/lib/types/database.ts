@@ -70,8 +70,6 @@ export type Machine = {
   id: string;
   name: string;
   category: string;
-  description: string | null;
-  description_en: string | null;
   // Price range. When has_components: cached sum of the component ranges.
   // Otherwise: a direct price range set on the machine. price_max NULL = single price.
   has_components: boolean;
@@ -163,17 +161,6 @@ export type ProjectSpec = {
   unit: string | null;
   value_text: string | null;
   note: string | null;
-  sort_order: number;
-  created_at: string;
-  updated_at: string;
-};
-
-// En feature/säljpunkt på en maskin. name = svenska, name_en = engelska (valfri).
-export type MachineFeature = {
-  id: string;
-  machine_id: string;
-  name: string;
-  name_en: string | null;
   sort_order: number;
   created_at: string;
   updated_at: string;

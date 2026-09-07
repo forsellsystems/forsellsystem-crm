@@ -85,11 +85,6 @@ export default async function MaskinerPage() {
                               : formatCurrency(machine.price_min, machine.currency)}
                           </p>
                         )}
-                        {machine.description && (
-                          <p className="text-sm text-[#6B6B6B]">
-                            {machine.description}
-                          </p>
-                        )}
                       </div>
                       <div className="flex items-center gap-1">
                         <Link href={`/maskiner/${machine.id}`}>
