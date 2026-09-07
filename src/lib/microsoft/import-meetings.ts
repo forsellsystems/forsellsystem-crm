@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { getPastEvents } from './graph'
+import { SETTLE_MS, hasSettled, outlookMeetingStatus, stockholmWallClock } from './meeting-status'
 import type { GraphEvent } from './types'
 
 /**
@@ -15,10 +16,6 @@ import type { GraphEvent } from './types'
  * där. Det kostar ingen infrastruktur, men inget händer medan ingen är inne.
  */
 
-// Hur länge efter mötets slut kortet skapas. Bufferten finns för möten som
-// drar över: kortet ska skapas som genomfört, inte mitt i mötet.
-const SETTLE_MS = 60 * 60 * 1000
-
 // Bakåtfönstret vid FÖRSTA körningen. Därefter styr vattenmärket hur långt
 // tillbaka som behövs, så ett uppehåll aldrig lämnar ett hål.
 const WINDOW_DAYS = 14
@@ -29,27 +26,6 @@ const MAX_WINDOW_DAYS = 90
 
 // Strypventil: svepet gör ett Graph-anrop, och mötessidan kan laddas ofta.
 const THROTTLE_MS = 5 * 60 * 1000
-
-/**
- * "Nu minus X" som svensk väggklocka, i samma form som Graph returnerar
- * (YYYY-MM-DDTHH:MM:SS). Servern kör i UTC, så tiderna får aldrig jämföras
- * genom att parsa Graph-strängarna — de saknar offset och skulle tolkas som
- * UTC och slinta två timmar på sommaren. Strängjämförelse på samma tidszon
- * är däremot exakt.
- */
-function stockholmWallClock(msAgo: number): string {
-  const parts = new Intl.DateTimeFormat('sv-SE', {
-    timeZone: 'Europe/Stockholm',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  }).format(new Date(Date.now() - msAgo))
-  return parts.replace(' ', 'T')
-}
 
 /** Deltagarnas namn som fritext, samma form som möteskortet visar i övrigt. */
 function participantsOf(ev: GraphEvent): string | null {
@@ -72,8 +48,8 @@ function meetingRowFrom(ev: GraphEvent) {
     meeting_date: dt ? dt.slice(0, 10) : null,
     meeting_time: ev.isAllDay || !dt || dt.length < 16 ? null : dt.slice(11, 16),
     participants: participantsOf(ev),
-    // Mötet är över när kortet skapas, så statusen är känd.
-    status: ev.isCancelled ? 'installt' : 'genomfort',
+    // Mötet är över när kortet skapas, men inställt väger tyngre än genomfört.
+    status: outlookMeetingStatus(ev),
     outlook_event_id: ev.id,
     outlook_ical_uid: ev.iCalUId ?? null,
     outlook_web_link: ev.webLink ?? null,
@@ -130,8 +106,7 @@ export async function importFinishedCalendarMeetings(userId: string): Promise<nu
     const finished = events.filter((ev) => {
       const end = ev.end?.dateTime
       if (typeof end !== 'string') return false
-      const at = end.slice(0, 19)
-      return at <= cutoff && (watermark === null || at > watermark)
+      return hasSettled(ev) && (watermark === null || end.slice(0, 19) > watermark)
     })
 
     if (finished.length) {

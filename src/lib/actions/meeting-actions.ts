@@ -6,6 +6,7 @@ import { meetingSchema, type MeetingFormData } from '@/lib/validations'
 import { getCurrentUserId, deleteActivityForEntity, logActivity } from '@/lib/actions/activity-actions'
 import { getEventById } from '@/lib/microsoft/graph'
 import type { GraphEvent } from '@/lib/microsoft/types'
+import { outlookMeetingStatus } from '@/lib/microsoft/meeting-status'
 import { fetchTranscript } from '@/lib/fireflies/client'
 import { buildTranscriptNotes } from '@/lib/fireflies/notes'
 
@@ -347,9 +348,10 @@ export async function syncOutlookMeeting(
     if (!event) return null
 
     const { date, time } = eventDateTime(event)
-    // Outlook drives status: cancelled → inställt, past → genomfört, else planerat.
-    const today = new Date().toISOString().slice(0, 10)
-    const status = event.isCancelled ? 'installt' : date && date < today ? 'genomfort' : 'planerat'
+    // Samma regel som kalendersvepet: sluttiden plus en timme avgör, inte
+    // datumet. Annars stod ett möte som hölls i morse kvar som planerat till
+    // midnatt, och den här synken skrev dessutom över svepets riktiga status.
+    const status = outlookMeetingStatus(event)
     const fields = {
       title: event.subject ?? null,
       meeting_date: date,
