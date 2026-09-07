@@ -48,7 +48,7 @@ export default async function InstallningarPage({
             href: '/maskiner',
             icon: Wrench,
             title: 'Maskiner',
-            desc: 'Produktkatalog — maskiner och utrustning',
+            desc: null,
           },
           {
             href: '/logg',
@@ -60,7 +60,7 @@ export default async function InstallningarPage({
             href: '/installningar/foretagsinformation',
             icon: Building2,
             title: 'Företagsinformation',
-            desc: 'Positionering, målgrupp, regler och termer',
+            desc: null,
           },
         ].map(({ href, icon: Icon, title, desc }) => (
           <Link key={href} href={href} className="group">
@@ -71,7 +71,7 @@ export default async function InstallningarPage({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-[#1A1A1A]">{title}</p>
-                  <p className="text-xs text-[#6B6B6B] truncate">{desc}</p>
+                  {desc && <p className="text-xs text-[#6B6B6B] truncate">{desc}</p>}
                 </div>
                 <ChevronRight className="size-4 text-[#B8B8B8] shrink-0" />
               </CardContent>
