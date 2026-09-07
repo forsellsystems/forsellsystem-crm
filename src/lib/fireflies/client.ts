@@ -48,7 +48,8 @@ async function firefliesQuery<T>(query: string, variables: Record<string, unknow
   return json.data
 }
 
-// Fetch a transcript (with summary + sentences) by its id. Bearer-auth GraphQL.
+// Fetch a transcript (summary only — sentences are deliberately not requested)
+// by its id. Bearer-auth GraphQL.
 export async function fetchTranscript(id: string): Promise<FirefliesTranscript> {
   const data = await firefliesQuery<{ transcript?: FirefliesTranscript }>(TRANSCRIPT_QUERY, { id })
   if (!data.transcript) throw new Error('Fireflies: transkript saknas i svaret')
