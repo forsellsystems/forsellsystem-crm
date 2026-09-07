@@ -23,9 +23,6 @@ export default async function MaskinerPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display text-3xl text-[#1A1A1A]">Maskiner</h2>
-          <p className="text-sm text-[#6B6B6B] mt-1">
-            Produktkatalog — maskiner och utrustning
-          </p>
         </div>
         <MachineDialog />
       </div>

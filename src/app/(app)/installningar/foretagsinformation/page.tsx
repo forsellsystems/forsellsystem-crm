@@ -18,9 +18,6 @@ export default async function ForetagsinformationPage() {
         </Link>
         <div>
           <h2 className="font-display text-3xl text-[#1A1A1A]">Företagsinformation</h2>
-          <p className="mt-1 text-sm text-[#6B6B6B]">
-            Bolagets egen kontext: positionering, målgrupp, regler och termer
-          </p>
         </div>
       </div>
 

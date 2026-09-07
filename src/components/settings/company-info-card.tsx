@@ -191,9 +191,6 @@ export function CompanyInfoCard({ rows }: { rows: CompanyInfo[] }) {
           <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">
             Företagsinformation
           </CardTitle>
-          <p className="mt-1 text-xs text-[#9A9A9A]">
-            Det som inte går att fråga databasen om. Kan en query producera det, skriv inte in det här.
-          </p>
         </div>
         <div className="flex items-center gap-1">
           <div className="flex overflow-hidden rounded-lg border border-border" role="group" aria-label="Språk">

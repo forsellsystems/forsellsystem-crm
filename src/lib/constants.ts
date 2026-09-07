@@ -32,6 +32,7 @@ export type BuildingType = (typeof BUILDING_TYPES)[number]["key"];
 export const MATERIALS = [
   { key: "tra", label: "Trä" },
   { key: "stal", label: "Stål" },
+  { key: "betong", label: "Betong" },
 ] as const;
 
 export type Material = (typeof MATERIALS)[number]["key"];

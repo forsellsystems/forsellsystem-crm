@@ -194,11 +194,6 @@ export function MachineComponentsCard({
         <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">
           Komponenter
         </CardTitle>
-        {!hasComponents && (
-          <p className="text-xs text-[#6B6B6B]">
-            Ingår i produkten. Priset sätts direkt på maskinen, så priser här är valfria.
-          </p>
-        )}
       </CardHeader>
       <CardContent className="space-y-3">
         {components.length === 0 ? (

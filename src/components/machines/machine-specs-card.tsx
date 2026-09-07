@@ -224,12 +224,6 @@ export function MachineSpecsCard({
   // språk sida vid sida hade bara dubblat höjden utan att tillföra något.
   const [lang, setLang] = useState<Lang>('sv')
 
-  // Grupperna följer SPEC_OBJECTS-ordningen; tomma grupper visas inte.
-  const groups = SPEC_OBJECTS.map((obj) => ({
-    ...obj,
-    items: specs.filter((s) => s.object_type === obj.key),
-  })).filter((g) => g.items.length > 0)
-
   function run(fn: () => Promise<void>) {
     setError(null)
     startTransition(async () => {
@@ -284,9 +278,6 @@ export function MachineSpecsCard({
           <CardTitle className="font-condensed text-xs tracking-[0.12em] text-[#6B6B6B]">
             Specifikationer
           </CardTitle>
-          <p className="mt-1 text-xs text-[#9A9A9A]">
-            Vad maskinen klarar. &quot;Anpassas efter behov&quot; är ett svar, &quot;ej dokumenterat&quot; är en lucka.
-          </p>
         </div>
         <div className="flex items-center gap-1">
           <div className="flex overflow-hidden rounded-lg border border-border" role="group" aria-label="Språk">
@@ -312,78 +303,71 @@ export function MachineSpecsCard({
         </div>
       </CardHeader>
       <CardContent className="space-y-5">
-        {groups.length === 0 && !adding ? (
+        {specs.length === 0 && !adding ? (
           <p className="text-sm text-[#6B6B6B]">Inga specifikationer tillagda.</p>
         ) : (
-          groups.map((group) => (
-            <div key={group.key} className="space-y-1">
-              <p className="font-condensed text-[11px] uppercase tracking-[0.12em] text-[#9A9A9A]">
-                {lang === 'en' ? group.label_en : group.label}
-              </p>
-              <div className="divide-y divide-[#B8B8B8]/40">
-                {group.items.map((spec) => {
-                  const first = specs.indexOf(spec) === 0
-                  const last = specs.indexOf(spec) === specs.length - 1
-                  return editId === spec.id ? (
-                    <div key={spec.id} className="flex items-start gap-2 py-2 first:pt-0">
-                      <EditFields d={edit} set={setEdit} />
-                      <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(spec.id)} disabled={isPending}>
-                        <Check className="size-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon-sm" onClick={() => setEditId(null)} disabled={isPending}>
-                        <X className="size-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div key={spec.id} className="flex items-start gap-2 py-2 first:pt-0">
-                      <div className="flex-1 min-w-0 sm:flex sm:items-baseline sm:gap-3">
-                        <span className="text-sm text-[#6B6B6B] sm:w-[46%] sm:shrink-0">
-                          {labelOf(spec, lang)}
-                        </span>
-                        <span className="block text-sm tabular-nums">
-                          <span
-                            className={
-                              spec.value_type === 'undocumented'
-                                ? 'text-[#9A9A9A]'
-                                : spec.value_type === 'adapt'
-                                  ? 'text-[#D4A301]'
-                                  : 'text-[#1A1A1A]'
-                            }
-                          >
-                            {valueOf(spec, lang)}
-                          </span>
-                          {noteOf(spec, lang) && (
-                            <span className="block text-xs text-[#9A9A9A]">{noteOf(spec, lang)}</span>
-                          )}
-                        </span>
-                      </div>
-                      <Button variant="ghost" size="icon-sm" onClick={() => run(() => moveSpec(spec.id, machineId, 'up'))} disabled={isPending || first} aria-label="Flytta upp">
-                        <ChevronUp className="size-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon-sm" onClick={() => run(() => moveSpec(spec.id, machineId, 'down'))} disabled={isPending || last} aria-label="Flytta ner">
-                        <ChevronDown className="size-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => {
-                          setEditId(spec.id)
-                          setEdit(draftFrom(spec))
-                          setError(null)
-                        }}
-                        disabled={isPending}
-                      >
-                        <Pencil className="size-3.5" />
-                      </Button>
-                      <Button variant="ghost" size="icon-sm" onClick={() => run(() => deleteSpec(spec.id, machineId))} disabled={isPending}>
-                        <Trash2 className="size-3.5" />
-                      </Button>
-                    </div>
-                  )
-                })}
+          <div className="divide-y divide-[#B8B8B8]/40">
+            {specs.map((spec, i) => {
+            const first = i === 0
+            const last = i === specs.length - 1
+            return editId === spec.id ? (
+              <div key={spec.id} className="flex items-start gap-2 py-2 first:pt-0">
+                <EditFields d={edit} set={setEdit} />
+                <Button variant="ghost" size="icon-sm" onClick={() => saveEdit(spec.id)} disabled={isPending}>
+                  <Check className="size-4" />
+                </Button>
+                <Button variant="ghost" size="icon-sm" onClick={() => setEditId(null)} disabled={isPending}>
+                  <X className="size-4" />
+                </Button>
               </div>
-            </div>
-          ))
+            ) : (
+              <div key={spec.id} className="flex items-start gap-2 py-2 first:pt-0">
+                <div className="flex-1 min-w-0 sm:flex sm:items-baseline sm:gap-3">
+                  <span className="text-sm text-[#6B6B6B] sm:w-[46%] sm:shrink-0">
+                    {labelOf(spec, lang)}
+                  </span>
+                  <span className="block text-sm tabular-nums">
+                    <span
+                      className={
+                        spec.value_type === 'undocumented'
+                          ? 'text-[#9A9A9A]'
+                          : spec.value_type === 'adapt'
+                            ? 'text-[#D4A301]'
+                            : 'text-[#1A1A1A]'
+                      }
+                    >
+                      {valueOf(spec, lang)}
+                    </span>
+                    {noteOf(spec, lang) && (
+                      <span className="block text-xs text-[#9A9A9A]">{noteOf(spec, lang)}</span>
+                    )}
+                  </span>
+                </div>
+                <Button variant="ghost" size="icon-sm" onClick={() => run(() => moveSpec(spec.id, machineId, 'up'))} disabled={isPending || first} aria-label="Flytta upp">
+                  <ChevronUp className="size-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon-sm" onClick={() => run(() => moveSpec(spec.id, machineId, 'down'))} disabled={isPending || last} aria-label="Flytta ner">
+                  <ChevronDown className="size-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => {
+                    setEditId(spec.id)
+                    setEdit(draftFrom(spec))
+                    setError(null)
+                  }}
+                  disabled={isPending}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+                <Button variant="ghost" size="icon-sm" onClick={() => run(() => deleteSpec(spec.id, machineId))} disabled={isPending}>
+                  <Trash2 className="size-3.5" />
+                </Button>
+              </div>
+            )
+            })}
+          </div>
         )}
 
         {adding && (
