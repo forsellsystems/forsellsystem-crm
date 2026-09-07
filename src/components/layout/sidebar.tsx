@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  FileText,
 } from "lucide-react";
 import { logout } from "@/lib/actions/auth-actions";
 import { useState } from "react";
@@ -33,6 +34,7 @@ const navItems: {
   { href: "/affarer", label: "AFFÄRER", icon: Briefcase },
   { href: "/projekt", label: "PROJEKT", icon: FolderKanban },
   { href: "/moten", label: "MÖTEN", icon: CalendarDays },
+  { href: "/rapporter", label: "RAPPORTER", icon: FileText },
   { href: "/foretag", label: "KUNDER", icon: Building2, alsoActiveOn: ["/prospekt"] },
   { href: "/aterforsaljare", label: "AGENTER", icon: Handshake, alsoActiveOn: ["/aterforsaljar-prospekt"] },
   { href: "/installningar", label: "INSTÄLLNINGAR", icon: Cog, alsoActiveOn: ["/maskiner", "/logg"] },

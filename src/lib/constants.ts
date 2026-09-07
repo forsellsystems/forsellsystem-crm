@@ -37,6 +37,16 @@ export const MATERIALS = [
 
 export type Material = (typeof MATERIALS)[number]["key"];
 
+// Prospektrapportens läge i inkorgen. "ny" är otriagerad och det enda som
+// kräver något av användaren.
+export const REPORT_STATUSES = [
+  { key: "ny", label: "Ny", color: "#D4A301" },
+  { key: "hanterad", label: "Hanterad", color: "#333333" },
+  { key: "avfardad", label: "Avfärdad", color: "#9A9A9A" },
+] as const;
+
+export type ReportStatus = (typeof REPORT_STATUSES)[number]["key"];
+
 export const MEETING_STATUSES = [
   { key: "planerat", label: "Planerat", color: "#808080" },
   { key: "genomfort", label: "Genomfört", color: "#333333" },

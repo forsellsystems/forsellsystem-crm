@@ -66,6 +66,25 @@ export type Prospect = {
   updated_at: string;
 };
 
+// En daglig prospektrapport från den schemalagda ChatGPT-körningen. Rapporten
+// är ett underlag i en inkorg, inte ett prospekt: den blir ett prospekt först
+// när någon läst den och klickat.
+export type ProspectReport = {
+  id: string;
+  source_file: string; // unikt, ÅÅÅÅ-MM-DD--bolagsnamn.md
+  report_date: string;
+  company_name: string;
+  org_number: string | null;
+  website: string | null;
+  icp_score: number | null;
+  content: string;
+  status: "ny" | "hanterad" | "avfardad";
+  prospect_id: string | null;
+  company_id: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Machine = {
   id: string;
   name: string;

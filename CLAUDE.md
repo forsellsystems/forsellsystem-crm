@@ -77,6 +77,16 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - Mötesanteckningen från Fireflies är SAMMANFATTNINGEN plus action items, ALDRIG hela transkriptet. Ordagranna repliker rad för rad blev 37 000 tecken i ett fält som ska gå att läsa. Transkriptet finns kvar i Fireflies för den som behöver det, och `sentences` hämtas inte ens hem längre.
 - Både Outlook-väljaren och transkriptväljaren på /moten/[id] döljer det som redan sitter på ett annat kort, och båda server actions förhandskollar innan de skriver. Unika index får aldrig nå användaren som rått Postgres-fel.
 
+## Prospektrapporter
+- prospect_reports: de dagliga rapporterna från den schemalagda ChatGPT-körningen, en per bolag. Egen sida /rapporter i menyn.
+- Rapporten är ett UNDERLAG i en inkorg, aldrig ett prospekt. Den blir ett prospekt först när någon läst den och klickat "Skapa prospekt"; då skapas prospektet med namn, webbplats och land Sverige, och hela rapporten läggs som anteckning där. Systemet skapar aldrig något av sig självt, av samma skäl som Fortnox-kopplingen aldrig kopplar automatiskt.
+- Alternativen är "Koppla till befintligt bolag" (rapporten blir en anteckning på det bolaget) och "Avfärda". status: ny | hanterad | avfardad.
+- Två vägar in, samma mottagare och samma tolkning via saveReport(): uppladdning på /rapporter (drag-and-drop, kräver inloggning) och POST till /api/webhooks/rapporter med HMAC-signatur i x-rapport-signature, för att ChatGPT-körningen ska kunna posta själv. REPORTS_WEBHOOK_SECRET styr den senare; saknas den är webhooken stängd och uppladdningen fungerar ändå.
+- source_file är unikt: samma rapport kan skickas om utan att bli två poster. En omsändning uppdaterar innehållet men rör ALDRIG status eller kopplingen — triageringen är användarens arbete.
+- Rapportformatet är INTE stabilt (metadata som lös text i de tidiga, punktlista i de senare, olika sektionsrubriker). Enda garantin är filnamnet ÅÅÅÅ-MM-DD--bolagsnamn.md. Därför läses datum och bolag ur filnamnet och rubriken, medan org.nr, webbplats och ICP plockas tolerant ur de första 2000 tecknen; hittas de inte lämnas fältet TOMT i stället för gissat. Webbplatsen väljs så att källsajter (hitta.se, LinkedIn, mynewsdesk m.fl.) aldrig råkar bli kundens.
+- Körningar utan kvalificerat prospekt heter no-qualified-prospect och läses inte in alls.
+- react-markdown + remark-gfm renderar rapporten. De behövs: rapporterna bär tabeller (ICP-poäng, bokslut) och källänkar som är oläsbara som rå text.
+
 ## Prospect ↔ Company Flow
 - "Flytta till kund" / "Flytta till återförsäljare" button on prospect detail: creates company (is_reseller derived from prospect_type) + contact + copies notes, flyttar projekten, marks prospect as converted
 - "Flytta till prospekt" / "Flytta till återförsäljar-prospekt" button on company detail: type-aware (kund → kund-prospekt, återförsäljare → återförsäljar-prospekt). Creates prospect with prospect_type derived from is_reseller, copies notes, flyttar projekt/möten/todos, DELETES the company
