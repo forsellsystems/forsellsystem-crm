@@ -406,7 +406,7 @@ export function MeetingDetailCard({
                   </Button>
                 </div>
                 <p className="text-[11px] text-[#9A9A9A]">
-                  Transkriptet skrivs in som mötesanteckning.
+                  Sammanfattningen skrivs in som mötesanteckning.
                 </p>
               </div>
             ) : null}

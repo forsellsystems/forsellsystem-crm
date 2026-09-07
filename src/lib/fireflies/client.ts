@@ -11,7 +11,6 @@ const TRANSCRIPT_QUERY = `query Transcript($id: String!) {
     participants
     meeting_attendees { displayName email }
     summary { overview short_summary action_items keywords }
-    sentences { speaker_name text }
   }
 }`
 

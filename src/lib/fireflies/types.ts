@@ -12,11 +12,6 @@ export interface FirefliesSummary {
   keywords?: string[] | null
 }
 
-export interface FirefliesSentence {
-  speaker_name?: string | null
-  text?: string | null
-}
-
 export interface FirefliesTranscript {
   id: string
   title?: string | null
@@ -26,7 +21,6 @@ export interface FirefliesTranscript {
   participants?: string[] | null
   meeting_attendees?: FirefliesAttendee[] | null
   summary?: FirefliesSummary | null
-  sentences?: FirefliesSentence[] | null
 }
 
 // En rad i kopplingsväljaren: identifierande fält, inga meningar.
