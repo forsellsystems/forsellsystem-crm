@@ -29,6 +29,15 @@ export interface FirefliesTranscript {
   sentences?: FirefliesSentence[] | null
 }
 
+// En rad i kopplingsväljaren: identifierande fält, inga meningar.
+export interface FirefliesTranscriptSummary {
+  id: string
+  title?: string | null
+  date?: number | string | null
+  duration?: number | null
+  meeting_attendees?: FirefliesAttendee[] | null
+}
+
 // The webhook payload Fireflies POSTs on "Transcription completed".
 export interface FirefliesWebhookPayload {
   meetingId?: string

@@ -62,6 +62,19 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - Projektets kontaktperson är projects.contact_id, vald ur ÄGARENS kontakter (bolagets eller prospektets), aldrig fritext.
 - Möten kan INTE kopplas till en affär. Möten hålls på kund- eller projektnivå. Affärsväljaren i mötesdialogen och /api/deals är borttagna.
 
+## Möten
+- Möten i Outlook-kalendern blir möteskort AUTOMATISKT en timme efter sluttiden. Bufferten finns för möten som drar över: kortet ska skapas som genomfört, inte mitt i mötet.
+- Svepet körs när /moten renderas, INTE av ett cronjobb. Projektet har ingen schemaläggning alls (ingen vercel.json, pg_cron/pg_net ej påslagna), och för den som tittar blir resultatet detsamma: när du öppnar Möten är allt avslutat på plats. Priset är att inget händer medan ingen är inne, så notiser eller rapporter kan inte bygga på importen.
+- ALLT i kalendern importeras. Ingen filtrering på deltagare, bolag eller mötestyp. Interna möten kommer också in och lämnas okopplade, vilket är ett giltigt sluttillstånd.
+- Det importerade kortet skapas UTAN bolag och UTAN transkript. Båda kopplingarna görs för hand på /moten/[id]: väljarna visar hela listan och systemet väljer aldrig åt användaren, samma regel som Fortnox-kopplingen.
+- Fireflies-webhooken SKAPAR INGA möteskort längre. Den uppdaterar bara anteckningen på ett kort som redan pekar på transkriptet. Skapade den egna kort fick varje inspelat möte två stycken, ett från kalendern och ett från Fireflies, och då vore den manuella kopplingen meningslös.
+- Tider från Graph är SVENSK VÄGGKLOCKA utan offset (Prefer: outlook.timezone), medan servern kör i UTC. Parsa dem aldrig med new Date() för att jämföra — stockholmWallClock() i lib/microsoft/import-meetings.ts bygger en jämförbar sträng i samma tidszon och jämför som text.
+- meetings.outlook_event_id har ett UNIKT index som INTE är partiellt. Partiella index går inte att peka ut i ON CONFLICT via PostgREST, och Postgres räknar ändå NULL som olika, så okopplade möten störs inte.
+- microsoft_connection.calendar_watermark är svensk väggklocka och betyder "allt som slutade vid eller före denna punkt är behandlat". Det är vad som gör att ett RADERAT importerat kort aldrig återuppstår, och att ett uppehåll längre än fönstret inte tappar möten. Svepet importerar bara händelser vars sluttid ligger mellan vattenmärket och nu minus en timme, och flyttar fram märket först när körningen gick igenom.
+- microsoft_connection.last_calendar_import_at är strypventil och stämplas ALLTID, även när svepet misslyckas. Annars ger en trasig kalenderkoppling ett Graph-anrop per sidladdning i all evighet. Fönstret bakåt är 14 dagar första gången (WINDOW_DAYS) och sträcks efter ett uppehåll upp till 90 dagar (MAX_WINDOW_DAYS); bufferten efter sluttid är 1 timme (SETTLE_MS).
+- Ett Graph-event-id är MAILBOXSPECIFIKT: samma möte har olika id i varje deltagares brevlåda. Därför bär möteskortet även outlook_ical_uid, och svepet dubblettkollar på både event-id och (iCalUId, datum). Datumet måste ingå eftersom alla instanser i en möteserie delar iCalUId. Utan detta skulle två kollegor med kopplad kalender få var sitt kort för samma möte.
+- Både Outlook-väljaren och transkriptväljaren på /moten/[id] döljer det som redan sitter på ett annat kort, och båda server actions förhandskollar innan de skriver. Unika index får aldrig nå användaren som rått Postgres-fel.
+
 ## Prospect ↔ Company Flow
 - "Flytta till kund" / "Flytta till återförsäljare" button on prospect detail: creates company (is_reseller derived from prospect_type) + contact + copies notes, flyttar projekten, marks prospect as converted
 - "Flytta till prospekt" / "Flytta till återförsäljar-prospekt" button on company detail: type-aware (kund → kund-prospekt, återförsäljare → återförsäljar-prospekt). Creates prospect with prospect_type derived from is_reseller, copies notes, flyttar projekt/möten/todos, DELETES the company

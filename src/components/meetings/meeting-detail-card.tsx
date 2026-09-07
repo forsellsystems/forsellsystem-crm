@@ -12,6 +12,8 @@ import {
   deleteMeeting,
   linkOutlookEvent,
   unlinkOutlookEvent,
+  linkFirefliesTranscript,
+  unlinkFirefliesTranscript,
   setMeetingEntity,
 } from '@/lib/actions/meeting-actions'
 import { MeetingForm, type MeetingFormValues } from './meeting-form'
@@ -29,6 +31,7 @@ export function MeetingDetailCard({
   outlookConnected = false,
   outlookEvents = [],
   outlookWebLink = null,
+  firefliesTranscripts = [],
   customers = [],
   resellers = [],
   customerProspects = [],
@@ -39,12 +42,14 @@ export function MeetingDetailCard({
   outlookConnected?: boolean
   outlookEvents?: { id: string; label: string }[]
   outlookWebLink?: string | null
+  firefliesTranscripts?: { id: string; label: string }[]
   customers?: EntityOption[]
   resellers?: EntityOption[]
   customerProspects?: EntityOption[]
   resellerProspects?: EntityOption[]
 }) {
   const linked = Boolean(meeting.outlook_event_id)
+  const transcriptLinked = Boolean(meeting.fireflies_transcript_id)
   const entityValue =
     meeting.entity_type && meeting.entity_id
       ? `${meeting.entity_type}:${meeting.entity_id}`
@@ -63,6 +68,7 @@ export function MeetingDetailCard({
   const [editing, setEditing] = useState(isEmpty)
   const [isPending, startTransition] = useTransition()
   const [selectedEvent, setSelectedEvent] = useState('')
+  const [selectedTranscript, setSelectedTranscript] = useState('')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
@@ -135,6 +141,37 @@ export function MeetingDetailCard({
     startTransition(async () => {
       try {
         await unlinkOutlookEvent(meeting.id, meeting.entity_type, meeting.entity_id)
+        router.refresh()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Kunde inte ta bort koppling')
+      }
+    })
+  }
+
+  function handleLinkTranscript() {
+    if (!selectedTranscript) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        await linkFirefliesTranscript(
+          meeting.id,
+          meeting.entity_type,
+          meeting.entity_id,
+          selectedTranscript
+        )
+        setSelectedTranscript('')
+        router.refresh()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Kunde inte koppla transkript')
+      }
+    })
+  }
+
+  function handleUnlinkTranscript() {
+    setError(null)
+    startTransition(async () => {
+      try {
+        await unlinkFirefliesTranscript(meeting.id, meeting.entity_type, meeting.entity_id)
         router.refresh()
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Kunde inte ta bort koppling')
@@ -320,6 +357,57 @@ export function MeetingDetailCard({
                     Koppla
                   </Button>
                 </div>
+              </div>
+            ) : null}
+
+            {/* Fireflies-transkript. Väljaren visar hela listan och kopplar
+                aldrig av sig själv — samma regel som Fortnox-kopplingen. */}
+            {transcriptLinked ? (
+              <div className="space-y-1.5 border-t border-[#B8B8B8]/40 pt-3">
+                <p className="text-xs text-[#6B6B6B]">Kopplat Fireflies-transkript</p>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUnlinkTranscript}
+                    disabled={isPending}
+                  >
+                    Ta bort koppling
+                  </Button>
+                </div>
+                <p className="text-[11px] text-[#9A9A9A]">
+                  Anteckningen uppdateras automatiskt när transkriptet ändras.
+                </p>
+              </div>
+            ) : firefliesTranscripts.length > 0 ? (
+              <div className="space-y-2 border-t border-[#B8B8B8]/40 pt-3">
+                <p className="text-xs text-[#6B6B6B]">Koppla Fireflies-transkript</p>
+                <div className="flex items-center gap-2">
+                  <select
+                    className={selectClass}
+                    value={selectedTranscript}
+                    onChange={(e) => setSelectedTranscript(e.target.value)}
+                    aria-label="Välj Fireflies-transkript"
+                  >
+                    <option value="">Välj ett transkript…</option>
+                    {firefliesTranscripts.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLinkTranscript}
+                    disabled={isPending || !selectedTranscript}
+                  >
+                    Koppla
+                  </Button>
+                </div>
+                <p className="text-[11px] text-[#9A9A9A]">
+                  Transkriptet skrivs in som mötesanteckning.
+                </p>
               </div>
             ) : null}
 

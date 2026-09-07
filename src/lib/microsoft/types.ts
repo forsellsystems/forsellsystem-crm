@@ -61,6 +61,9 @@ export interface GraphDateTime {
 
 export interface GraphEvent {
   id: string
+  // Samma möte bär SAMMA iCalUId i alla deltagares brevlådor, till skillnad
+  // från id som är mailboxspecifikt. Delas dock av alla instanser i en serie.
+  iCalUId?: string | null
   subject: string | null
   start?: GraphDateTime
   end?: GraphDateTime

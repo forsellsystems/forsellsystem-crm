@@ -21,8 +21,13 @@ import {
 import { MEETING_STATUSES } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
 import { NewMeetingDialog } from '@/components/meetings/new-meeting-dialog'
+import { importFinishedCalendarMeetingsForViewer } from '@/lib/microsoft/import-meetings'
 
 export default async function MotenPage() {
+  // Avslutade kalendermöten får sina kort innan listan hämtas, så de syns
+  // direkt i samma rendering. Best-effort — svepet kastar aldrig.
+  await importFinishedCalendarMeetingsForViewer()
+
   const [meetings, customers, resellers, customerProspects, resellerProspects] =
     await Promise.all([
       getAllMeetings(),
@@ -38,7 +43,7 @@ export default async function MotenPage() {
         <div>
           <h2 className="font-display text-3xl text-[#1A1A1A]">Möten</h2>
           <p className="text-sm text-[#6B6B6B] mt-1">
-            Alla möten hos kunder, prospekt och agenter
+            Hämtas automatiskt från din kalender en timme efter mötets slut
           </p>
         </div>
         <NewMeetingDialog

@@ -2,7 +2,8 @@ import { graphFetch, graphJson } from './client'
 import type { GraphUser, GraphMessage, GraphEvent } from './types'
 
 const MESSAGE_SELECT = 'id,subject,bodyPreview,receivedDateTime,webLink,from,toRecipients,isRead'
-const EVENT_SELECT = 'id,subject,start,end,webLink,isAllDay,isCancelled,location,organizer,attendees'
+const EVENT_SELECT =
+  'id,iCalUId,subject,start,end,webLink,isAllDay,isCancelled,location,organizer,attendees'
 
 // Ask Graph to return event times in Swedish local time so the UI can slice
 // HH:MM straight from the string without timezone math.
@@ -98,6 +99,33 @@ export async function getUpcomingEvents(userId: string, limit = 8): Promise<Grap
     `&$select=${encodeURIComponent(EVENT_SELECT)}` +
     `&$top=${limit}` +
     `&$orderby=${encodeURIComponent('start/dateTime')}`
+  const res = await graphFetch(userId, `/me/calendarView?${qs}`, { headers: PREFER_TZ })
+  const data = await graphJson<{ value: GraphEvent[] }>(res, 'kalenderhämtning')
+  return data.value ?? []
+}
+
+/**
+ * Kalenderhändelser i ett bakåtfönster, för den automatiska mötesimporten.
+ * calendarView tar med allt som ÖVERLAPPAR fönstret, så händelser som ännu
+ * pågår följer med — anroparen avgör vad som verkligen är avslutat.
+ *
+ * Tiderna kommer i svensk lokaltid (PREFER_TZ), samma som resten av filen, så
+ * datum och klockslag kan skrivas rakt in på möteskortet.
+ */
+export async function getPastEvents(
+  userId: string,
+  days: number,
+  limit = 100
+): Promise<GraphEvent[]> {
+  const now = Date.now()
+  const start = new Date(now - days * 86_400_000).toISOString()
+  const end = new Date(now).toISOString()
+  const qs =
+    `startDateTime=${encodeURIComponent(start)}` +
+    `&endDateTime=${encodeURIComponent(end)}` +
+    `&$select=${encodeURIComponent(EVENT_SELECT)}` +
+    `&$top=${limit}` +
+    `&$orderby=${encodeURIComponent('start/dateTime desc')}`
   const res = await graphFetch(userId, `/me/calendarView?${qs}`, { headers: PREFER_TZ })
   const data = await graphJson<{ value: GraphEvent[] }>(res, 'kalenderhämtning')
   return data.value ?? []

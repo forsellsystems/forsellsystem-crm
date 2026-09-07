@@ -265,6 +265,8 @@ export type Meeting = {
   notes: string | null;
   participants: string | null;
   outlook_event_id: string | null;
+  outlook_ical_uid: string | null;
+  fireflies_transcript_id: string | null;
   outlook_web_link: string | null;
   created_at: string;
   updated_at: string;

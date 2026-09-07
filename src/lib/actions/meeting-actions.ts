@@ -6,6 +6,8 @@ import { meetingSchema, type MeetingFormData } from '@/lib/validations'
 import { getCurrentUserId, deleteActivityForEntity, logActivity } from '@/lib/actions/activity-actions'
 import { getEventById } from '@/lib/microsoft/graph'
 import type { GraphEvent } from '@/lib/microsoft/types'
+import { fetchTranscript } from '@/lib/fireflies/client'
+import { buildTranscriptNotes } from '@/lib/fireflies/notes'
 
 // Derive a meeting's date (YYYY-MM-DD) + time (HH:MM) from an Outlook event.
 // Times arrive in W. Europe local time (see graph.ts), so we can slice directly.
@@ -257,6 +259,20 @@ export async function linkOutlookEvent(
   const userId = await getCurrentUserId(supabase)
   if (!userId) throw new Error('Ingen inloggad användare.')
 
+  // Händelsen kan redan sitta på ett annat kort — svepet kan ha hunnit skapa
+  // ett. Det unika indexet skulle annars ge ett rått Postgres-fel i rutan.
+  const { data: taken } = await supabase
+    .from('meetings')
+    .select('id, title')
+    .eq('outlook_event_id', eventId)
+    .neq('id', meetingId)
+    .maybeSingle()
+  if (taken) {
+    throw new Error(
+      `Mötet är redan kopplat till ett annat möteskort${taken.title ? `: ${taken.title}` : ''}. Öppna /moten/${taken.id} och ta bort kopplingen där först.`
+    )
+  }
+
   const event = await getEventById(userId, eventId)
   if (!event) throw new Error('Kunde inte hämta Outlook-mötet.')
   const { date, time } = eventDateTime(event)
@@ -265,6 +281,7 @@ export async function linkOutlookEvent(
     .from('meetings')
     .update({
       outlook_event_id: eventId,
+      outlook_ical_uid: event.iCalUId ?? null,
       outlook_web_link: event.webLink ?? null,
       title: event.subject ?? null,
       meeting_date: date,
@@ -288,7 +305,12 @@ export async function unlinkOutlookEvent(
   const supabase = await createClient()
   const { error } = await supabase
     .from('meetings')
-    .update({ outlook_event_id: null, outlook_web_link: null, updated_at: new Date().toISOString() })
+    .update({
+      outlook_event_id: null,
+      outlook_ical_uid: null,
+      outlook_web_link: null,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', meetingId)
   if (error) throw new Error(`Kunde inte ta bort koppling: ${error.message}`)
 
@@ -488,12 +510,14 @@ export async function createOutlookMeetingCard(input: {
   const userId = await getCurrentUserId(supabase)
   if (!userId) throw new Error('Ingen inloggad användare.')
 
+  // Svepet kan redan ha skapat ett kort för händelsen. Då fyller vi PÅ det
+  // kortet i stället för att returnera det tyst — annars försvinner bolaget
+  // och agendan användaren just skrev in, utan att något säger ifrån.
   const { data: existing } = await supabase
     .from('meetings')
     .select('id')
     .eq('outlook_event_id', input.eventId)
     .maybeSingle()
-  if (existing) return existing.id
 
   const event = await getEventById(userId, input.eventId)
   if (!event) throw new Error('Kunde inte hämta Outlook-mötet.')
@@ -507,6 +531,27 @@ export async function createOutlookMeetingCard(input: {
     entityId = created.entity_id
   }
 
+  if (existing) {
+    const { error: updateError } = await supabase
+      .from('meetings')
+      .update({
+        entity_type: entityType,
+        entity_id: entityId,
+        agenda: input.agenda || null,
+        participants: input.participants || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existing.id)
+    if (updateError) throw new Error(`Kunde inte uppdatera möteskort: ${updateError.message}`)
+
+    await syncMeetingActivity(supabase, existing.id, entityType, entityId)
+    revalidateEntity(entityType, entityId)
+    revalidatePath('/moten')
+    revalidatePath('/dashboard')
+    revalidatePath('/logg')
+    return existing.id
+  }
+
   const { data: meeting, error } = await supabase
     .from('meetings')
     .insert({
@@ -518,6 +563,7 @@ export async function createOutlookMeetingCard(input: {
       agenda: input.agenda || null,
       participants: input.participants || null,
       outlook_event_id: input.eventId,
+      outlook_ical_uid: event.iCalUId ?? null,
       outlook_web_link: event.webLink ?? null,
     })
     .select('id')
@@ -569,3 +615,73 @@ export async function setMeetingEntity(
 
 // Meeting "action points" are now unified to-dos — see src/lib/actions/todo-actions.ts
 // (createTodo with source='meeting' + meeting_id, toggleTodo, deleteTodo).
+
+// ── Fireflies-transkript ────────────────────────────────────────────────────
+// Transkriptet kopplas för hand, precis som bolaget. Webhooken skapar inga
+// kort; den håller bara ett redan kopplat kort färskt.
+
+/**
+ * Koppla ett Fireflies-transkript till mötet och skriv in sammanfattning,
+ * action items och hela transkriptet som mötesanteckning. Har kortet redan en
+ * anteckning skrivs den över — transkriptet är den fylligare källan.
+ */
+export async function linkFirefliesTranscript(
+  meetingId: string,
+  entityType: string | null,
+  entityId: string | null,
+  transcriptId: string
+) {
+  const supabase = await createClient()
+
+  // fireflies_transcript_id är unikt i databasen. Utan förhandskoll blir det
+  // ett rått constraint-fel i rutan, efter att hela transkriptet hämtats.
+  const { data: taken } = await supabase
+    .from('meetings')
+    .select('id, title')
+    .eq('fireflies_transcript_id', transcriptId)
+    .neq('id', meetingId)
+    .maybeSingle()
+  if (taken) {
+    throw new Error(
+      `Transkriptet är redan kopplat till ett annat möte${taken.title ? `: ${taken.title}` : ''}. Öppna /moten/${taken.id} och ta bort kopplingen där först.`
+    )
+  }
+
+  const transcript = await fetchTranscript(transcriptId)
+
+  const { error } = await supabase
+    .from('meetings')
+    .update({
+      fireflies_transcript_id: transcriptId,
+      notes: buildTranscriptNotes(transcript),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', meetingId)
+  if (error) throw new Error(`Kunde inte koppla transkript: ${error.message}`)
+
+  await syncMeetingActivity(supabase, meetingId, entityType, entityId)
+  revalidateEntity(entityType, entityId)
+  revalidatePath(`/moten/${meetingId}`)
+  revalidatePath('/logg')
+}
+
+/**
+ * Ta bort kopplingen. Anteckningen lämnas kvar: texten kan ha redigerats efter
+ * kopplingen, och att radera den vore att kasta arbete som inte går att få
+ * tillbaka. Vill man bli av med den tömmer man fältet själv.
+ */
+export async function unlinkFirefliesTranscript(
+  meetingId: string,
+  entityType: string | null,
+  entityId: string | null
+) {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('meetings')
+    .update({ fireflies_transcript_id: null, updated_at: new Date().toISOString() })
+    .eq('id', meetingId)
+  if (error) throw new Error(`Kunde inte ta bort koppling: ${error.message}`)
+
+  revalidateEntity(entityType, entityId)
+  revalidatePath(`/moten/${meetingId}`)
+}
