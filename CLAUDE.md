@@ -89,6 +89,15 @@ Swedish UI. Long sales cycles. Custom pipeline.
 - Körningar utan kvalificerat prospekt heter no-qualified-prospect och läses inte in alls.
 - react-markdown + remark-gfm renderar rapporten. De behövs: rapporterna bär tabeller (ICP-poäng, bokslut) och källänkar som är oläsbara som rå text.
 
+## Utkast till första mejlet
+- Claude skriver ett utkast till första mejlet på rapportsidan. ANTHROPIC_API_KEY i miljön, modell claude-opus-5, cirka en tiondels krona per utkast. Saknas nyckeln är kortet avstängt med en förklaring, aldrig trasigt.
+- TVÅ STEG med flit. Först läser Claude rapporten och listar de personer den namnger (strikt verktygsschema, inte regex — rapportformatet varierar). Sedan väljer ANVÄNDAREN mottagare, och först då skrivs mejlet. Systemet väljer aldrig mottagare.
+- Instruktionsfältet står ALLTID öppet, också före första utkastet, och sparas på rapporten. Ett utkast utan instruktion är en gissning om vad användaren velat ha. Vid omgenerering skickas instruktionen OCH det gamla utkastet med, så det blir en rättning och inte ett nytt tärningskast.
+- Systemprompten byggs av company_info, inte av hårdkodad text: när en regel läggs till under "Regler i kunddialog" gäller den nästa utkast utan att koden rörs. Produktregistret skickas med så rätt maskin nämns vid rätt namn. Ordlistan utelämnas — den styr inte texten.
+- Avsändaren hämtas från den INLOGGADE användarens namn. Utan det gissar modellen ett namn ur bolagsnamnet; den signerade "Linus Forsell" i första testet.
+- Mejlets inledning är fast och ligger som en post i company_info ("Mejlets inledning"), med platshållaren {avsändare}. En främling behöver veta vem som skriver innan resten spelar roll. Efter inledningen: varför just nu, vad som passar dem, en äkta fråga ur rapportens obesvarade frågor, sedan mötet.
+- Absoluta regler i prompten: aldrig siffror ur bolagets bokslut (deras egna publika investeringar är fria), aldrig påhittade fakta, aldrig tankstreck som skiljetecken, 150-200 ord.
+
 ## Prospect ↔ Company Flow
 - "Flytta till kund" / "Flytta till återförsäljare" button on prospect detail: creates company (is_reseller derived from prospect_type) + contact + copies notes, flyttar projekten, marks prospect as converted
 - "Flytta till prospekt" / "Flytta till återförsäljar-prospekt" button on company detail: type-aware (kund → kund-prospekt, återförsäljare → återförsäljar-prospekt). Creates prospect with prospect_type derived from is_reseller, copies notes, flyttar projekt/möten/todos, DELETES the company

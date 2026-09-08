@@ -84,6 +84,11 @@ export type ProspectReport = {
   status: "ny" | "hanterad" | "avfardad";
   prospect_id: string | null;
   company_id: string | null;
+  // Utkastet till första mejlet, skrivet av Claude ur rapporten.
+  outreach_draft: string | null;
+  outreach_recipient: string | null;
+  outreach_instruction: string | null;
+  outreach_updated_at: string | null;
   created_at: string;
   updated_at: string;
 };

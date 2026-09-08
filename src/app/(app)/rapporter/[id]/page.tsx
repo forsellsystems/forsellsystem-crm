@@ -13,6 +13,8 @@ import { REPORT_STATUSES } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
 import { ReportMarkdown } from '@/components/reports/report-markdown'
 import { ReportActionsBar } from '@/components/reports/report-actions-bar'
+import { OutreachCard } from '@/components/reports/outreach-card'
+import { outreachConfigured } from '@/lib/outreach/config'
 
 export default async function RapportDetailPage({
   params,
@@ -130,7 +132,14 @@ export default async function RapportDetailPage({
           </Card>
         </div>
 
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
+          <OutreachCard
+            reportId={report.id}
+            draft={report.outreach_draft}
+            recipient={report.outreach_recipient}
+            instruction={report.outreach_instruction}
+            configured={outreachConfigured()}
+          />
           <Card>
             <CardContent>
               <ReportMarkdown content={report.content} />
