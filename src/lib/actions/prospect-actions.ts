@@ -172,6 +172,21 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
     .eq('entity_type', 'prospect')
     .eq('entity_id', prospectId)
 
+  // Möten och to-dos FLYTTAS, av samma skäl som projekten: det konverterade
+  // prospektet är en kvarleva, och /moten filtrerar inte på status. Lämnas de
+  // kvar visas mötet under det gamla prospektets namn, eller som "Okänt" om
+  // prospektet senare raderas.
+  await supabase
+    .from('meetings')
+    .update({ entity_type: 'company', entity_id: company.id })
+    .eq('entity_type', 'prospect')
+    .eq('entity_id', prospectId)
+  await supabase
+    .from('todos')
+    .update({ entity_type: 'company', entity_id: company.id })
+    .eq('entity_type', 'prospect')
+    .eq('entity_id', prospectId)
+
   // Prospektrapporten pekar alltid på NULÄGET. Bolaget lever nu som kund, så
   // rapporten flyttar dit. Lämnas den kvar pekar den på en konverterad post
   // som ingen öppnar.
@@ -196,6 +211,8 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
   revalidatePath(isReseller ? '/aterforsaljare' : '/foretag')
   revalidatePath('/projekt')
   revalidatePath('/rapporter')
+  revalidatePath('/moten')
+  revalidatePath('/todo')
 
   return company.id
 }
@@ -227,6 +244,26 @@ export async function deleteProspect(id: string) {
     .eq('entity_type', 'prospect')
     .eq('entity_id', id)
 
+  // Möten och to-dos är polymorfa utan FK, så de måste städas uttryckligen.
+  // Utan det blir de kvar och visas som "Okänt" i mötslistan för alltid.
+  const { data: prospectMeetings } = await supabase
+    .from('meetings')
+    .select('id')
+    .eq('entity_type', 'prospect')
+    .eq('entity_id', id)
+  const meetingIds = (prospectMeetings ?? []).map((m) => m.id)
+  if (meetingIds.length > 0) await deleteActivityForEntity(supabase, 'meeting', meetingIds)
+  await supabase.from('meetings').delete().eq('entity_type', 'prospect').eq('entity_id', id)
+  await supabase.from('todos').delete().eq('entity_type', 'prospect').eq('entity_id', id)
+
+  // Kom bolaget ur en prospektrapport går rapporten tillbaka till inkorgen.
+  // Utan det står den kvar som "hanterad" men pekar ingenstans, vilket är ett
+  // dödläge man inte ser förrän man letar efter det.
+  await supabase
+    .from('prospect_reports')
+    .update({ status: 'ny' })
+    .eq('prospect_id', id)
+
   await deleteActivityForEntity(supabase, 'prospect', id)
 
   const { error } = await supabase
@@ -237,4 +274,7 @@ export async function deleteProspect(id: string) {
   if (error) throw new Error(`Kunde inte radera prospekt: ${error.message}`)
   revalidatePath('/prospekt')
   revalidatePath('/aterforsaljar-prospekt')
+  revalidatePath('/moten')
+  revalidatePath('/todo')
+  revalidatePath('/rapporter')
 }

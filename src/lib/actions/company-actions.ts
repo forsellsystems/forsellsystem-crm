@@ -100,6 +100,14 @@ export async function deleteCompany(id: string) {
   await supabase.from('todos').delete().eq('entity_type', 'company').eq('entity_id', id)
   await supabase.from('notes').delete().eq('entity_type', 'company').eq('entity_id', id)
 
+  // Kom bolaget ur en prospektrapport går rapporten tillbaka till inkorgen.
+  // Utan det står den kvar som "hanterad" men pekar ingenstans, vilket är ett
+  // dödläge man inte ser förrän man letar efter det.
+  await supabase
+    .from('prospect_reports')
+    .update({ status: 'ny' })
+    .eq('company_id', id)
+
   await deleteActivityForEntity(supabase, 'company', id)
 
   const { error } = await supabase.from('companies').delete().eq('id', id)
@@ -107,6 +115,7 @@ export async function deleteCompany(id: string) {
   if (error) throw new Error(`Kunde inte ta bort: ${error.message}`)
   revalidatePath('/foretag')
   revalidatePath('/aterforsaljare')
+  revalidatePath('/rapporter')
 }
 
 export async function moveCompanyToProspect(companyId: string): Promise<string> {
