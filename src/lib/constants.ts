@@ -181,6 +181,8 @@ export const SPEC_FIELDS = [
   // Lyft
   { key: "lifting_capacity", label: "Lyftkapacitet, max", label_en: "Lifting capacity, max", unit: "kg", object: "maskin" },
   { key: "power_source", label: "Drivning", label_en: "Power source", unit: "", object: "maskin" },
+  // Vad som BÄR redskapet, till skillnad från power_source som är vad som driver det.
+  { key: "lifted_by", label: "Lyfts med", label_en: "Lifted by", unit: "", object: "maskin" },
   { key: "air_pressure", label: "Arbetstryck", label_en: "Working pressure", unit: "bar", object: "maskin" },
   // Carrier carts (Modutrack, Painttrack) och trolleys (Skate System).
   // Komponentnamnen översätts aldrig, så de står på engelska även i svenskan.
