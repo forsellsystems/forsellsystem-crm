@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
+import { getReportOrigin } from '@/lib/queries/reports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -46,6 +47,9 @@ export default async function ForetagDetailPage({
   ])
 
   if (!company) notFound()
+
+  // Kom bolaget ur en prospektrapport? Kopplingen pekar på nuläget.
+  const reportOrigin = await getReportOrigin('company', company.id)
 
   // Signed-in CRM user (for their own Outlook mailbox/calendar), and the customer's
   // contact addresses to match mail/meetings against.
@@ -131,7 +135,11 @@ export default async function ForetagDetailPage({
       />
 
       {tab === 'uppgifter' && (
-        <CompanyDetailsCard company={company} resellers={resellers} />
+        <CompanyDetailsCard
+          company={company}
+          resellers={resellers}
+          reportOrigin={reportOrigin}
+        />
       )}
 
       {tab === 'anteckningar' && (

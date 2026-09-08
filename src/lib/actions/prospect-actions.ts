@@ -172,6 +172,14 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
     .eq('entity_type', 'prospect')
     .eq('entity_id', prospectId)
 
+  // Prospektrapporten pekar alltid på NULÄGET. Bolaget lever nu som kund, så
+  // rapporten flyttar dit. Lämnas den kvar pekar den på en konverterad post
+  // som ingen öppnar.
+  await supabase
+    .from('prospect_reports')
+    .update({ prospect_id: null, company_id: company.id })
+    .eq('prospect_id', prospectId)
+
   // 6. Mark prospect as converted
   await supabase
     .from('prospects')
@@ -187,6 +195,7 @@ export async function moveProspectToCompany(prospectId: string): Promise<string>
   revalidatePath(`${basePath}/${prospectId}`)
   revalidatePath(isReseller ? '/aterforsaljare' : '/foretag')
   revalidatePath('/projekt')
+  revalidatePath('/rapporter')
 
   return company.id
 }

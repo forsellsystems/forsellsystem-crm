@@ -92,3 +92,26 @@ export async function getNewReportCounts(): Promise<{ customer: number; reseller
     reseller: rows.filter((r) => r.report_type === 'reseller').length,
   }
 }
+
+/**
+ * Vilken prospektrapport bolaget kom ur, om någon.
+ *
+ * Kopplingen pekar alltid på NULÄGET: så länge bolaget är ett prospekt ligger
+ * den på prospektet, och blir det kund flyttar den med till kunden. Därför
+ * räcker det att fråga på den entitet man står på.
+ */
+export async function getReportOrigin(
+  kind: 'prospect' | 'company',
+  entityId: string
+): Promise<{ id: string; report_date: string } | null> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('prospect_reports')
+    .select('id, report_date')
+    .eq(kind === 'prospect' ? 'prospect_id' : 'company_id', entityId)
+    .order('report_date', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return data ?? null
+}

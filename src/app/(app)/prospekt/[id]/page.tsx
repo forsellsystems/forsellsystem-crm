@@ -19,6 +19,7 @@ import { ProspectDetailsCard } from '@/components/prospects/prospect-details-car
 import { SectionTabs } from '@/components/layout/section-tabs'
 import { ProjectsCard } from '@/components/projects/projects-card'
 import { MeetingsCard } from '@/components/meetings/meetings-card'
+import { getReportOrigin } from '@/lib/queries/reports'
 
 const statusLabels: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
   active: { label: 'Aktiv', variant: 'default' },
@@ -44,6 +45,9 @@ export default async function ProspektDetailPage({
   ])
 
   if (!prospect) notFound()
+
+  // Kom bolaget ur en prospektrapport? Kopplingen pekar på nuläget.
+  const reportOrigin = await getReportOrigin('prospect', prospect.id)
   if (prospect.prospect_type === 'reseller') redirect(`/aterforsaljar-prospekt/${id}`)
 
   // Prospektets kontakter är riktiga poster, precis som på kunder.
@@ -122,6 +126,7 @@ export default async function ProspektDetailPage({
 
       {tab === 'uppgifter' && (
         <ProspectDetailsCard
+          reportOrigin={reportOrigin}
           prospect={prospect}
           editable={prospect.status === 'active'}
           resellers={resellers}

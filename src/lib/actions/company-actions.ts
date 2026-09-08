@@ -204,9 +204,18 @@ export async function moveCompanyToProspect(companyId: string): Promise<string> 
     .eq('entity_id', companyId)
   await supabase.from('notes').delete().eq('entity_type', 'company').eq('entity_id', companyId)
 
+  // Rapporten pekar alltid på nuläget. Måste ske FÖRE raderingen: nyckeln är
+  // ON DELETE SET NULL, så annars nollas kopplingen tyst och går inte att
+  // återskapa.
+  await supabase
+    .from('prospect_reports')
+    .update({ company_id: null, prospect_id: prospect.id })
+    .eq('company_id', companyId)
+
   // 6. Delete company (projekten ligger redan på prospektet efter steg 5)
   await supabase.from('companies').delete().eq('id', companyId)
 
+  revalidatePath('/rapporter')
   if (isReseller) {
     revalidatePath('/aterforsaljare')
     revalidatePath('/aterforsaljar-prospekt')

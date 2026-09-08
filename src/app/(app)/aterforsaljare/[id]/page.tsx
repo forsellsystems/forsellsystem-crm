@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { getReportOrigin } from '@/lib/queries/reports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -66,6 +67,9 @@ export default async function ResellerDetailPage({
   ])
 
   if (!reseller) notFound()
+
+  // Kom bolaget ur en prospektrapport? Kopplingen pekar på nuläget.
+  const reportOrigin = await getReportOrigin('company', reseller.id)
 
   // Samma flikar som kundkortet. En agent har inga fabriksuppgifter, men har
   // kunder och affärer som går via den.
@@ -134,7 +138,10 @@ export default async function ResellerDetailPage({
       />
 
       {tab === 'uppgifter' && (
-        <CompanyDetailsCard company={reseller as CompanyWithRelations} />
+        <CompanyDetailsCard
+          company={reseller as CompanyWithRelations}
+          reportOrigin={reportOrigin}
+        />
       )}
 
       {tab === 'anteckningar' && (

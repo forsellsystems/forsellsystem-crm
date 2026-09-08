@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { getReportOrigin } from '@/lib/queries/reports'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -39,6 +40,9 @@ export default async function AterforsaljarProspektDetailPage({
   ])
 
   if (!prospect || prospect.prospect_type !== 'reseller') notFound()
+
+  // Kom bolaget ur en prospektrapport? Kopplingen pekar på nuläget.
+  const reportOrigin = await getReportOrigin('prospect', prospect.id)
 
   const supabase = await createClient()
   const { data: contactRows } = await supabase
@@ -112,6 +116,7 @@ export default async function AterforsaljarProspektDetailPage({
 
       {tab === 'uppgifter' && (
         <ProspectDetailsCard
+          reportOrigin={reportOrigin}
           prospect={prospect}
           editable={prospect.status === 'active'}
           contacts={contacts}

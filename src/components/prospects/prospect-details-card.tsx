@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { Pencil, Check, X, User, Star, Globe } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,11 +20,13 @@ export function ProspectDetailsCard({
   editable = true,
   resellers = [],
   contacts = [],
+  reportOrigin = null,
 }: {
   prospect: Prospect
   editable?: boolean
   contacts?: Contact[]
   resellers?: { id: string; name: string }[]
+  reportOrigin?: { id: string; report_date: string } | null
 }) {
   const [editing, setEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -229,6 +232,20 @@ export function ProspectDetailsCard({
               <span className="text-[#6B6B6B]">Land</span>
               <span>{prospect.country}</span>
             </div>
+            {/* Kom bolaget ur en prospektrapport syns det här. Kopplingen
+                pekar alltid på nuläget och flyttar med vid konvertering. */}
+            {reportOrigin && (
+              <div className="flex justify-between">
+                <span className="text-[#6B6B6B]">Från rapport</span>
+                <Link
+                  href={`/rapporter/${reportOrigin.id}`}
+                  className="text-[#656565] hover:underline"
+                >
+                  {formatDate(reportOrigin.report_date)}
+                </Link>
+              </div>
+            )}
+
             {!isReseller && resellerName && (
               <div className="flex justify-between">
                 <span className="text-[#6B6B6B]">Agent</span>

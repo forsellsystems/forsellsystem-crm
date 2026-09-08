@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useTransition } from 'react'
 import { Pencil, Check, X, Globe, User, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -9,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { updateCompanyFields } from '@/lib/actions/company-actions'
 import { COUNTRIES, FACTORY_TYPES, BUILDING_TYPES, MATERIALS } from '@/lib/constants'
 import { MultiSelectDropdown } from '@/components/ui/multi-select-dropdown'
+import { formatDate } from '@/lib/utils'
 import { FortnoxCompanyLink } from '@/components/fortnox/fortnox-company-link'
 import { ContactDialog, EditContactButton } from '@/components/companies/contact-dialog'
 import { DeleteContactButton } from '@/components/companies/delete-contact-button'
@@ -17,9 +19,11 @@ import type { CompanyWithRelations } from '@/lib/types/database'
 export function CompanyDetailsCard({
   company,
   resellers = [],
+  reportOrigin = null,
 }: {
   company: CompanyWithRelations
   resellers?: { id: string; name: string }[]
+  reportOrigin?: { id: string; report_date: string } | null
 }) {
   const [editing, setEditing] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -237,6 +241,19 @@ export function CompanyDetailsCard({
               <div className="flex justify-between">
                 <span className="text-[#6B6B6B]">Agent</span>
                 <span className="text-[#D4A301] font-medium">{company.reseller_name}</span>
+              </div>
+            )}
+            {/* Kom bolaget ur en prospektrapport syns det här. Kopplingen
+                pekar alltid på nuläget och flyttar med vid konvertering. */}
+            {reportOrigin && (
+              <div className="flex justify-between">
+                <span className="text-[#6B6B6B]">Från rapport</span>
+                <Link
+                  href={`/rapporter/${reportOrigin.id}`}
+                  className="text-[#656565] hover:underline"
+                >
+                  {formatDate(reportOrigin.report_date)}
+                </Link>
               </div>
             )}
             {/* Kontakterna hör till bolagets uppgifter, inte till ett eget kort. */}
