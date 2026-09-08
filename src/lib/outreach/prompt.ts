@@ -69,13 +69,23 @@ export async function buildProductContext(supabase: SupabaseClient): Promise<str
 export function systemPrompt(
   companyContext: string,
   productContext: string,
-  senderName: string
+  senderName: string,
+  reportType: 'customer' | 'reseller' = 'customer'
 ): string {
   // Inledningen ligger som en regel i Företagsinformation och bär platshållaren
   // {avsändare}. Den fylls här, så texten kan ändras utan att koden rörs.
   const context = companyContext.replaceAll('{avsändare}', senderName)
 
-  return `Du skriver första mejlet från Forsell Systems till ett potentiellt kundföretag, utifrån en prospektrapport som en researchkörning tagit fram.
+  // Ett agentmejl har ett annat ärende: de ska sälja våra maskiner vidare, inte
+  // köpa dem till en egen fabrik. Samma rapport, helt annan vinkel.
+  const errand =
+    reportType === 'reseller'
+      ? `Mottagaren är en möjlig AGENT, alltså en part som skulle sälja Forsell Systems maskiner vidare till husfabriker på sin marknad. De ska inte köpa maskiner till en egen produktion. Skriv om ett samarbete: att deras kunder har de behov våra maskiner löser, och att ni vill undersöka om det finns en gemensam affär. Nämn en produkt bara om rapporten visar att deras marknad har det behovet.`
+      : `Mottagaren är ett möjligt KUNDFÖRETAG som driver eller bygger en egen fabrik.`
+
+  return `Du skriver första mejlet från Forsell Systems, utifrån en prospektrapport som en researchkörning tagit fram.
+
+${errand}
 
 Avsändare är ${senderName}. Signera mejlet med det namnet och ingenting annat. Hitta ALDRIG på ett avsändarnamn.
 
@@ -94,6 +104,10 @@ Bygg mejlet på en KONKRET köpsignal ur rapporten: en fabrik som byggs, en rekr
 Nämn den produkt ur vårt sortiment som rapporten pekar ut som mest relevant, vid rätt namn, och säg i en mening vad den gör för deras situation. Lova ingenting om mått, vikter eller kapacitet.
 
 Ställ en äkta fråga ur rapportens obesvarade frågor. Den visar att du läst på och att du vet vad du inte vet.
+
+# Språk
+
+Skriv på SVENSKA om bolaget är svenskt. Är det ett utländskt bolag, skriv hela mejlet på ENGELSKA, inledningen inkluderad. Avgör utifrån rapporten: bolagets säte, organisationsnummer och var fabrikerna ligger. Blanda aldrig språk i samma mejl.
 
 # Absoluta regler
 

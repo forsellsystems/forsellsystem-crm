@@ -30,7 +30,7 @@ async function reportFor(id: string) {
   const supabase = await createClient()
   const { data } = await supabase
     .from('prospect_reports')
-    .select('id, company_name, content, outreach_draft, outreach_recipient, outreach_instruction')
+    .select('id, company_name, content, outreach_draft, outreach_recipient, outreach_instruction, report_type')
     .eq('id', id)
     .single()
   if (!data) throw new Error('Rapporten finns inte.')
@@ -170,7 +170,12 @@ export async function generateOutreachDraft(
     system: [
       {
         type: 'text',
-        text: systemPrompt(companyContext, productContext, sender),
+        text: systemPrompt(
+          companyContext,
+          productContext,
+          sender,
+          report.report_type === 'reseller' ? 'reseller' : 'customer'
+        ),
         cache_control: { type: 'ephemeral' },
       },
     ],
