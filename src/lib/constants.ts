@@ -77,12 +77,14 @@ export const CURRENCIES = ["SEK", "EUR", "NOK", "DKK"] as const;
 
 export type Currency = (typeof CURRENCIES)[number];
 
+// Produktkategorierna. Undantag från key/label-regeln: kategorin lagras som
+// sin engelska text i machines.category, eftersom namnen är produktnamn och
+// aldrig översätts. Byter en kategori namn måste raderna uppdateras med.
 export const MACHINE_CATEGORIES = [
   { key: "Element Handling", label: "Element Handling" },
-  { key: "Vertical Access", label: "Vertical Access" },
+  { key: "Module Handling", label: "Module Handling" },
   { key: "Tiling", label: "Tiling" },
-  { key: "Storage", label: "Storage" },
-  { key: "Module Transport Solutions", label: "Module Transport Solutions" },
+  { key: "Vertical Access", label: "Vertical Access" },
 ] as const;
 
 export type MachineCategory = (typeof MACHINE_CATEGORIES)[number]["key"];
