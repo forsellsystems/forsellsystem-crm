@@ -184,7 +184,7 @@ export const SPEC_FIELDS = [
   // Vad som BÄR redskapet, till skillnad från power_source som är vad som driver det.
   { key: "lifted_by", label: "Lyfts med", label_en: "Lifted by", unit: "", object: "maskin" },
   { key: "air_pressure", label: "Arbetstryck", label_en: "Working pressure", unit: "bar", object: "maskin" },
-  // Carrier carts (Modutrack, Painttrack) och trolleys (Skate System).
+  // Carrier carts (Vertitrack, Vertitrack Finish) och trolleys (Skate System).
   // Komponentnamnen översätts aldrig, så de står på engelska även i svenskan.
   { key: "element_cart_load", label: "Last per carrier cart", label_en: "Load per carrier cart", unit: "kg", object: "maskin" },
   { key: "element_carts_per", label: "Carrier carts per element", label_en: "Carrier carts per element", unit: "st", object: "maskin" },
