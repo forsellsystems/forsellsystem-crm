@@ -78,6 +78,9 @@ export type ProspectReport = {
   website: string | null;
   icp_score: number | null;
   content: string;
+  // Kund- eller agentspår. Filen säger inte vilket, så typen kommer från
+  // fliken rapporten laddades upp i.
+  report_type: "customer" | "reseller";
   status: "ny" | "hanterad" | "avfardad";
   prospect_id: string | null;
   company_id: string | null;

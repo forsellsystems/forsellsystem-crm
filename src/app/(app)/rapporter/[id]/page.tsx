@@ -31,12 +31,13 @@ export default async function RapportDetailPage({
   if (!report) notFound()
 
   const status = REPORT_STATUSES.find((s) => s.key === report.status)
+  const backHref = report.report_type === 'reseller' ? '/rapporter?flik=agent' : '/rapporter'
 
   return (
     <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-4 min-w-0">
-          <Link href="/rapporter">
+          <Link href={backHref}>
             <Button variant="ghost" size="icon-sm">
               <ArrowLeft className="size-4" />
             </Button>

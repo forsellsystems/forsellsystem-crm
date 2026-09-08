@@ -48,11 +48,14 @@ async function withLinks(
   })
 }
 
-export async function getReports(): Promise<ReportListRow[]> {
+export async function getReports(
+  reportType: 'customer' | 'reseller'
+): Promise<ReportListRow[]> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('prospect_reports')
     .select('*')
+    .eq('report_type', reportType)
     .order('report_date', { ascending: false })
     .order('created_at', { ascending: false })
 
@@ -74,14 +77,18 @@ export async function getReport(id: string): Promise<ReportListRow | null> {
   return row
 }
 
-/** Hur många otriagerade rapporter som väntar — badgen i menyn. */
-export async function getNewReportCount(): Promise<number> {
+/** Otriagerade per spår — siffrorna på flikarna. */
+export async function getNewReportCounts(): Promise<{ customer: number; reseller: number }> {
   const supabase = await createClient()
-  const { count, error } = await supabase
+  const { data, error } = await supabase
     .from('prospect_reports')
-    .select('id', { count: 'exact', head: true })
+    .select('report_type')
     .eq('status', 'ny')
 
-  if (error) return 0
-  return count ?? 0
+  if (error) return { customer: 0, reseller: 0 }
+  const rows = data ?? []
+  return {
+    customer: rows.filter((r) => r.report_type === 'customer').length,
+    reseller: rows.filter((r) => r.report_type === 'reseller').length,
+  }
 }

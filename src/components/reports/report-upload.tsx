@@ -12,7 +12,11 @@ import { uploadReport } from '@/lib/actions/report-actions'
  * filnamnet följer med eftersom det bär datum och bolag. Flera filer går att ta
  * i en gång, så en hel mapp kan läsas in på en gång första gången.
  */
-export function ReportUpload() {
+export function ReportUpload({
+  reportType,
+}: {
+  reportType: 'customer' | 'reseller'
+}) {
   const router = useRouter()
   const inputRef = useRef<HTMLInputElement>(null)
   const [isPending, startTransition] = useTransition()
@@ -34,7 +38,7 @@ export function ReportUpload() {
       for (const file of list) {
         try {
           const text = await file.text()
-          const res = await uploadReport(file.name, text)
+          const res = await uploadReport(file.name, text, reportType)
           if (res.created) created++
           else updated++
         } catch (err) {
@@ -91,8 +95,8 @@ export function ReportUpload() {
         </button>
       </p>
       <p className="mt-1 text-xs text-[#9A9A9A]">
-        Filnamnet måste vara ÅÅÅÅ-MM-DD--bolagsnamn.md. Samma rapport kan skickas om utan att bli
-        två poster.
+        Filnamnet måste vara ÅÅÅÅ-MM-DD--bolagsnamn.md. Rapporten hamnar i{' '}
+        {reportType === 'reseller' ? 'agentspåret' : 'kundspåret'}, alltså den flik du står i.
       </p>
 
       {isPending && <p className="mt-2 text-xs text-[#6B6B6B]">Läser in…</p>}

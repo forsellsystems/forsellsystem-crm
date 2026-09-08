@@ -79,6 +79,8 @@ Swedish UI. Long sales cycles. Custom pipeline.
 
 ## Prospektrapporter
 - prospect_reports: de dagliga rapporterna från den schemalagda ChatGPT-körningen, en per bolag. Egen sida /rapporter i menyn.
+- Två spår via report_type (customer | reseller), som flikar på /rapporter med ?flik=agent via SectionTabs. Filen säger INTE vilket spår den hör till, så det avgörs av vilken flik du laddar upp i. Hamnar den fel finns "Flytta till agentfliken" på rapporten — den behöver inte laddas om.
+- Spåret styr triageringen: kundrapport ger kund-prospekt på /prospekt, agentrapport ger agent-prospekt på /aterforsaljar-prospekt, och kopplingsväljaren visar bara spårets egna bolag. En omsändning av samma fil ändrar ALDRIG spåret — en rättad placering ska inte skrivas över.
 - Rapporten är ett UNDERLAG i en inkorg, aldrig ett prospekt. Den blir ett prospekt först när någon läst den och klickat "Skapa prospekt"; då skapas prospektet med namn, webbplats och land Sverige, och hela rapporten läggs som anteckning där. Systemet skapar aldrig något av sig självt, av samma skäl som Fortnox-kopplingen aldrig kopplar automatiskt.
 - Alternativen är "Koppla till befintligt bolag" (rapporten blir en anteckning på det bolaget) och "Avfärda". status: ny | hanterad | avfardad.
 - Rapporterna läggs in för hand: drag-and-drop på /rapporter, flera filer åt gången. En webhook som lät ChatGPT-körningen posta själv byggdes och togs bort igen oanvänd (commit f55107b) — automatiken byggs när det manuella arbetet visat hur rapporterna faktiskt ser ut över tid. saveReport() i lib/reports/store.ts är mottagningspunkten och är avsiktligt oberoende av var filen kom ifrån, så en andra väg in bara behöver anropa den.

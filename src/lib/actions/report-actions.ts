@@ -15,9 +15,13 @@ function revalidateReports(id?: string) {
  * webhooken — enda skillnaden är att den här vägen kräver inloggning i stället
  * för en delad hemlighet.
  */
-export async function uploadReport(filename: string, content: string) {
+export async function uploadReport(
+  filename: string,
+  content: string,
+  reportType: 'customer' | 'reseller' = 'customer'
+) {
   const supabase = await createClient()
-  const result = await saveReport(supabase, filename, content)
+  const result = await saveReport(supabase, filename, content, reportType)
   if (!result.ok) throw new Error(result.error)
 
   revalidateReports(result.id)
@@ -37,17 +41,22 @@ export async function createProspectFromReport(reportId: string) {
 
   const { data: report } = await supabase
     .from('prospect_reports')
-    .select('id, company_name, website, content, prospect_id')
+    .select('id, company_name, website, content, prospect_id, report_type')
     .eq('id', reportId)
     .single()
   if (!report) throw new Error('Rapporten finns inte.')
   if (report.prospect_id) throw new Error('Rapporten är redan kopplad till ett prospekt.')
 
+  // Kundrapport ger kund-prospekt, agentrapport ger agent-prospekt.
+  const prospectType: 'customer' | 'reseller' =
+    report.report_type === 'reseller' ? 'reseller' : 'customer'
+  const basePath = prospectType === 'reseller' ? '/aterforsaljar-prospekt' : '/prospekt'
+
   const { data: prospect, error } = await supabase
     .from('prospects')
     .insert({
       company_name: report.company_name,
-      prospect_type: 'customer',
+      prospect_type: prospectType,
       // Rapporterna gäller svenska fabriker. Landet går att ändra på prospektet.
       country: 'Sverige',
       website: report.website,
@@ -76,15 +85,15 @@ export async function createProspectFromReport(reportId: string) {
     entity_id: prospect.id,
     metadata: {
       label: report.company_name,
-      href: `/prospekt/${prospect.id}`,
+      href: `${basePath}/${prospect.id}`,
       snippet: 'Skapat från prospektrapport',
     },
   })
 
   revalidateReports(reportId)
-  revalidatePath('/prospekt')
+  revalidatePath(basePath)
   revalidatePath('/logg')
-  return prospect.id
+  return { id: prospect.id, href: `${basePath}/${prospect.id}` }
 }
 
 /**
@@ -124,6 +133,20 @@ export async function linkReportToExisting(
 
   revalidateReports(reportId)
   revalidatePath(target.kind === 'prospect' ? '/prospekt' : '/foretag')
+}
+
+/**
+ * Flytta rapporten mellan kund- och agentspåret. Filen säger inte vilket den
+ * hör till, så en felladdad rapport måste gå att rätta utan att laddas om.
+ */
+export async function setReportType(reportId: string, reportType: 'customer' | 'reseller') {
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('prospect_reports')
+    .update({ report_type: reportType, updated_at: new Date().toISOString() })
+    .eq('id', reportId)
+  if (error) throw new Error(`Kunde inte flytta rapporten: ${error.message}`)
+  revalidateReports(reportId)
 }
 
 /** Rapporten höll inte. Den ligger kvar och går att läsa, men är avklarad. */

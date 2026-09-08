@@ -9,6 +9,7 @@ import {
   dismissReport,
   reopenReport,
   deleteReport,
+  setReportType,
 } from '@/lib/actions/report-actions'
 import type { ProspectReport } from '@/lib/types/database'
 
@@ -42,6 +43,7 @@ export function ReportActionsBar({
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const handled = report.status === 'hanterad'
+  const isReseller = report.report_type === 'reseller'
 
   function run(fn: () => Promise<void>) {
     setError(null)
@@ -71,13 +73,13 @@ export function ReportActionsBar({
           <Button
             onClick={() =>
               run(async () => {
-                const id = await createProspectFromReport(report.id)
-                router.push(`/prospekt/${id}`)
+                const created = await createProspectFromReport(report.id)
+                router.push(created.href)
               })
             }
             disabled={isPending}
           >
-            Skapa prospekt
+            {isReseller ? 'Skapa agent-prospekt' : 'Skapa prospekt'}
           </Button>
           <Button
             variant="ghost"
@@ -98,30 +100,18 @@ export function ReportActionsBar({
             aria-label="Koppla till befintligt bolag"
           >
             <option value="">Eller koppla till ett bolag som redan finns…</option>
-            {customerProspects.length > 0 && (
-              <optgroup label="Kund-prospekt">
-                {customerProspects.map((o) => (
+            {/* Bara spårets egna bolag. Ligger rapporten i fel flik flyttar man
+                den i stället, med knappen nedanför. */}
+            {(isReseller ? resellerProspects : customerProspects).length > 0 && (
+              <optgroup label={isReseller ? 'Agent-prospekt' : 'Kund-prospekt'}>
+                {(isReseller ? resellerProspects : customerProspects).map((o) => (
                   <option key={o.id} value={`prospect:${o.id}`}>{o.name}</option>
                 ))}
               </optgroup>
             )}
-            {customers.length > 0 && (
-              <optgroup label="Kunder">
-                {customers.map((o) => (
-                  <option key={o.id} value={`company:${o.id}`}>{o.name}</option>
-                ))}
-              </optgroup>
-            )}
-            {resellerProspects.length > 0 && (
-              <optgroup label="Agent-prospekt">
-                {resellerProspects.map((o) => (
-                  <option key={o.id} value={`prospect:${o.id}`}>{o.name}</option>
-                ))}
-              </optgroup>
-            )}
-            {resellers.length > 0 && (
-              <optgroup label="Agenter">
-                {resellers.map((o) => (
+            {(isReseller ? resellers : customers).length > 0 && (
+              <optgroup label={isReseller ? 'Agenter' : 'Kunder'}>
+                {(isReseller ? resellers : customers).map((o) => (
                   <option key={o.id} value={`company:${o.id}`}>{o.name}</option>
                 ))}
               </optgroup>
@@ -133,8 +123,8 @@ export function ReportActionsBar({
         </div>
       )}
 
-      {report.status !== 'ny' && (
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {report.status !== 'ny' && (
           <Button
             variant="ghost"
             size="sm"
@@ -143,8 +133,21 @@ export function ReportActionsBar({
           >
             Lägg tillbaka i inkorgen
           </Button>
-        </div>
-      )}
+        )}
+        {!handled && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-[#6B6B6B]"
+            onClick={() =>
+              run(() => setReportType(report.id, isReseller ? 'customer' : 'reseller'))
+            }
+            disabled={isPending}
+          >
+            {isReseller ? 'Flytta till kundfliken' : 'Flytta till agentfliken'}
+          </Button>
+        )}
+      </div>
 
       <div className="border-t border-[#B8B8B8]/40 pt-3">
         {confirmDelete ? (
@@ -158,7 +161,7 @@ export function ReportActionsBar({
               onClick={() =>
                 run(async () => {
                   await deleteReport(report.id)
-                  router.push('/rapporter')
+                  router.push(isReseller ? '/rapporter?flik=agent' : '/rapporter')
                 })
               }
               disabled={isPending}

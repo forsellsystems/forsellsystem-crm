@@ -9,13 +9,25 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { FileText } from 'lucide-react'
-import { getReports } from '@/lib/queries/reports'
+import { getReports, getNewReportCounts } from '@/lib/queries/reports'
+import { SectionTabs } from '@/components/layout/section-tabs'
 import { REPORT_STATUSES } from '@/lib/constants'
 import { formatDate } from '@/lib/utils'
 import { ReportUpload } from '@/components/reports/report-upload'
 
-export default async function RapporterPage() {
-  const reports = await getReports()
+export default async function RapporterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ flik?: string }>
+}) {
+  const { flik } = await searchParams
+  // Kundspåret är förval: det är där rapporterna kommer i dag.
+  const reportType = flik === 'agent' ? 'reseller' : 'customer'
+
+  const [reports, counts] = await Promise.all([
+    getReports(reportType),
+    getNewReportCounts(),
+  ])
   const nya = reports.filter((r) => r.status === 'ny').length
 
   return (
@@ -31,14 +43,33 @@ export default async function RapporterPage() {
         </div>
       </div>
 
-      <ReportUpload />
+      <SectionTabs
+        items={[
+          {
+            label: 'Kunder',
+            href: '/rapporter',
+            active: reportType === 'customer',
+            count: counts.customer,
+          },
+          {
+            label: 'Agenter',
+            href: '/rapporter?flik=agent',
+            active: reportType === 'reseller',
+            count: counts.reseller,
+          },
+        ]}
+      />
+
+      <ReportUpload reportType={reportType} />
 
       {reports.length === 0 ? (
         <Card>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-12 text-[#6B6B6B]">
               <FileText className="h-12 w-12 mb-4 text-[#B8B8B8]" />
-              <p className="text-sm">Inga rapporter ännu.</p>
+              <p className="text-sm">
+                Inga {reportType === 'reseller' ? 'agentrapporter' : 'kundrapporter'} ännu.
+              </p>
               <p className="text-xs mt-1">Ladda upp dagens rapport här ovanför.</p>
             </div>
           </CardContent>

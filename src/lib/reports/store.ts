@@ -16,7 +16,8 @@ export type SaveResult =
 export async function saveReport(
   supabase: SupabaseClient,
   filename: string,
-  content: string
+  content: string,
+  reportType: 'customer' | 'reseller' = 'customer'
 ): Promise<SaveResult> {
   if (!content.trim()) return { ok: false, error: 'Rapporten är tom.' }
 
@@ -37,6 +38,8 @@ export async function saveReport(
     .maybeSingle()
 
   if (existing) {
+    // En omsändning uppdaterar innehållet men inte spåret: har rapporten
+    // flyttats till rätt flik för hand ska den stanna där.
     const { error } = await supabase
       .from('prospect_reports')
       .update({
@@ -62,6 +65,7 @@ export async function saveReport(
       website: parsed.website,
       icp_score: parsed.icp_score,
       content: parsed.content,
+      report_type: reportType,
     })
     .select('id')
     .single()
